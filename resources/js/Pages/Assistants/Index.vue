@@ -8,14 +8,27 @@
           <h5 class="text-sm font-medium mt-1">KHOA CÔNG NGHỆ THÔNG TIN</h5>
         </div>
       <!-- Góc phải: Thông tin admin -->
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-white text-blue-600 font-bold rounded-full flex items-center justify-center"> A </div>
+      <div class="relative">
+        <div
+        class="flex items-center space-x-3 cursor-pointer"
+        @click="toggleMenu"
+        >
+        <div class="w-10 h-10 bg-white text-blue-600 font-bold rounded-full flex items-center justify-center">A</div>
         <div class="text-right">
-          <!-- Be để tự hiển thị tên -->
-          <div class="font-semibold text-sm">Tên</div>
+          <div class="font-semibold text-sm">{{ user.name }}</div>
           <div class="text-xs opacity-80">Admin</div>
         </div>
       </div>
+      <!-- Dropdown menu -->
+      <div
+       v-if="showMenu"
+       class="absolute right-0 mt-2 bg-white text-black rounded shadow w-40 z-50"
+       >
+       <button class="w-full text-left px-4 py-2 hover:bg-gray-100">Profile</button>
+       <button class="w-full text-left px-4 py-2 hover:bg-gray-100">Log out</button>
+      </div>
+    </div>
+
     </header>
 
     <!-- Nội dung chính: sidebar + main -->
@@ -79,6 +92,16 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
+
+const showMenu = ref(false)
+
+function toggleMenu() {
+  showMenu.value = !showMenu.value
+}
+defineProps({
+  user: Object,
+});
 const topics = [
   {
     code: '',
