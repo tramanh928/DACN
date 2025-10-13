@@ -9,10 +9,7 @@
         </div>
       <!-- Góc phải: Thông tin admin -->
       <div class="relative">
-        <div
-        class="flex items-center space-x-3 cursor-pointer"
-        @click="toggleMenu"
-        >
+        <div @click="Menu" class="flex items-center space-x-3 cursor-pointer" >
         <div class="w-10 h-10 bg-white text-blue-600 font-bold rounded-full flex items-center justify-center">A</div>
         <div class="text-right">
           <div class="font-semibold text-sm">{{ user.name }}</div>
@@ -20,12 +17,10 @@
         </div>
       </div>
       <!-- Dropdown menu -->
-      <div
-       v-if="showMenu"
-       class="absolute right-0 mt-2 bg-white text-black rounded shadow w-40 z-50"
-       >
-       <button class="w-full text-left px-4 py-2 hover:bg-gray-100">Profile</button>
-       <button class="w-full text-left px-4 py-2 hover:bg-gray-100">Log out</button>
+      <div v-if="showMenu" 
+      class="absolute right-0 mt-2 bg-white text-black rounded shadow w-40 z-50" >
+       <button @click="Profile" class="w-full text-left px-4 py-2 hover:bg-gray-100">Profile</button>
+       <button @click="Logout" class="w-full text-left px-4 py-2 hover:bg-gray-100">Log out</button>
       </div>
     </div>
 
@@ -93,52 +88,29 @@
 
 <script setup>
 import { ref } from 'vue'
-
+import { router } from '@inertiajs/vue3'
 const showMenu = ref(false)
 
-function toggleMenu() {
-  showMenu.value = !showMenu.value
+function Menu() {
+  showMenu.value = !showMenu.value //Hiển thị profile với logout
+}
+
+function Profile() {
+  router.visit('/profile') //Di chuyển đến trang thông tin cá nhân
+}
+
+function Logout() {
+  router.post('/logout', {}, {
+    onFinish: () => {
+      router.visit('/login') //Xuất ra về trang login 
+    }
+  })
 }
 defineProps({
   user: Object,
 });
 const topics = [
   {
-    code: '',
-    title: '',
-    lecturer: '',
-    limit: 0,
-    status: ''
-  },
-  {
-    code: '',
-    title: '',
-    lecturer: '',
-    limit: 0,
-    status: ''
-  },
-   {
-    code: '',
-    title: '',
-    lecturer: '',
-    limit: 0,
-    status: ''
-  },
-   {
-    code: '',
-    title: '',
-    lecturer: '',
-    limit: 0,
-    status: ''
-  },
-   {
-    code: '',
-    title: '',
-    lecturer: '',
-    limit: 0,
-    status: ''
-  },
-   {
     code: '',
     title: '',
     lecturer: '',
