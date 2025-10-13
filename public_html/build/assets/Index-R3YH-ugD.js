@@ -1,0 +1,1 @@
+import{c as t,a as e,o as a}from"./app-CgEQKHdu.js";const o={class:"p-6"},l={__name:"Index",setup(n){return(r,s)=>(a(),t("div",o,[...s[0]||(s[0]=[e("h1",{class:"text-2xl font-bold mb-4"},"Assistants - Page",-1),e("p",{class:"text-gray-600"},"This is the Index.vue page for Assistants.",-1)])]))}};export{l as default};

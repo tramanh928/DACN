@@ -1,0 +1,1 @@
+import{c as t,a as s,o}from"./app-CgEQKHdu.js";const a={class:"p-6"},l={__name:"Show",setup(r){return(n,e)=>(o(),t("div",a,[...e[0]||(e[0]=[s("h1",{class:"text-2xl font-bold mb-4"},"Events - Page",-1),s("p",{class:"text-gray-600"},"This is the Show.vue page for Events.",-1)])]))}};export{l as default};

@@ -23,7 +23,6 @@ Route::get('/dashboard', function () {
     if (!$user) {
         return redirect()->route('login');
     }
-
     switch ($user->role) {
         case 'GiangVien':
             return Inertia::render('Teachers/Index', ['user' => $user]);
@@ -34,6 +33,7 @@ Route::get('/dashboard', function () {
             return Inertia::render('Students/Index', ['user' => $user]);
     }
 })->middleware(['auth', 'verified'])->name('dashboard');
+
 
 Route::resource('students', StudentController::class)->middleware(['auth', 'verified']);
 Route::resource('teachers', TeacherController::class)->middleware(['auth', 'verified']);
