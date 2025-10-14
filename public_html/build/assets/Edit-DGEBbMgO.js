@@ -1,1 +1,0 @@
-import{c as s,a as e,o as a}from"./app-CgVAtPZ8.js";const o={class:"p-6"},d={__name:"Edit",setup(r){return(n,t)=>(a(),s("div",o,[...t[0]||(t[0]=[e("h1",{class:"text-2xl font-bold mb-4"},"Students - Page",-1),e("p",{class:"text-gray-600"},"This is the Edit.vue page for Students.",-1)])]))}};export{d as default};
