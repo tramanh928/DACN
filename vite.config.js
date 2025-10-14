@@ -18,6 +18,9 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    cors: true,
+  },
   build: {
     // output into DirectAdmin document root build folder
     outDir: 'public/build',
