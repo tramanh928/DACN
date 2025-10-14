@@ -1,1 +1,0 @@
-import{c as t,a as s,o as a}from"./app-CgEQKHdu.js";const r={class:"p-6"},n={__name:"Create",setup(o){return(c,e)=>(a(),t("div",r,[...e[0]||(e[0]=[s("h1",{class:"text-2xl font-bold mb-4"},"Teachers - Page",-1),s("p",{class:"text-gray-600"},"This is the Create.vue page for Teachers.",-1)])]))}};export{n as default};

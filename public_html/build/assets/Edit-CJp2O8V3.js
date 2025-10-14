@@ -1,1 +1,0 @@
-import{c as s,a as t,o as a}from"./app-0A4lP3Oj.js";const o={class:"p-6"},l={__name:"Edit",setup(r){return(n,e)=>(a(),s("div",o,[...e[0]||(e[0]=[t("h1",{class:"text-2xl font-bold mb-4"},"Events - Page",-1),t("p",{class:"text-gray-600"},"This is the Edit.vue page for Events.",-1)])]))}};export{l as default};
