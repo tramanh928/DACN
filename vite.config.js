@@ -20,7 +20,7 @@ export default defineConfig({
   ],
   build: {
     // output into DirectAdmin document root build folder
-    outDir: 'public_html/build',
+    outDir: 'public/build',
     // don't wipe other files that may be in public_html
     emptyOutDir: false,
   },
