@@ -20,6 +20,7 @@ export default defineConfig({
   ],
   server: {
     cors: true,
+    host: 'https://buimaitramanh.id.vn',
   },
   build: {
     // output into DirectAdmin document root build folder
