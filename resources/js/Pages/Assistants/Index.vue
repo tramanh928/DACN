@@ -31,16 +31,17 @@
       <!-- Sidebar -->
       <aside class="w-64 bg-white border-r p-6">
         <nav class="space-y-4">
-          <button class="block text-left text-blue-600 hover:underline">Trang chủ</button>
+          <button class="block text-left text-blue-600 hover:underline">Bảng phân công </button>
           <button class="block text-left text-blue-600 hover:underline">Quản lý sinh viên</button>
           <button class="block text-left text-blue-600 hover:underline">Quản lý đề tài</button>
           <button class="block text-left text-blue-600 hover:underline">Quản lý giảng viên</button>
+          <button class="block text-left text-blue-600 hover:underline">Trang chủ</button>
         </nav>
       </aside>
 
       <!-- Main content: Be click vào ra index này-->
       <main class="flex-1 p-8">
-        <h1 class="text-2xl font-bold mb-6">TRANG CHỦ</h1>
+        <h1 class="text-2xl font-bold mb-6 text-center">BẢNG PHÂN CÔNG</h1>
 
        <!-- Search bar: Be để nó tìm kiếm được -->
       <input
@@ -100,11 +101,7 @@ function Profile() {
 }
 
 function Logout() {
-  router.post('/logout', {}, {
-    onFinish: () => {
-      router.visit('/login') //Xuất ra về trang login 
-    }
-  })
+  router.post(route('logout')) //Gọi route logout trong web.php
 }
 defineProps({
   user: Object,
