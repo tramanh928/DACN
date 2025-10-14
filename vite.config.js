@@ -19,9 +19,15 @@ export default defineConfig({
     }),
   ],
   server: {
-    cors: true,
-    host: 'https://buimaitramanh.id.vn',
-  },
+  host: true, // binds to 0.0.0.0
+  port: 5173,
+  strictPort: true,
+  cors: true,
+  hmr: {
+    host: 'buimaitramanh.id.vn', // must resolve to your dev machine (hosts/DNS)
+    protocol: 'ws'
+  }
+},
   build: {
     // output into DirectAdmin document root build folder
     outDir: 'public/build',
