@@ -1,0 +1,1 @@
+import{c as n,a as e,t as o,o as a}from"./app-0A4lP3Oj.js";const c={class:"p-6"},i={class:"text-2xl font-bold mb-4"},d={__name:"Index",props:{user:Object},setup(s){return(r,t)=>(a(),n("div",c,[e("h1",i,"Xin chào giảng viên "+o(s.user.name),1),t[0]||(t[0]=e("p",{class:"text-gray-600"},"Đây là giao diện dành cho giảng viên.",-1))]))}};export{d as default};

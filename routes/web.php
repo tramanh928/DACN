@@ -34,6 +34,16 @@ Route::get('/dashboard', function () {
     }
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::post('/logout', function (Request $request) {
+    Auth::logout(); // Đăng xuất user
+
+    // Xóa session & regenerate token
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    // Quay về trang login
+    return redirect()->route('login');
+})->name('logout');
 
 Route::resource('students', StudentController::class)->middleware(['auth', 'verified']);
 Route::resource('teachers', TeacherController::class)->middleware(['auth', 'verified']);

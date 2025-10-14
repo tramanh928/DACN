@@ -1,0 +1,1 @@
+import{c as s,a as t,o}from"./app-0A4lP3Oj.js";const a={class:"p-6"},l={__name:"Show",setup(r){return(n,e)=>(o(),s("div",a,[...e[0]||(e[0]=[t("h1",{class:"text-2xl font-bold mb-4"},"Students - Page",-1),t("p",{class:"text-gray-600"},"This is the Show.vue page for Students.",-1)])]))}};export{l as default};
