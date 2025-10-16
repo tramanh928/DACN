@@ -18,7 +18,7 @@ export default defineConfig({
       },
     }),
   ],
-  server: {
+  /*server: {
   host: true, // binds to 0.0.0.0
   port: 5173,
   strictPort: true,
@@ -27,7 +27,7 @@ export default defineConfig({
     host: 'buimaitramanh.id.vn', // must resolve to your dev machine (hosts/DNS)
     protocol: 'ws'
   }
-},
+},*/
   build: {
     // output into DirectAdmin document root build folder
     outDir: 'public/build',
