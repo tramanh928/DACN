@@ -27,7 +27,22 @@ Route::get('/dashboard', function () {
         case 'GiangVien':
             return Inertia::render('Teachers/Index', ['user' => $user]);
         case 'ThuKy':
-            return Inertia::render('Assistants/Index', ['user' => $user]);
+    $students = \App\Models\SinhVien::all()->map(function($s) {
+        return [
+            'mssv'     => $s->mssv,
+            'name'     => trim($s->Ho . ' ' . ($s->Ten ?? '')),
+            'group'    => $s->Nhom,
+            'topic'    => $s->Huong_de_tai,
+            'lecturer' => $s->Giang_vien_huong_dan ?? '',
+            'status'   => $s->Trang_Thai ?? 'Chưa gặp',
+            'note'     => $s->Ghi_chu ?? '',
+        ];
+    });
+
+    return Inertia::render('Assistants/Index', [  // <-- Inertia render, not JSON
+        'user' => $user,
+        'students' => $students,
+    ]);
         case 'SinhVien':
         default:
             return Inertia::render('Students/Index', ['user' => $user]);
@@ -56,4 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::get('/students-export', [StudentController::class, 'export'])->name('students.export');
+
+Route::get('/students-list', [StudentController::class, 'index'])->name('students.list');
 require __DIR__.'/auth.php';

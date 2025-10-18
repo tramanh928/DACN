@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\SinhVien;
+use Inertia\Inertia;
 use Illuminate\Http\Request;
+use App\Exports\StudentsExport;
+use Maatwebsite\Excel\Facades\Excel; 
 
 class StudentController extends Controller
 {
@@ -11,12 +14,24 @@ class StudentController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        $students = SinhVien::all();
-        return Inertia::render('Students/Index', [
+{
+    $students = SinhVien::all()->map(function($s) {
+        return [
+            'mssv'     => $s->mssv,
+            'name'     => trim($s->Ho . ' ' . ($s->Ten ?? '')),
+            'group'    => $s->Nhom,
+            'topic'    => $s->Huong_de_tai,
+            'lecturer' => $s->Giang_vien_hd ?? '',
+            'status'   => $s->Trang_Thai ?? 'Chưa gặp',
+            'note'     => $s->Ghi_chu ?? '',
+        ];
+    });
+
+    return Inertia::render('Assistants/Index', [
+        'user' => auth()->user(), 
         'students' => $students,
     ]);
-    }
+}
 
     /**
      * Show the form for creating a new resource.
@@ -89,5 +104,10 @@ class StudentController extends Controller
     {
         $student->delete();
         return redirect()->route('students.index')->with('success','Student deleted.');
+    }
+
+    public function export()
+    {
+        return Excel::download(new StudentsExport, 'DSSV.xlsx');
     }
 }

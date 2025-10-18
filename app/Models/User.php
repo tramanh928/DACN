@@ -52,6 +52,7 @@ class User extends Authenticatable
         'profile_photo_url',
     ];
 
+    protected $table = 'users';
     /**
      * Get the attributes that should be cast.
      *

@@ -10,14 +10,11 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('mssv')->nullable();
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('role', ['SinhVien', 'GiangVien', 'ThuKy'])->default('SinhVien');
-            $table->string('lop')->nullable();
-            $table->string('huong_detai')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

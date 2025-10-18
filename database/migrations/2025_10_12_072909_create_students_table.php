@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('Lop')->nullable(); 
             $table->string('Nhom')->nullable();
             $table->string('Huong_de_tai')->nullable();
+            $table-> string('Giang_vien_huong_dan')->nullable();
             $table->timestamps();
         });
     }
