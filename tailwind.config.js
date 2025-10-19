@@ -13,7 +13,8 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Inter', 'Roboto', 'Segoe UI', 'Tahoma', 'Arial', 'sans-serif'],
+                vietnamese: ['Inter', 'Roboto', 'Segoe UI', 'Tahoma', 'Arial', 'sans-serif'],
             },
         },
     },
