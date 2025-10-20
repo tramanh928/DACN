@@ -136,6 +136,9 @@
                 placeholder="Tìm kiếm theo MSSV / tên / đề tài..."
                 class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
               />
+              <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                Thêm
+              </button>
               <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition" @click="exportExcel">
                 Xuất file Excel
               </button>
@@ -154,6 +157,7 @@
                   <th class="p-3 text-left">Giảng viên HD</th>
                   <th class="p-3 text-left">Trạng thái gặp GV</th>
                   <th class="p-3 text-left">Ghi chú</th>
+                  <th class="p-3 text-left">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -174,9 +178,19 @@
                     </span>
                   </td>
                   <td class="p-3 text-gray-600 italic">{{ item.note }}</td>
+                  <td class="p-3">
+                    <div class="flex gap-2">
+                      <button class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                        Sửa
+                      </button>
+                      <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
+                        Xóa
+                      </button>
+                    </div>
+                  </td>
                 </tr>
                 <tr v-if="assignments.length === 0">
-                  <td class="p-3 italic text-sm text-gray-500" colspan="7">Không có kết quả</td>
+                  <td class="p-3 italic text-sm text-gray-500" colspan="8">Không có dữ liệu từ database</td>
                 </tr>
               </tbody>
             </table>
@@ -194,6 +208,9 @@
                 placeholder="Tìm kiếm giảng viên..."
                 class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
               />
+              <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                Thêm
+              </button>
               <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
                 Xuất file Excel
               </button>
@@ -210,6 +227,7 @@
                   <th class="p-3 text-left">Email</th>
                   <th class="p-3 text-left">Số đề tài HD</th>
                   <th class="p-3 text-left">Trạng thái</th>
+                  <th class="p-3 text-left">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -223,9 +241,19 @@
                       Hoạt động
                     </span>
                   </td>
+                  <td class="p-3">
+                    <div class="flex gap-2">
+                      <button class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                        Sửa
+                      </button>
+                      <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
+                        Xóa
+                      </button>
+                    </div>
+                  </td>
                 </tr>
                 <tr v-if="teachers.length === 0">
-                  <td class="p-3 italic text-sm text-gray-500" colspan="5">Không có kết quả</td>
+                  <td class="p-3 italic text-sm text-gray-500" colspan="6">Không có dữ liệu từ database</td>
                 </tr>
               </tbody>
             </table>
@@ -243,6 +271,9 @@
                 placeholder="Tìm kiếm sinh viên..."
                 class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
               />
+              <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                Thêm
+              </button>
               <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
                 Xuất file Excel
               </button>
@@ -259,11 +290,12 @@
                   <th class="p-3 text-left">Nhóm</th>
                   <th class="p-3 text-left">Email</th>
                   <th class="p-3 text-left">Số điện thoại</th>
+                  <th class="p-3 text-left">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="students.length === 0">
-                  <td class="p-3 italic text-sm text-gray-500" colspan="5">Không có dữ liệu sinh viên</td>
+                  <td class="p-3 italic text-sm text-gray-500" colspan="6">Không có dữ liệu từ database</td>
                 </tr>
               </tbody>
             </table>
@@ -281,6 +313,9 @@
                 placeholder="Tìm kiếm đề tài..."
                 class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
               />
+              <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                Thêm
+              </button>
               <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
                 Xuất file Excel
               </button>
@@ -297,6 +332,7 @@
                   <th class="p-3 text-left">Giảng viên</th>
                   <th class="p-3 text-left">Số lượng</th>
                   <th class="p-3 text-left">Trạng thái</th>
+                  <th class="p-3 text-left">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -316,9 +352,19 @@
                       {{ topic.status }}
                     </span>
                   </td>
+                  <td class="p-3">
+                    <div class="flex gap-2">
+                      <button class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                        Sửa
+                      </button>
+                      <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
+                        Xóa
+                      </button>
+                    </div>
+                  </td>
                 </tr>
                 <tr v-if="topics.length === 0">
-                  <td class="p-3 italic text-sm text-gray-500" colspan="5">Không có kết quả</td>
+                  <td class="p-3 italic text-sm text-gray-500" colspan="6">Không có dữ liệu từ database</td>
                 </tr>
               </tbody>
             </table>
