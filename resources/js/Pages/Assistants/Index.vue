@@ -136,7 +136,7 @@
                 placeholder="Tìm kiếm theo MSSV / tên / đề tài..."
                 class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
               />
-              <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+              <button @click="openAddForm" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
                 Thêm
               </button>
               <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition" @click="exportExcel">
@@ -180,7 +180,7 @@
                   <td class="p-3 text-gray-600 italic">{{ item.note }}</td>
                   <td class="p-3">
                     <div class="flex gap-2">
-                      <button class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                      <button @click="openEditForm(item)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
                         Sửa
                       </button>
                       <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
@@ -208,7 +208,7 @@
                 placeholder="Tìm kiếm giảng viên..."
                 class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
               />
-              <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+              <button @click="openAddForm" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
                 Thêm
               </button>
               <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
@@ -243,7 +243,7 @@
                   </td>
                   <td class="p-3">
                     <div class="flex gap-2">
-                      <button class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                      <button @click="openEditForm(item)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
                         Sửa
                       </button>
                       <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
@@ -271,7 +271,7 @@
                 placeholder="Tìm kiếm sinh viên..."
                 class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
               />
-              <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+              <button @click="openAddForm" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
                 Thêm
               </button>
               <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
@@ -313,7 +313,7 @@
                 placeholder="Tìm kiếm đề tài..."
                 class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
               />
-              <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+              <button @click="openAddForm" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
                 Thêm
               </button>
               <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
@@ -354,7 +354,7 @@
                   </td>
                   <td class="p-3">
                     <div class="flex gap-2">
-                      <button class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                      <button @click="openEditForm(item)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
                         Sửa
                       </button>
                       <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
@@ -368,6 +368,150 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- Form Modal -->
+        <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-xl font-bold text-indigo-600">
+                {{ formMode === 'add' ? 'THÊM MỚI' : 'CHỈNH SỬA' }} {{ getFormTitle() }}
+              </h3>
+              <button @click="closeForm" class="text-gray-500 hover:text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Form Content -->
+            <div class="space-y-4">
+              <!-- Assignment Form -->
+              <div v-if="currentView === 'assignments'">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">MSSV</label>
+                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập MSSV">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nhóm</label>
+                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập nhóm">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Đề tài LVTN</label>
+                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập đề tài">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Giảng viên HD</label>
+                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên giảng viên">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                    <select class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                      <option value="Chưa gặp">Chưa gặp</option>
+                      <option value="Đã gặp">Đã gặp</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="mt-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
+                  <textarea class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" rows="3" placeholder="Nhập ghi chú"></textarea>
+                </div>
+              </div>
+
+              <!-- Teacher Form -->
+              <div v-if="currentView === 'teachers'">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mã GV</label>
+                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập mã giảng viên">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập email">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Số đề tài HD</label>
+                    <input type="number" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập số đề tài">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Student Form -->
+              <div v-if="currentView === 'students'">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">MSSV</label>
+                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập MSSV">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nhóm</label>
+                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập nhóm">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập email">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                    <input type="tel" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập số điện thoại">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Topic Form -->
+              <div v-if="currentView === 'topics'">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mã đề tài</label>
+                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập mã đề tài">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tên đề tài</label>
+                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên đề tài">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Giảng viên</label>
+                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên giảng viên">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
+                    <input type="number" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập số lượng">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                    <select class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                      <option value="Chờ sinh viên chọn">Chờ sinh viên chọn</option>
+                      <option value="Đã được chọn">Đã được chọn</option>
+                      <option value="Đã khóa">Đã khóa</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
+              <button @click="closeForm" class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition">
+                Hủy
+              </button>
+              <button class="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition">
+                {{ formMode === 'add' ? 'Thêm' : 'Cập nhật' }}
+              </button>
+            </div>
           </div>
         </div>
       </main>
@@ -393,6 +537,35 @@ const props = defineProps({
 // Current view 
 const currentView = ref('dashboard')
 function setCurrentView(view) { currentView.value = view }
+
+// Form modal state
+const showForm = ref(false)
+const formMode = ref('add') // 'add' or 'edit'
+
+function openAddForm() {
+  formMode.value = 'add'
+  showForm.value = true
+}
+
+function openEditForm(item) {
+  formMode.value = 'edit'
+  showForm.value = true
+  // Có thể load dữ liệu item vào form ở đây
+}
+
+function closeForm() {
+  showForm.value = false
+}
+
+function getFormTitle() {
+  const titles = {
+    'assignments': 'BẢNG PHÂN CÔNG',
+    'teachers': 'GIẢNG VIÊN',
+    'students': 'SINH VIÊN', 
+    'topics': 'ĐỀ TÀI'
+  }
+  return titles[currentView.value] || ''
+}
 
 // simple data holders
 const assignments = ref([])
