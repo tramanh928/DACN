@@ -77,3 +77,5 @@ Route::get('/students-list', [StudentController::class, 'index'])->name('student
 require __DIR__.'/auth.php';
 
 Route::post('/teachers/getAll', [TeacherController::class, 'index']);
+Route::post('/students/getAll', [StudentController::class, 'index']);
+Route::post('/topics/getAll', [DeTaiController::class, 'index']);

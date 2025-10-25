@@ -292,46 +292,65 @@
         </div>
 
         <!-- Trang qlsv -->
-        <div v-if="currentView === 'students'">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-indigo-600">QUẢN LÝ SINH VIÊN</h2>
-            <div class="flex items-center gap-4">
-              <input
-                v-model="studentSearch"
-                type="text"
-                placeholder="Tìm kiếm sinh viên..."
-                class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-              />
-              <button @click="openAddForm" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-                Thêm
+<div v-if="currentView === 'students'">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-indigo-600">QUẢN LÝ SINH VIÊN</h2>
+    <div class="flex items-center gap-4">
+      <input
+        v-model="studentSearch"
+        @input="onStudentSearchInput"
+        type="text"
+        placeholder="Tìm kiếm sinh viên..."
+        class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+      />
+      <button @click="openAddForm" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+        Thêm
+      </button>
+      <button @click="exportExcel" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
+        Xuất file Excel
+      </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200">
+      <thead class="bg-indigo-100 text-indigo-700">
+        <tr>
+          <th class="p-3 text-left">MSSV</th>
+          <th class="p-3 text-left">Họ và tên</th>
+          <th class="p-3 text-left">Nhóm</th>
+          <th class="p-3 text-left">Email</th>
+          <th class="p-3 text-left">Số điện thoại</th>
+          <th class="p-3 text-left">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(s, idx) in students" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
+          <td class="p-3">{{ s.mssv }}</td>
+          <td class="p-3">{{ s.name }}</td>
+          <td class="p-3">{{ s.group || '-' }}</td>
+          <td class="p-3">{{ s.email || '-' }}</td>
+          <td class="p-3">{{ s.phone || '-' }}</td>
+          <td class="p-3">
+            <div class="flex gap-2">
+              <button @click="openEditForm(s)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                Sửa
               </button>
-              <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
-                Xuất file Excel
+              <button @click="confirmDeleteStudent(s)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
+                Xóa
               </button>
             </div>
-          </div>
+          </td>
+        </tr>
 
-          <!-- Table -->
-          <div class="overflow-x-auto">
-            <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200">
-              <thead class="bg-indigo-100 text-indigo-700">
-                <tr>
-                  <th class="p-3 text-left">MSSV</th>
-                  <th class="p-3 text-left">Họ và tên</th>
-                  <th class="p-3 text-left">Nhóm</th>
-                  <th class="p-3 text-left">Email</th>
-                  <th class="p-3 text-left">Số điện thoại</th>
-                  <th class="p-3 text-left">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="students.length === 0">
-                  <td class="p-3 italic text-sm text-gray-500" colspan="6">Không có dữ liệu từ database</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <tr v-if="students.length === 0">
+          <td class="p-3 italic text-sm text-gray-500" colspan="6">Không có dữ liệu từ database</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
         <!-- Trang qldt -->
         <div v-if="currentView === 'topics'">
@@ -367,11 +386,11 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(topic, i) in topics" :key="i" class="hover:bg-indigo-50">
-                  <td class="p-3">{{ topic.code }}</td>
-                  <td class="p-3">{{ topic.title }}</td>
-                  <td class="p-3">{{ topic.lecturer }}</td>
-                  <td class="p-3">{{ topic.limit }}</td>
+                <tr v-for="(topic, i) in topics" :key="topic.MaDT" class="hover:bg-indigo-50">
+                  <td class="p-3">{{ topic.MaDT }}</td>
+                  <td class="p-3">{{ topic.TenDT }}</td>
+                  <td class="p-3">{{ topic.MaGV }}</td>
+                  <td class="p-3">{{ topic.SoLuong }}</td>
                   <td class="p-3">
                     <span
                       :class="{
@@ -611,7 +630,16 @@ const teacherSearch = ref('')
 const studentSearch = ref('')
 const topicSearch = ref('')
 
-
+//Topics data
+//Get topics data
+const fetchTopics = async () => {
+  try {
+    const response = await axios.post('/topics/getAll')
+    topics.value = response.data
+  } catch (error) {
+    console.error('Error fetching topics:', error)
+  }
+}
 //Teachers data
 //Get teachers data
 const fetchTeachers = async () => {
@@ -676,5 +704,7 @@ function exportExcel() {
 
 onMounted(() => {
   fetchTeachers()
+  fetchTopics()
+  fetchStudents()
 })
 </script>

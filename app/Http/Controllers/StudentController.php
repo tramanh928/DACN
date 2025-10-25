@@ -21,16 +21,14 @@ class StudentController extends Controller
             'name'     => trim($s->Ho . ' ' . ($s->Ten ?? '')),
             'group'    => $s->Nhom,
             'topic'    => $s->Huong_de_tai,
+            'email'    => $s->email,
+            'phone'    => $s->sdt,
             'lecturer' => $s->Giang_vien_hd ?? '',
             'status'   => $s->Trang_Thai ?? 'Chưa gặp',
             'note'     => $s->Ghi_chu ?? '',
         ];
     });
-
-    return Inertia::render('Assistants/Index', [
-        'user' => auth()->user(), 
-        'students' => $students,
-    ]);
+    return response()->json($students);
 }
 
     /**
