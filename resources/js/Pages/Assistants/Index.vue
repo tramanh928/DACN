@@ -6,7 +6,7 @@
         <h1 class="text-xl font-bold tracking-wide">HỆ THỐNG QUẢN LÝ LUẬN VĂN TỐT NGHIỆP</h1>
         <p class="text-sm mt-1">KHOA CÔNG NGHỆ THÔNG TIN</p>
       </div>
-      <div class="relative">
+      <div class="relative">     
         <div @click="toggleMenu" class="flex items-center space-x-3 cursor-pointer">
           <div class="w-10 h-10 bg-white text-indigo-600 font-bold rounded-full flex items-center justify-center">
             {{ user.name ? user.name.charAt(0).toUpperCase() : '?' }}
@@ -50,13 +50,43 @@
             @click="setCurrentView('students')" 
             :class="currentView === 'students' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
           >
-            Quản lý sinh viên
+            Quản lý sinh viên  
           </button>
           <button 
             @click="setCurrentView('topics')" 
             :class="currentView === 'topics' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
           >
             Quản lý đề tài
+          </button>
+          <button 
+            @click="setCurrentView('evaluation50')" 
+            :class="currentView === 'evaluation50' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
+          >
+            Đánh giá 50%
+          </button>
+          <button 
+            @click="setCurrentView('reviewAssignment')" 
+            :class="currentView === 'reviewAssignment' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
+          >
+            Phân công phản biện
+          </button>
+          <button 
+            @click="setCurrentView('grading')" 
+            :class="currentView === 'grading' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
+          >
+            Chấm điểm
+          </button>
+          <button 
+            @click="setCurrentView('committee')" 
+            :class="currentView === 'committee' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
+          >
+            Thành lập hội đồng
+          </button>
+          <button 
+            @click="setCurrentView('committeeAssignment')" 
+            :class="currentView === 'committeeAssignment' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
+          >
+            Phân công hội đồng
           </button>
         </nav>
       </aside>
