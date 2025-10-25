@@ -12,8 +12,17 @@ class TeacherController extends Controller
      */
     public function index()
     {
-        $teachers = GiangVien::all();
-        return view('teachers.index', compact('teachers'));
+        $teachers = GiangVien::all()->map(function ($teacher) {
+        return [
+            'id' => $teacher->id,
+            'MaGV' => $teacher->MaGV,
+            'name' => trim($teacher->Ho . ' ' . $teacher->Ten), // combine Ho + Ten
+            'email' => $teacher->email,
+            'Khoa' => $teacher->Khoa,
+            'So_luong_sinh_vien' => $teacher->So_luong_sinh_vien,
+        ];
+    });
+        return response()->json($teachers);
     }
 
     /**

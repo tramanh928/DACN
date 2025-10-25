@@ -75,3 +75,5 @@ Route::get('/students-export', [StudentController::class, 'export'])->name('stud
 
 Route::get('/students-list', [StudentController::class, 'index'])->name('students.list');
 require __DIR__.'/auth.php';
+
+Route::post('/teachers/getAll', [TeacherController::class, 'index']);

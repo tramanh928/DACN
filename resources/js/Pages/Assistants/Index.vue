@@ -231,11 +231,12 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(teacher, i) in teachers" :key="i" class="hover:bg-indigo-50">
-                  <td class="p-3">{{ teacher.code }}</td>
+                <tr v-for="(teacher, i) in teachers" :key="teacher.id" class="hover:bg-indigo-50">
+                  <td class="p-3">{{ teacher.MaGV}}</td>
                   <td class="p-3">{{ teacher.name }}</td>
                   <td class="p-3">{{ teacher.email }}</td>
-                  <td class="p-3">{{ teacher.topicsCount }}</td>
+                  <td class="p-3">{{ teacher.Khoa }}</td>
+                  <td class="p-3">{{ teacher.So_luong_sinh_vien }}</td>
                   <td class="p-3">
                     <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold">
                       Hoạt động
@@ -520,8 +521,9 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { router } from '@inertiajs/vue3'
+import axios from 'axios'
 
 const showMenu = ref(false)
 function toggleMenu() { showMenu.value = !showMenu.value }
@@ -579,6 +581,29 @@ const teacherSearch = ref('')
 const studentSearch = ref('')
 const topicSearch = ref('')
 
+
+//Teachers data
+//Get teachers data
+const fetchTeachers = async () => {
+  try {
+    const response = await axios.post('/teachers/getAll')
+    teachers.value = response.data
+  } catch (error) {
+    console.error('Error fetching teachers:', error)
+  }
+}
+
+//Students data
+//Get students data
+const fetchStudents = async () => {
+  try {
+    const response = await axios.post('/students/getAll')
+    students.value = response.data
+  } catch (error) {
+    console.error('Error fetching students:', error)
+  }
+}
+
 // normalize incoming student objects to match table fields
 function normalizeStudents(list) {
   return (list || []).map(s => {
@@ -618,4 +643,8 @@ watch(() => props.students, (newVal) => {
 function exportExcel() {
   window.open(route('students.export'), '_blank')
 }
+
+onMounted(() => {
+  fetchTeachers()
+})
 </script>
