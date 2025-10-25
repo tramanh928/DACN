@@ -106,7 +106,7 @@
                 </div>
                 <div class="ml-4">
                   <p class="text-sm font-medium text-gray-600">Tổng số sinh viên</p>
-                  <p class="text-2xl font-semibold text-gray-900">0</p>
+                  <p class="text-2xl font-semibold text-gray-900">{{ totalStudents }}</p>
                 </div>
               </div>
             </div>
@@ -120,7 +120,7 @@
                 </div>
                 <div class="ml-4">
                   <p class="text-sm font-medium text-gray-600">Tổng số giảng viên</p>
-                  <p class="text-2xl font-semibold text-gray-900">0</p>
+                  <p class="text-2xl font-semibold text-gray-900">{{ totalTeachers }}</p>
                 </div>
               </div>
             </div>
@@ -134,7 +134,7 @@
                 </div>
                 <div class="ml-4">
                   <p class="text-sm font-medium text-gray-600">Tổng số đề tài</p>
-                  <p class="text-2xl font-semibold text-gray-900">0</p>
+                  <p class="text-2xl font-semibold text-gray-900">{{ totalTopics }}</p>
                 </div>
               </div>
             </div>
@@ -399,7 +399,7 @@
                         'bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold': topic.status === 'Đã khóa'
                       }"
                     >
-                      {{ topic.status }}
+                      {{ topic.TrangThai }}
                     </span>
                   </td>
                   <td class="p-3">
@@ -630,6 +630,24 @@ const teacherSearch = ref('')
 const studentSearch = ref('')
 const topicSearch = ref('')
 
+// Stats data
+const totalStudents = ref(0)
+const totalTeachers = ref(0)
+const totalTopics = ref(0)
+
+const fetchStats = async () => {
+  try {
+    const res = await axios.get('/stats')
+    // adapt if your backend path differs
+    totalStudents.value = Number(res.data.students ?? 0)
+    totalTeachers.value = Number(res.data.teachers ?? 0)
+    totalTopics.value = Number(res.data.topics ?? 0)
+  } catch (err) {
+    console.error('Error fetching stats', err)
+    // keep zeros on failure
+  }
+}
+
 //Topics data
 //Get topics data
 const fetchTopics = async () => {
@@ -703,6 +721,7 @@ function exportExcel() {
 }
 
 onMounted(() => {
+  fetchStats()
   fetchTeachers()
   fetchTopics()
   fetchStudents()

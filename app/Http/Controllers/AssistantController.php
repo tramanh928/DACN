@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\ThuKy;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AssistantController extends Controller
 {
@@ -81,5 +84,22 @@ class AssistantController extends Controller
     {
         $assistant->delete();
         return redirect()->route('assistants.index')->with('success','Assistant deleted.');
+    }
+
+    public function getStats(Request $request)
+    {
+        try {
+            $totalStudents = class_exists(SinhVien::class) ? SinhVien::count() : DB::table('sinhvien')->count();
+            $totalTeachers = class_exists(GiangVien::class) ? GiangVien::count() : DB::table('giangvien')->count();
+            $totalTopics   = class_exists(DeTai::class) ? DeTai::count() : DB::table('detai')->count();
+            return response()->json([
+                'students' => (int) $totalStudents,
+                'teachers' => (int) $totalTeachers,
+                'topics'   => (int) $totalTopics,
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('StatsController@index error: '.$e->getMessage(), ['trace'=>$e->getTraceAsString()]);
+            return response()->json(['error' => 'Unable to get stats'], 500);
+        }
     }
 }

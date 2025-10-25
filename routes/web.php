@@ -8,6 +8,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\AssistantController;
+use App\Http\Controllers\DeTaiController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -75,6 +76,8 @@ Route::get('/students-export', [StudentController::class, 'export'])->name('stud
 
 Route::get('/students-list', [StudentController::class, 'index'])->name('students.list');
 require __DIR__.'/auth.php';
+
+Route::get('/stats', [AssistantController::class, 'getStats']);
 
 Route::post('/teachers/getAll', [TeacherController::class, 'index']);
 Route::post('/students/getAll', [StudentController::class, 'index']);
