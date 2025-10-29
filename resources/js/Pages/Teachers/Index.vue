@@ -9,7 +9,7 @@
       <div class="relative">
         <div @click="toggleMenu" class="flex items-center space-x-3 cursor-pointer">
           <div class="w-10 h-10 bg-white text-indigo-600 font-bold rounded-full flex items-center justify-center">
-            {{ user.name.charAt(0).toUpperCase() }}
+            {{ user.name && user.name.length ? user.name.charAt(0).toUpperCase() : 'U' }}
           </div>
           <div class="text-right">
             <div class="font-semibold text-sm text-white">{{ user.name }}</div>
@@ -24,116 +24,294 @@
     </header>
 
     <!-- Body -->
-    <div class="flex">
-      <!-- Sidebar -->
-      <aside class="w-64 bg-white border-r p-6">
+    <div class="flex h-[calc(100vh-4rem)]"> <!-- 4rem matches header height -->
+      <!-- Sidebar - increased width from w-64 to w-72 -->
+      <aside class="w-70 bg-white border-r p-6 h-full">
         <nav class="flex flex-col space-y-4 text-indigo-700 font-medium">
-          <button class="text-left hover:text-indigo-900"> Trang chủ</button>
-          <button class="text-left hover:text-indigo-900"> Quản lý đề tài</button>
-          <button class="text-left hover:text-indigo-900">Danh sách sinh viên</button>
+          <button 
+            @click="setCurrentView('dashboard')" 
+            :class="currentView === 'dashboard' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
+          >
+            Trang chủ
+          </button>
+
+          <button 
+            @click="setCurrentView('students')" 
+            :class="currentView === 'students' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
+          >
+            Quản lý sinh viên
+          </button>
+
+          <button 
+            @click="setCurrentView('assignTopic')" 
+            :class="currentView === 'assignTopic' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
+          >
+            Phân công đề tài
+          </button>
+
+          <button 
+            @click="setCurrentView('evaluation50')" 
+            :class="currentView === 'evaluation50' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
+          >
+            Đánh giá 50%
+          </button>
+
+          <button 
+            @click="setCurrentView('reviewScore')" 
+            :class="currentView === 'reviewScore' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
+          >
+            Điểm phản biện - hướng dẫn
+          </button>
         </nav>
       </aside>
 
-      <!-- Main content -->
-      <main class="flex-1 p-8">
-        <h2 class="text-2xl font-bold text-indigo-600 mb-6 text-center">QUẢN LÝ ĐỀ TÀI LUẬN VĂN</h2>
-
-        <!-- Nút chức năng -->
-        <div class="flex justify-end mb-6">
-          <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
-            Import đề tài
-          </button>
+      <!-- Main content - added overflow-auto to handle content overflow -->
+      <main class="flex-1 p-8 overflow-auto">
+        <!-- Dashboard View -->
+        <div v-if="currentView === 'dashboard'" class="min-h-[50vh] flex items-center justify-center">
+          <div class="text-center">
+            <h2 class="text-3xl font-bold text-indigo-600">Xin chào, {{ user.name }}</h2>
+            <p class="text-gray-600 mt-2">Chúc bạn một ngày làm việc hiệu quả.</p>
+          </div>
         </div>
 
-        <!-- Bảng danh sách đề tài -->
-        <div class="overflow-x-auto">
-          <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200">
-            <thead class="bg-indigo-100 text-indigo-700">
-              <tr>
-                <th class="p-3 text-left">Mã đề tài</th>
-                <th class="p-3 text-left">Tên đề tài</th>
-                <th class="p-3 text-left">Mô tả</th>
-                <th class="p-3 text-left">Số lượng tối đa</th>
-                <th class="p-3 text-left">Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(topic, i) in filteredTopics" :key="i" class="hover:bg-indigo-50">
-                <td class="p-3">{{ topic.code }}</td>
-                <td class="p-3">{{ topic.title }}</td>
-                <td class="p-3">{{ topic.description }}</td>
-                <td class="p-3">{{ topic.limit }}</td>
-                <td class="p-3">
-                  <div v-if="editingIndex === i">
-                    <select
-                      v-model="topics[i].status"
-                      @change="finishEdit(i)"
-                      class="border p-1 rounded text-sm"
-                    >
-                      <option v-for="option in statusOptions" :key="option" :value="option">
-                        {{ option }}
-                      </option>
-                    </select>
-                  </div>
-                  <div
-                    v-else
-                    @click="editingIndex = i"
-                    class="cursor-pointer inline-block px-2 py-1 rounded-full text-xs font-semibold"
-                    :class="{
-                      'bg-green-100 text-green-700': topic.status === 'Chờ sinh viên chọn',
-                      'bg-yellow-100 text-yellow-700': topic.status === 'Đã được chọn',
-                      'bg-red-100 text-red-700': topic.status === 'Đã khóa'
-                    }"
-                  >
-                    {{ topic.status }}
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Students view -->
+        <div v-if="currentView === 'students'">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-indigo-600">QUẢN LÝ SINH VIÊN</h2>
+
+            <div class="flex items-center space-x-2">
+              <input
+                type="text"
+                placeholder="Tìm kiếm sinh viên..."
+                class="border rounded px-3 py-2 text-sm w-64"
+              />
+              <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Thêm</button>
+              <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Xuất file Excel</button>
+            </div>
+          </div>
+
+          <div class="bg-white rounded shadow overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-indigo-100 text-indigo-700">
+                <tr>
+                  <th class="p-3 text-left">MSSV</th>
+                  <th class="p-3 text-left">Họ và tên</th>
+                  <th class="p-3 text-left">Nhóm</th>
+                  <th class="p-3 text-left">Email</th>
+                  <th class="p-3 text-left">Số điện thoại</th>
+                  <th class="p-3 text-left">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="6" class="p-4 text-center text-gray-500">
+                    Chưa có dữ liệu sinh viên
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Assign Topic view -->
+        <div v-if="currentView === 'assignTopic'">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-indigo-600">PHÂN CÔNG ĐỀ TÀI</h2>
+
+            <div class="flex items-center space-x-2">
+              <input
+                type="text"
+                placeholder="Tìm theo MSGV / MSSV / tên đề tài"
+                class="border rounded px-3 py-2 text-sm w-64"
+              />
+              <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Thêm</button>
+              <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Xuất file Excel</button>
+            </div>
+          </div>
+
+          <div class="bg-white rounded shadow overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-indigo-100 text-indigo-700">
+                <tr>
+                  <th class="p-3 text-left">MSGV</th>
+                  <th class="p-3 text-left">MSSV</th>
+                  <th class="p-3 text-left">Nhóm</th>
+                  <th class="p-3 text-left">Tên đề tài</th>
+                  <th class="p-3 text-left">Mô tả đề tài</th>
+                  <th class="p-3 text-left">Trạng thái</th>
+                  <th class="p-3 text-left">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="7" class="p-4 text-center text-gray-500">
+                    Chưa có phân công đề tài
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Evaluation 50% view placeholder -->
+        <div v-if="currentView === 'evaluation50'">
+          <h2 class="text-2xl font-bold text-indigo-600 mb-6">ĐÁNH GIÁ 50%</h2>
+          <div class="bg-white rounded shadow p-6 text-gray-600">Chưa có dữ liệu.</div>
+        </div>
+
+        <!-- Review Score view placeholder -->
+        <div v-if="currentView === 'reviewScore'">
+          <h2 class="text-2xl font-bold text-indigo-600 mb-6">ĐIỂM PHẢN BIỆN - HƯỚNG DẪN</h2>
+          <div class="bg-white rounded shadow p-6 text-gray-600">Chưa có dữ liệu.</div>
         </div>
       </main>
+    </div>
+
+    <!-- Simple Form Modal (placeholder dùng cho Thêm/Sửa) -->
+    <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white rounded shadow-lg w-[90%] max-w-2xl p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">{{ formMode === 'add' ? 'Thêm' : 'Sửa' }}</h3>
+          <button @click="closeForm" class="text-gray-600 hover:text-gray-800">Đóng</button>
+        </div>
+
+        <!-- Form content placeholder -->
+        <div class="space-y-3 text-sm text-gray-700">
+          <p>Form (điền chi tiết ở đây). Chọn lưu để gửi đến backend.</p>
+          <div class="flex justify-end mt-4">
+            <button @click="saveForm" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Lưu</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
+import axios from 'axios'
 
 const showMenu = ref(false)
-function toggleMenu() {
-  showMenu.value = !showMenu.value
-}
-function goProfile() {
-  router.visit('/profile')
-}
-function logout() {
-  router.post(route('logout'))
-}
+function toggleMenu() { showMenu.value = !showMenu.value }
+function goProfile() { router.visit('/profile') }
+function logout() { router.post(route('logout')) }
 
-defineProps({
-  user: Object,
+const props = defineProps({
+  user: { type: Object, default: () => ({ name: 'Giảng viên' }) },
 })
 
-const selectedStatus = ref('')
+// Sidebar view state
+const currentView = ref('dashboard')
+function setCurrentView(view) { currentView.value = view }
+
+// Stats default 0
+const totalStudents = ref(0)
+const totalTopics = ref(0)
+
+// Students & topics data
+const students = ref([])
+const topics = ref([])
+
+// Search models
+const studentSearch = ref('')
+const topicSearch = ref('')
+
+// Simple form modal state
+const showForm = ref(false)
+const formMode = ref('add') // 'add'|'edit'
+const editingItem = ref(null)
 const editingIndex = ref(null)
 
+function openAddStudent() { formMode.value = 'add'; editingItem.value = null; showForm.value = true }
+function openEditStudent(item, idx) { formMode.value = 'edit'; editingItem.value = item; editingIndex.value = idx; showForm.value = true }
+async function deleteStudent(item) {
+  if (!confirm('Xác nhận xóa sinh viên này?')) return
+  try {
+    // nếu có endpoint: await axios.delete(`/students/${item.id}`)
+    // local remove for UI
+    students.value = students.value.filter(s => (s.mssv ?? s.student_id) !== (item.mssv ?? item.student_id))
+    totalStudents.value = students.value.length
+  } catch (err) { /* handle */ }
+}
+
+function openAddTopic() { formMode.value = 'add'; editingItem.value = null; showForm.value = true }
+function openEditTopic(item, idx) { formMode.value = 'edit'; editingItem.value = item; editingIndex.value = idx; showForm.value = true }
+async function deleteTopic(item) {
+  if (!confirm('Xác nhận xóa phân công này?')) return
+  try {
+    // nếu có endpoint: await axios.delete(`/topics/${item.id}`)
+    topics.value = topics.value.filter(t => t !== item)
+    totalTopics.value = topics.value.length
+  } catch (err) { /* handle */ }
+}
+
+function closeForm() { showForm.value = false; editingItem.value = null; editingIndex.value = null }
+function saveForm() {
+  // placeholder: lưu dữ liệu -> gọi backend hoặc cập nhật local arrays
+  // sau khi lưu, đóng modal
+  showForm.value = false
+}
+
+// Export functions
+function exportStudents() {
+  try { window.open(route('students.export'), '_blank') } catch { /* fallback */ }
+}
+function exportTopics() {
+  try { window.open(route('topics.export'), '_blank') } catch { /* fallback */ }
+}
+
+// Filtering/computed lists
+const displayedStudents = computed(() => {
+  const q = (studentSearch.value || '').toString().toLowerCase().trim()
+  if (!q) return students.value
+  return students.value.filter(s => {
+    const mssv = (s.mssv ?? s.student_id ?? '').toString().toLowerCase()
+    const name = (s.name ?? s.ho_ten ?? '').toString().toLowerCase()
+    const cls = (s.class ?? s.lop ?? '').toString().toLowerCase()
+    return mssv.includes(q) || name.includes(q) || cls.includes(q)
+  })
+})
+
+const displayedTopics = computed(() => {
+  const q = (topicSearch.value || '').toString().toLowerCase().trim()
+  const base = topics.value
+  if (!q) return base
+  return base.filter(t => {
+    const msgv = (t.msgv ?? t.teacher_id ?? '').toString().toLowerCase()
+    const mssv = (t.mssv ?? t.student_id ?? '').toString().toLowerCase()
+    const title = (t.title ?? t.ten_de_tai ?? '').toString().toLowerCase()
+    return msgv.includes(q) || mssv.includes(q) || title.includes(q)
+  })
+})
+
+// status options
 const statusOptions = [
   'Chờ sinh viên chọn',
   'Đã được chọn',
   'Đã khóa'
 ]
 
-const topics = ref([
-])
-
-const filteredTopics = computed(() => {
-  if (!selectedStatus.value) return topics.value
-  return topics.value.filter(t => t.status === selectedStatus.value)
-})
-
-function finishEdit(index) {
-  editingIndex.value = null
+// fetch students/topics if backend available (kept optional)
+const fetchStudents = async () => {
+  try {
+    const res = await axios.post('/students/getAll')
+    students.value = res.data || []
+    totalStudents.value = students.value.length
+  } catch (err) {}
 }
+const fetchTopics = async () => {
+  try {
+    const res = await axios.post('/topics/getAll')
+    topics.value = res.data || []
+    totalTopics.value = topics.value.length
+  } catch (err) {}
+}
+
+onMounted(() => {
+  // totals default 0; load lists only if backend present
+  fetchStudents()
+  fetchTopics()
+})
 </script>
