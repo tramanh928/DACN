@@ -212,7 +212,7 @@
                   </td>
                   <td class="p-3">
                     <div class="flex gap-2">
-                      <button @click="openEditForm(item)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                      <button @click="openEditForm(teacher)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
                         Sửa
                       </button>
                       <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
@@ -342,7 +342,7 @@
                   </td>
                   <td class="p-3">
                     <div class="flex gap-2">
-                      <button @click="openEditForm(item)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                      <button @click="openEditForm(topic)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
                         Sửa
                       </button>
                       <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
@@ -747,7 +747,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, reactive } from 'vue'
 import { router } from '@inertiajs/vue3'
 import axios from 'axios'
 
@@ -818,6 +818,45 @@ function closeForm() {
   showForm.value = false
 }
 
+async function submitForm() {
+  errorsClear()
+  try {
+    // xác định resource
+    let resource = ''
+    if (currentView.value === 'students') resource = 'students'
+    else if (currentView.value === 'teachers') resource = 'teachers'
+    else if (currentView.value === 'topics') resource = 'topics'
+    else if (currentView.value === 'assignments') resource = 'assignments'
+
+    const payload = { ...formData } // gửi tất cả, backend ignore các trường thừa
+
+    let resp
+    if (formMode.value === 'add') {
+      resp = await axios.post(`/api/${resource}`, payload)
+    } else {
+      // editingId required
+      if (!editingId.value) throw new Error('Missing id for update')
+      resp = await axios.put(`/api/${resource}/${editingId.value}`, payload)
+    }
+
+    // update local lists (có thể reload toàn bộ list từ server)
+    await refreshCurrentViewData(resource)
+    closeForm()
+  } catch (err) {
+    if (err.response && err.response.status === 422) {
+      const d = err.response.data.errors ?? {}
+      Object.assign(errors, d)
+    } else {
+      console.error(err)
+      alert('Lỗi khi lưu dữ liệu. Kiểm tra console.')
+    }
+  }
+}
+
+function errorsClear() {
+  Object.keys(errors).forEach(k => delete errors[k])
+}
+
 function getFormTitle() {
   const titles = {
     'assignments': 'BẢNG PHÂN CÔNG',
@@ -828,6 +867,30 @@ function getFormTitle() {
   return titles[currentView.value] || ''
 }
 
+const formData = reactive({
+  // student defaults
+  mssv: '',
+  name: '',
+  group: '',
+  email: '',
+  phone: '',
+  // assignment fields (shared)
+  topic: '',
+  lecturer: '',
+  status: 'Chưa gặp',
+  note: '',
+  // teacher/topic specific
+  MaGV: '',
+  So_luong_sinh_vien: 0,
+  MaDT: '',
+  TenDT: '',
+  SoLuong: 1,
+  TrangThai: 'Chờ sinh viên chọn'
+})
+
+const errors = reactive({}) // validation errors
+
+let editingId = ref(null)
 
 // simple data holders
 const assignments = ref([])
