@@ -12,19 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('SinhVien', function (Blueprint $table) {
-            $table->id();
-            $table->string('Ho', 120);
-            $table->string('Ten', 120);
-            $table->string('email')->unique()->nullable(); 
-            $table->string('sdt')->nullable();
-            $table->date('Ngay_Sinh')->nullable();
-            $table->string('mssv')->unique();
-            $table->string('Lop')->nullable(); 
-            $table->string('Nhom')->nullable();
-            $table->string('Huong_de_tai')->nullable();
-            $table-> string('Giang_vien_huong_dan')->nullable();
-            $table->timestamps();
-        });
+        $table->string('MSSV', 20)->primary();
+        $table->string('Ho_va_Ten', 120);
+        $table->string('email')->unique()->nullable(); 
+        $table->string('sdt')->nullable();
+        $table->date('Ngay_Sinh')->nullable();
+        $table->string('Lop')->nullable(); 
+        $table->string('Nhom')->nullable();
+        $table->string('MaDT', 50)->nullable();
+        $table->string('Giang_vien_huong_dan', 20)->nullable();
+        $table->boolean('Da_phan_cong')->default(false);
+        $table->timestamps();
+        $table->foreignId('user_id')->unique()->constrained('users')->onDelete('cascade');
+        $table->foreign('Giang_vien_huong_dan')->references('MaGV')->on('GiangVien')->onUpdate('cascade')->onDelete('set null');
+        $table->foreign('MaDT')->references('MaDT')->on('DeTai')->onUpdate('cascade')->onDelete('set null');
+});
     }
 
     /**
@@ -32,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('students');
+        Schema::dropIfExists('SinhVien');
     }
 };

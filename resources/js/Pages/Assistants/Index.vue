@@ -255,6 +255,7 @@
                   <th class="p-3 text-left">Mã GV</th>
                   <th class="p-3 text-left">Họ và tên</th>
                   <th class="p-3 text-left">Email</th>
+                  <th class="p-3 text-left">Khoa</th>
                   <th class="p-3 text-left">Số đề tài HD</th>
                   <th class="p-3 text-left">Trạng thái</th>
                   <th class="p-3 text-left">Thao tác</th>
@@ -274,7 +275,7 @@
                   </td>
                   <td class="p-3">
                     <div class="flex gap-2">
-                      <button @click="openEditForm(item)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                      <button @click="openEditForm(teacher)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
                         Sửa
                       </button>
                       <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
@@ -404,7 +405,7 @@
                   </td>
                   <td class="p-3">
                     <div class="flex gap-2">
-                      <button @click="openEditForm(item)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                      <button @click="openEditForm(topic)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
                         Sửa
                       </button>
                       <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
@@ -570,7 +571,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, reactive } from 'vue'
 import { router } from '@inertiajs/vue3'
 import axios from 'axios'
 
@@ -585,6 +586,9 @@ const props = defineProps({
   students: { type: Array, default: () => [] }
 })
 
+axios.defaults.withCredentials = true
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
+
 // Current view 
 const currentView = ref('dashboard')
 function setCurrentView(view) { currentView.value = view }
@@ -593,19 +597,88 @@ function setCurrentView(view) { currentView.value = view }
 const showForm = ref(false)
 const formMode = ref('add') // 'add' or 'edit'
 
-function openAddForm() {
+async function refreshCurrentViewData(resource) {
+  if (resource === 'students') await fetchStudents()
+  if (resource === 'teachers') await fetchTeachers()
+  if (resource === 'topics') await fetchTopics()
+  if (resource === 'assignments') await fetchStudents() // assignments normalized from students in your code
+}
+
+function openAddForm(view = null) {
+  if (view) currentView.value = view
   formMode.value = 'add'
+  editingId.value = null
+  // reset formData relevant fields
+  Object.keys(formData).forEach(k => formData[k] = (typeof formData[k] === 'number') ? 0 : '')
+  // set sensible defaults:
+  formData.status = 'Chưa gặp'
+  formData.TrangThai = 'Chờ sinh viên chọn'
   showForm.value = true
 }
 
 function openEditForm(item) {
   formMode.value = 'edit'
   showForm.value = true
-  // Có thể load dữ liệu item vào form ở đây
+  editingId.value = item.id ?? item.mssv ?? item.MaDT ?? null
+  // copy known fields (map tolerant)
+  formData.mssv = item.mssv ?? item.MSSV ?? ''
+  formData.name = item.name ?? ((item.Ho ?? '') + ' ' + (item.Ten ?? '')).trim() ?? ''
+  formData.group = item.group ?? item.Nhom ?? ''
+  formData.email = item.email ?? ''
+  formData.phone = item.phone ?? ''
+  formData.topic = item.topic ?? item.Huong_de_tai ?? ''
+  formData.lecturer = item.lecturer ?? item.MaGV ?? item.Giang_vien_hd ?? ''
+  formData.status = item.status ?? item.Trang_Thai ?? 'Chưa gặp'
+  formData.note = item.note ?? item.Ghi_chu ?? ''
+  // topic / teacher
+  formData.MaDT = item.MaDT ?? ''
+  formData.TenDT = item.TenDT ?? item.Ten ?? ''
+  formData.SoLuong = item.SoLuong ?? item.So_luong ?? 1
+  formData.MaGV = item.MaGV ?? ''
+  formData.So_luong_sinh_vien = item.So_luong_sinh_vien ?? item.SoLuong ?? 0
 }
 
 function closeForm() {
   showForm.value = false
+}
+
+async function submitForm() {
+  errorsClear()
+  try {
+    // xác định resource
+    let resource = ''
+    if (currentView.value === 'students') resource = 'students'
+    else if (currentView.value === 'teachers') resource = 'teachers'
+    else if (currentView.value === 'topics') resource = 'topics'
+    else if (currentView.value === 'assignments') resource = 'assignments'
+
+    const payload = { ...formData } // gửi tất cả, backend ignore các trường thừa
+
+    let resp
+    if (formMode.value === 'add') {
+      resp = await axios.post(`/api/${resource}`, payload)
+    } else {
+      // editingId required
+      if (!editingId.value) throw new Error('Missing id for update')
+      resp = await axios.put(`/api/${resource}/${editingId.value}`, payload)
+    }
+
+    // update local lists (có thể reload toàn bộ list từ server)
+    await refreshCurrentViewData(resource)
+    closeForm()
+  } catch (err) {
+    if (err.response && err.response.status === 422) {
+      const d = err.response.data.errors ?? {}
+      Object.assign(errors, d)
+    } else {
+      console.error(err)
+      alert('Lỗi khi lưu dữ liệu. Kiểm tra console.')
+    }
+  }
+}
+
+function errorsClear() {
+  Object.keys(errors).forEach(k => delete errors[k])
 }
 
 function getFormTitle() {
@@ -617,6 +690,31 @@ function getFormTitle() {
   }
   return titles[currentView.value] || ''
 }
+
+const formData = reactive({
+  // student defaults
+  mssv: '',
+  name: '',
+  group: '',
+  email: '',
+  phone: '',
+  // assignment fields (shared)
+  topic: '',
+  lecturer: '',
+  status: 'Chưa gặp',
+  note: '',
+  // teacher/topic specific
+  MaGV: '',
+  So_luong_sinh_vien: 0,
+  MaDT: '',
+  TenDT: '',
+  SoLuong: 1,
+  TrangThai: 'Chờ sinh viên chọn'
+})
+
+const errors = reactive({}) // validation errors
+
+let editingId = ref(null)
 
 // simple data holders
 const assignments = ref([])

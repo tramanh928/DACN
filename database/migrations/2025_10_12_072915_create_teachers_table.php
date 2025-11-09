@@ -12,17 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('GiangVien', function (Blueprint $table) {
-            $table->id();
-            $table->string('Ho', 120);
-            $table->string('Ten', 120);
+            $table->string('MaGV', 20)->primary();
+            $table->string('Ho_va_Ten', 120);
             $table->string('email')->unique();
             $table->string('sdt')->nullable();
             $table->date('Ngay_Sinh')->nullable();
-            $table->string("MaGV")->unique();
-            $table->string("Khoa")->nullable();
             $table->integer('So_luong_sinh_vien')->default(0);
             $table->timestamps();
-        });
+            $table->foreignId('user_id')->unique()->constrained('users')->onDelete('cascade');
+});
+
     }
 
     /**
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('teachers');
+        Schema::dropIfExists('GiangVien');
     }
 };
