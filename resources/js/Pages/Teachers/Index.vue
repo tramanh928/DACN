@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="min-h-screen bg-gray-50 font-sans text-gray-800">
+  <div class="min-h-screen bg-gray-50 font-vietnamese text-gray-800">
     <!-- Header -->
     <header class="flex justify-between items-center bg-gradient-to-r from-indigo-400 to-indigo-600 text-white px-6 py-4 shadow-md">
       <div>
@@ -24,9 +24,9 @@
     </header>
 
     <!-- Body -->
-    <div class="flex h-[calc(100vh-4rem)]"> <!-- 4rem matches header height -->
-      <!-- Sidebar - increased width from w-64 to w-72 -->
-      <aside class="w-70 bg-white border-r p-6 h-full">
+    <div class="flex">
+      <!-- Sidebar  -->
+      <aside class="w-64 bg-white border-r p-6 h-full">
         <nav class="flex flex-col space-y-4 text-indigo-700 font-medium">
           <button 
             @click="setCurrentView('dashboard')" 
@@ -39,7 +39,7 @@
             @click="setCurrentView('students')" 
             :class="currentView === 'students' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
           >
-            Quản lý sinh viên
+            Danh sách sinh viên
           </button>
 
           <button 
@@ -95,17 +95,20 @@
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-indigo-100 text-indigo-700">
                 <tr>
+                  <th class="p-3 text-left">STT</th>
                   <th class="p-3 text-left">MSSV</th>
                   <th class="p-3 text-left">Họ và tên</th>
-                  <th class="p-3 text-left">Nhóm</th>
+                  <th class="p-3 text-left">Lớp</th>
+                  <th class="p-3 text-left">SĐT</th>
                   <th class="p-3 text-left">Email</th>
-                  <th class="p-3 text-left">Số điện thoại</th>
+                  <th class="p-3 text-left">Nhóm</th>
+                  <th class="p-3 text-left">Ghi chú</th>
                   <th class="p-3 text-left">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td colspan="6" class="p-4 text-center text-gray-500">
+                  <td colspan="9" class="p-4 text-center text-gray-500">
                     Chưa có dữ liệu sinh viên
                   </td>
                 </tr>

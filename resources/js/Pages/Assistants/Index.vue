@@ -23,65 +23,74 @@
       </div>
     </header>
 
-    <!-- Body -->
-    <div class="flex">
-      <!-- Sidebar -->
-      <aside class="w-64 bg-white border-r p-6">
-        <nav class="flex flex-col space-y-4 text-indigo-700 font-medium">
+    <!-- BODY: sửa để sidebar nền trắng kéo dài không bị cắt -->
+    <div class="flex h-[calc(100vh-4rem)]"> <!-- 4rem ~ header height (py-4) -->
+      <!-- Sidebar (kéo dài chiều cao) -->
+      <aside class="w-64 bg-white border-r p-6 h-full">
+         <nav class="flex flex-col space-y-4 text-indigo-700 font-medium">
           <button 
-            @click="setCurrentView('dashboard')" 
-            :class="currentView === 'dashboard' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
+            @click="setCurrentView('home')" 
+            :class="currentView === 'home' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
           >
             Trang chủ
           </button>
-          <button 
-            @click="setCurrentView('assignments')" 
-            :class="currentView === 'assignments' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
-          >
-            Bảng phân công
-          </button>
+
           <button 
             @click="setCurrentView('teachers')" 
             :class="currentView === 'teachers' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
           >
             Quản lý giảng viên
           </button>
+
           <button 
             @click="setCurrentView('students')" 
             :class="currentView === 'students' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
           >
-            Quản lý sinh viên  
+            Quản lý sinh viên
           </button>
+
           <button 
             @click="setCurrentView('topics')" 
             :class="currentView === 'topics' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
           >
             Quản lý đề tài
           </button>
+
+          <button 
+            @click="setCurrentView('assignments')" 
+            :class="currentView === 'assignments' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
+          >
+            Bảng phân công
+          </button>
+
           <button 
             @click="setCurrentView('evaluation50')" 
             :class="currentView === 'evaluation50' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
           >
             Đánh giá 50%
           </button>
+
           <button 
             @click="setCurrentView('reviewAssignment')" 
             :class="currentView === 'reviewAssignment' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
           >
             Phân công phản biện
           </button>
+
           <button 
             @click="setCurrentView('grading')" 
             :class="currentView === 'grading' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
           >
             Chấm điểm
           </button>
+
           <button 
             @click="setCurrentView('committee')" 
             :class="currentView === 'committee' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
           >
             Thành lập hội đồng
           </button>
+
           <button 
             @click="setCurrentView('committeeAssignment')" 
             :class="currentView === 'committeeAssignment' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
@@ -92,8 +101,8 @@
       </aside>
 
       <!-- Main content -->
-      <main class="flex-1 p-8">
-        <!-- Dashboard View -->
+      <main class="flex-1 p-8 overflow-y-auto">
+        <!-- 1. Home -->
         <div v-if="currentView === 'dashboard'">
           <h2 class="text-2xl font-bold text-indigo-600 mb-6 text-center">TRANG CHỦ - THỐNG KÊ TỔNG QUAN</h2>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -154,79 +163,7 @@
             </div>
           </div>
         </div>
-
-        <!-- Bảng phân công -->
-        <div v-if="currentView === 'assignments'">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-indigo-600">BẢNG PHÂN CÔNG LUẬN VĂN</h2>
-            <div class="flex items-center gap-4">
-              <input
-                v-model="assignmentSearch"
-                type="text"
-                placeholder="Tìm kiếm theo MSSV / tên / đề tài..."
-                class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-              />
-              <button @click="openAddForm" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-                Thêm
-              </button>
-              <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition" @click="exportExcel">
-                Xuất file Excel
-              </button>
-            </div>
-          </div>
-
-          <!-- Table -->
-          <div class="overflow-x-auto">
-            <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200">
-              <thead class="bg-indigo-100 text-indigo-700">
-                <tr>
-                  <th class="p-3 text-left">MSSV</th>
-                  <th class="p-3 text-left">Họ và tên SV</th>
-                  <th class="p-3 text-left">Nhóm</th>
-                  <th class="p-3 text-left">Đề tài LVTN</th>
-                  <th class="p-3 text-left">Giảng viên HD</th>
-                  <th class="p-3 text-left">Trạng thái gặp GV</th>
-                  <th class="p-3 text-left">Ghi chú</th>
-                  <th class="p-3 text-left">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(item, i) in assignments" :key="i" class="hover:bg-indigo-50">
-                  <td class="p-3">{{ item.mssv }}</td>
-                  <td class="p-3">{{ item.name }}</td>
-                  <td class="p-3">{{ item.group }}</td>
-                  <td class="p-3">{{ item.topic }}</td>
-                  <td class="p-3">{{ item.lecturer }}</td>
-                  <td class="p-3">
-                    <span
-                      :class="{
-                        'bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold': item.status === 'Đã gặp',
-                        'bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold': item.status === 'Chưa gặp'
-                      }"
-                    >
-                      {{ item.status }}
-                    </span>
-                  </td>
-                  <td class="p-3 text-gray-600 italic">{{ item.note }}</td>
-                  <td class="p-3">
-                    <div class="flex gap-2">
-                      <button @click="openEditForm(item)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
-                        Sửa
-                      </button>
-                      <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
-                        Xóa
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-if="assignments.length === 0">
-                  <td class="p-3 italic text-sm text-gray-500" colspan="8">Không có dữ liệu từ database</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
+        
         <!-- Trang qlgv -->
         <div v-if="currentView === 'teachers'">
           <div class="flex justify-between items-center mb-6">
@@ -255,6 +192,7 @@
                   <th class="p-3 text-left">Mã GV</th>
                   <th class="p-3 text-left">Họ và tên</th>
                   <th class="p-3 text-left">Email</th>
+                  <th class="p-3 text-left">Khoa</th>
                   <th class="p-3 text-left">Số đề tài HD</th>
                   <th class="p-3 text-left">Trạng thái</th>
                   <th class="p-3 text-left">Thao tác</th>
@@ -292,65 +230,65 @@
         </div>
 
         <!-- Trang qlsv -->
-<div v-if="currentView === 'students'">
-  <div class="flex justify-between items-center mb-6">
-    <h2 class="text-2xl font-bold text-indigo-600">QUẢN LÝ SINH VIÊN</h2>
-    <div class="flex items-center gap-4">
-      <input
-        v-model="studentSearch"
-        @input="onStudentSearchInput"
-        type="text"
-        placeholder="Tìm kiếm sinh viên..."
-        class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-      />
-      <button @click="openAddForm" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-        Thêm
-      </button>
-      <button @click="exportExcel" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
-        Xuất file Excel
-      </button>
-    </div>
-  </div>
-
-  <!-- Table -->
-  <div class="overflow-x-auto">
-    <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200">
-      <thead class="bg-indigo-100 text-indigo-700">
-        <tr>
-          <th class="p-3 text-left">MSSV</th>
-          <th class="p-3 text-left">Họ và tên</th>
-          <th class="p-3 text-left">Nhóm</th>
-          <th class="p-3 text-left">Email</th>
-          <th class="p-3 text-left">Số điện thoại</th>
-          <th class="p-3 text-left">Thao tác</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(s, idx) in students" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
-          <td class="p-3">{{ s.mssv }}</td>
-          <td class="p-3">{{ s.name }}</td>
-          <td class="p-3">{{ s.group || '-' }}</td>
-          <td class="p-3">{{ s.email || '-' }}</td>
-          <td class="p-3">{{ s.phone || '-' }}</td>
-          <td class="p-3">
-            <div class="flex gap-2">
-              <button @click="openEditForm(s)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
-                Sửa
+        <div v-if="currentView === 'students'">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-indigo-600">QUẢN LÝ SINH VIÊN</h2>
+            <div class="flex items-center gap-4">
+              <input
+                v-model="studentSearch"
+                @input="onStudentSearchInput"
+                type="text"
+                placeholder="Tìm kiếm sinh viên..."
+                class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              />
+              <button @click="openAddForm" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                Thêm
               </button>
-              <button @click="confirmDeleteStudent(s)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
-                Xóa
+              <button @click="exportExcel" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
+                Xuất file Excel
               </button>
             </div>
-          </td>
-        </tr>
+          </div>
 
-        <tr v-if="students.length === 0">
-          <td class="p-3 italic text-sm text-gray-500" colspan="6">Không có dữ liệu từ database</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+          <!-- Table -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200">
+              <thead class="bg-indigo-100 text-indigo-700">
+                <tr>
+                  <th class="p-3 text-left">MSSV</th>
+                  <th class="p-3 text-left">Họ và tên</th>
+                  <th class="p-3 text-left">Nhóm</th>
+                  <th class="p-3 text-left">Email</th>
+                  <th class="p-3 text-left">Số điện thoại</th>
+                  <th class="p-3 text-left">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(s, idx) in students" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
+                  <td class="p-3">{{ s.mssv }}</td>
+                  <td class="p-3">{{ s.name }}</td>
+                  <td class="p-3">{{ s.group || '-' }}</td>
+                  <td class="p-3">{{ s.email || '-' }}</td>
+                  <td class="p-3">{{ s.phone || '-' }}</td>
+                  <td class="p-3">
+                    <div class="flex gap-2">
+                      <button @click="openEditForm(s)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                        Sửa
+                      </button>
+                      <button @click="confirmDeleteStudent(s)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
+                        Xóa
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr v-if="students.length === 0">
+                  <td class="p-3 italic text-sm text-gray-500" colspan="6">Không có dữ liệu từ database</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
         <!-- Trang qldt -->
         <div v-if="currentView === 'topics'">
@@ -420,153 +358,392 @@
             </table>
           </div>
         </div>
-
-        <!-- Form Modal -->
-        <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div class="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-xl font-bold text-indigo-600">
-                {{ formMode === 'add' ? 'THÊM MỚI' : 'CHỈNH SỬA' }} {{ getFormTitle() }}
-              </h3>
-              <button @click="closeForm" class="text-gray-500 hover:text-gray-700">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
+         <!-- Trang qldt -->
+        <div v-if="currentView === 'topics'">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-indigo-600">QUẢN LÝ ĐỀ TÀI</h2>
+            <div class="flex items-center gap-4">
+              <input
+                v-model="topicSearch"
+                type="text"
+                placeholder="Tìm kiếm đề tài..."
+                class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              />
+              <button @click="openAddForm" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                Thêm
               </button>
-            </div>
-
-            <!-- Form Content -->
-            <div class="space-y-4">
-              <!-- Assignment Form -->
-              <div v-if="currentView === 'assignments'">
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">MSSV</label>
-                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập MSSV">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
-                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nhóm</label>
-                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập nhóm">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Đề tài LVTN</label>
-                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập đề tài">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Giảng viên HD</label>
-                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên giảng viên">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
-                    <select class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                      <option value="Chưa gặp">Chưa gặp</option>
-                      <option value="Đã gặp">Đã gặp</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="mt-4">
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
-                  <textarea class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" rows="3" placeholder="Nhập ghi chú"></textarea>
-                </div>
-              </div>
-
-              <!-- Teacher Form -->
-              <div v-if="currentView === 'teachers'">
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Mã GV</label>
-                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập mã giảng viên">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
-                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập email">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Số đề tài HD</label>
-                    <input type="number" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập số đề tài">
-                  </div>
-                </div>
-              </div>
-
-              <!-- Student Form -->
-              <div v-if="currentView === 'students'">
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">MSSV</label>
-                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập MSSV">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
-                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nhóm</label>
-                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập nhóm">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập email">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
-                    <input type="tel" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập số điện thoại">
-                  </div>
-                </div>
-              </div>
-
-              <!-- Topic Form -->
-              <div v-if="currentView === 'topics'">
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Mã đề tài</label>
-                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập mã đề tài">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tên đề tài</label>
-                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên đề tài">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Giảng viên</label>
-                    <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên giảng viên">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
-                    <input type="number" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập số lượng">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
-                    <select class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                      <option value="Chờ sinh viên chọn">Chờ sinh viên chọn</option>
-                      <option value="Đã được chọn">Đã được chọn</option>
-                      <option value="Đã khóa">Đã khóa</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Form Actions -->
-            <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
-              <button @click="closeForm" class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition">
-                Hủy
-              </button>
-              <button class="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition">
-                {{ formMode === 'add' ? 'Thêm' : 'Cập nhật' }}
+              <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
+                Xuất file Excel
               </button>
             </div>
           </div>
+
+          <!-- Table -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200">
+              <thead class="bg-indigo-100 text-indigo-700">
+                <tr>
+                  <th class="p-3 text-left">Mã đề tài</th>
+                  <th class="p-3 text-left">Tên đề tài</th>
+                  <th class="p-3 text-left">Giảng viên</th>
+                  <th class="p-3 text-left">Số lượng</th>
+                  <th class="p-3 text-left">Trạng thái</th>
+                  <th class="p-3 text-left">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(topic, i) in topics" :key="topic.MaDT" class="hover:bg-indigo-50">
+                  <td class="p-3">{{ topic.MaDT }}</td>
+                  <td class="p-3">{{ topic.TenDT }}</td>
+                  <td class="p-3">{{ topic.MaGV }}</td>
+                  <td class="p-3">{{ topic.SoLuong }}</td>
+                  <td class="p-3">
+                    <span
+                      :class="{
+                        'bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold': topic.status === 'Chờ sinh viên chọn',
+                        'bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-semibold': topic.status === 'Đã được chọn',
+                        'bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold': topic.status === 'Đã khóa'
+                      }"
+                    >
+                      {{ topic.TrangThai }}
+                    </span>
+                  </td>
+                  <td class="p-3">
+                    <div class="flex gap-2">
+                      <button @click="openEditForm(topic)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                        Sửa
+                      </button>
+                      <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
+                        Xóa
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr v-if="topics.length === 0">
+                  <td class="p-3 italic text-sm text-gray-500" colspan="6">Không có dữ liệu từ database</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+          <!-- Form Modal -->
+          <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-indigo-600">
+                  {{ formMode === 'add' ? 'THÊM MỚI' : 'CHỈNH SỬA' }} {{ getFormTitle() }}
+                </h3>
+                <button @click="closeForm" class="text-gray-500 hover:text-gray-700">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Form Content -->
+              <div class="space-y-4">
+                <!-- Assignment Form -->
+                <div v-if="currentView === 'assignments'">
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">MSSV</label>
+                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập MSSV">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Nhóm</label>
+                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập nhóm">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Đề tài LVTN</label>
+                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập đề tài">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Giảng viên HD</label>
+                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên giảng viên">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                      <select class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                        <option value="Chưa gặp">Chưa gặp</option>
+                        <option value="Đã gặp">Đã gặp</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
+                    <textarea class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" rows="3" placeholder="Nhập ghi chú"></textarea>
+                  </div>
+                </div>
+
+                <!-- Teacher Form -->
+                <div v-if="currentView === 'teachers'">
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Mã GV</label>
+                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập mã giảng viên">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <input type="email" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập email">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Số đề tài HD</label>
+                      <input type="number" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập số đề tài">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Student Form -->
+                <div v-if="currentView === 'students'">
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">MSSV</label>
+                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập MSSV">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Nhóm</label>
+                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập nhóm">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <input type="email" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập email">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                      <input type="tel" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập số điện thoại">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Topic Form -->
+                <div v-if="currentView === 'topics'">
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Mã đề tài</label>
+                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập mã đề tài">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Tên đề tài</label>
+                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên đề tài">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Giảng viên</label>
+                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên giảng viên">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
+                      <input type="number" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập số lượng">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                      <select class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                        <option value="Chờ sinh viên chọn">Chờ sinh viên chọn</option>
+                        <option value="Đã được chọn">Đã được chọn</option>
+                        <option value="Đã khóa">Đã khóa</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Form Actions -->
+              <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
+                <button @click="closeForm" class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition">
+                  Hủy
+                </button>
+                <button class="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition">
+                  {{ formMode === 'add' ? 'Thêm' : 'Cập nhật' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+        <!-- BẢNG PHÂN CÔNG -->
+          <div v-if="currentView === 'assignments'">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold text-indigo-600">BẢNG PHÂN CÔNG LUẬN VĂN</h2>
+              <div class="flex items-center gap-4">
+                <input
+                  v-model="assignmentSearch"
+                  type="text"
+                  placeholder="Tìm kiếm theo MSSV / tên / đề tài..."
+                  class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                />
+                <button @click="openImportForm" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                  Import
+                </button>
+                <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition" @click="exportExcel">
+                  Xuất file Excel
+                </button>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+              <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200">
+                <thead class="bg-indigo-100 text-indigo-700">
+                  <tr>
+                    <th class="p-3 text-left">MSSV</th>
+                    <th class="p-3 text-left">Họ và tên SV</th>
+                    <th class="p-3 text-left">Nhóm</th>
+                    <th class="p-3 text-left">Đề tài LVTN</th>
+                    <th class="p-3 text-left">Giảng viên HD</th>
+                    <th class="p-3 text-left">Trạng thái gặp GV</th>
+                    <th class="p-3 text-left">Ghi chú</th>
+                    <th class="p-3 text-left">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item, i) in assignments" :key="i" class="hover:bg-indigo-50">
+                    <td class="p-3">{{ item.mssv }}</td>
+                    <td class="p-3">{{ item.name }}</td>
+                    <td class="p-3">{{ item.group }}</td>
+                    <td class="p-3">{{ item.topic }}</td>
+                    <td class="p-3">{{ item.lecturer }}</td>
+                    <td class="p-3">
+                      <span
+                        :class="{
+                          'bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold': item.status === 'Đã gặp',
+                          'bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold': item.status === 'Chưa gặp'
+                        }"
+                      >
+                        {{ item.status }}
+                      </span>
+                    </td>
+                    <td class="p-3 text-gray-600 italic">{{ item.note }}</td>
+                    <td class="p-3">
+                      <div class="flex gap-2">
+                        <button @click="openAssignPanel(item)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                          Phân công
+                        </button>
+                        <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
+                          Xóa
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr v-if="assignments.length === 0">
+                    <td class="p-3 italic text-sm text-gray-500" colspan="8">Không có dữ liệu từ database</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Modal: danh sách giảng viên -->
+          <div v-if="showAssignModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div class="bg-white rounded-lg w-[95%] max-w-3xl p-4 max-h-[90vh] overflow-auto">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Danh sách giảng viên</h3>
+                <button @click="closeAssignPanel" class="bg-sky-500 text-white px-3 py-1 rounded text-sm hover:bg-sky-600 transition">Đóng</button>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm divide-y divide-gray-200">
+                  <thead class="bg-indigo-100 text-indigo-700">
+                    <tr>
+                      <th class="p-3 text-left">STT</th>
+                      <th class="p-3 text-left">MSGV</th>
+                      <th class="p-3 text-left">Họ và tên giảng viên</th>
+                      <th class="p-3 text-left">Số lượng sinh viên</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(gv, idx) in teachers" :key="gv.MaGV || gv.id || idx" class="hover:bg-indigo-50">
+                      <td class="p-3">{{ idx + 1 }}</td>
+                      <td class="p-3">{{ gv.MaGV ?? gv.id ?? '-' }}</td>
+                      <td class="p-3 flex items-center justify-between">
+                        <span>{{ gv.name ?? gv.HoTen ?? '-' }}</span>
+                        <button @click="openStudentModal(gv)" class="ml-2 text-indigo-600 hover:text-indigo-800 text-lg">▶</button>
+                      </td>
+                      <td class="p-3">{{ countAssignedTo(gv) }}</td>
+                    </tr>
+                    <tr v-if="teachers.length === 0">
+                      <td class="p-3 italic text-sm text-gray-500" colspan="4">Không có giảng viên</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal: danh sách sinh viên của giảng viên -->
+          <div v-if="showStudentModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div class="bg-white rounded-lg w-[95%] max-w-3xl p-4 max-h-[90vh] overflow-auto">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-indigo-700">
+                  Danh sách sinh viên của giảng viên: {{ selectedLecturer.name ?? selectedLecturer.HoTen ?? '-' }}
+                </h3>
+                <div class="flex gap-2">
+                  <button
+                    @click="confirmAllAssignments(selectedLecturer)"
+                    class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition"
+                  >
+                    Xác nhận
+                  </button>
+                  <button @click="closeStudentModal" class="bg-sky-500 text-white px-3 py-1 rounded text-sm hover:bg-sky-600 transition">
+                    Đóng
+                  </button>
+                </div>
+              </div>
+              <table class="min-w-full text-sm divide-y divide-gray-200">
+                <thead class="bg-indigo-100 text-indigo-700">
+                  <tr>
+                    <th class="p-3 text-left">MSSV</th>
+                    <th class="p-3 text-left">Họ và tên SV</th>
+                    <th class="p-3 text-left">Nhóm</th>
+                    <th class="p-3 text-left">Đề tài</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="sv in studentsAssignedTo(selectedLecturer)" :key="sv.mssv" class="hover:bg-indigo-50">
+                    <td class="p-3">{{ sv.mssv }}</td>
+                    <td class="p-3">{{ sv.name }}</td>
+                    <td class="p-3">{{ sv.group }}</td>
+                    <td class="p-3">{{ sv.topic }}</td>
+                  </tr>
+                  <tr v-if="studentsAssignedTo(selectedLecturer).length === 0">
+                    <td colspan="4" class="p-3 italic text-sm text-gray-500">Không có sinh viên được phân công</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        <!-- Đánh giá 50% -->
+        <div v-if="currentView === 'evaluation50'">
+        </div>
+
+        <!-- Phân công phản biện -->
+        <div v-if="currentView === 'reviewAssignment'">
+        </div>
+
+        <!-- Chấm điểm -->
+        <div v-if="currentView === 'grading'">
+        </div>
+
+        <!--  Thành lập hội đồng -->
+        <div v-if="currentView === 'committee'">
+        </div>
+
+        <!-- Phân công hội đồng -->
+        <div v-if="currentView === 'committeeAssignment'">
         </div>
       </main>
-    </div>
-  </div>
+     </div>
+   </div>
 </template>
 
 <script setup>
@@ -584,6 +761,9 @@ const props = defineProps({
   user: { type: Object, default: () => ({ name: 'User' }) },
   students: { type: Array, default: () => [] }
 })
+
+axios.defaults.withCredentials = true
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
 
 // Current view 
 const currentView = ref('dashboard')
@@ -718,6 +898,75 @@ watch(() => props.students, (newVal) => {
 // Export excel function (only for assignments)
 function exportExcel() {
   window.open(route('students.export'), '_blank')
+}
+const showAssignModal = ref(false)
+const showStudentModal = ref(false)
+const selectedLecturer = ref(null)
+
+// Mở modal danh sách giảng viên
+function openAssignPanel() {
+  showAssignModal.value = true
+}
+
+// Đóng modal danh sách giảng viên và cả modal sinh viên nếu đang mở
+function closeAssignPanel() {
+  showAssignModal.value = false
+  closeStudentModal()
+}
+
+// Mở modal danh sách sinh viên đã phân công cho giảng viên
+function openStudentModal(lecturer) {
+  selectedLecturer.value = lecturer
+  showStudentModal.value = true
+}
+
+// Đóng modal danh sách sinh viên
+function closeStudentModal() {
+  selectedLecturer.value = null
+  showStudentModal.value = false
+}
+
+// Đếm số sinh viên đã phân công cho giảng viên
+function countAssignedTo(lecturer) {
+  if (!lecturer) return 0
+  const id = lecturer.MaGV ?? lecturer.id ?? lecturer.name
+  return students.value?.filter(student => {
+    const assigned = (student.lecturer ?? student.Giang_vien_hd ?? student.lecturer_name ?? '').toString()
+    return assigned === id || assigned === (lecturer.name ?? '')
+  }).length || 0
+}
+
+// Lấy danh sách sinh viên đã phân công cho giảng viên
+function studentsAssignedTo(lecturer) {
+  if (!lecturer) return []
+  const id = lecturer.MaGV ?? lecturer.id ?? lecturer.name
+  return students.value?.filter(student => {
+    const assigned = (student.lecturer ?? student.Giang_vien_hd ?? student.lecturer_name ?? '').toString()
+    return assigned === id || assigned === (lecturer.name ?? '')
+  }) || []
+}
+function confirmAllAssignments(lecturer) {
+  if (!lecturer || !students.value) return
+
+  const lecturerId = lecturer.MaGV ?? lecturer.id ?? lecturer.name
+  const lecturerName = lecturer.name ?? lecturer.HoTen ?? 'giảng viên'
+
+  const assignedStudents = studentsAssignedTo(lecturer)
+
+  // Hiển thị hộp thoại xác nhận
+  const confirmed = window.confirm(
+    `Bạn có chắc muốn phân công ${assignedStudents.length} sinh viên cho giảng viên ${lecturerName}?`
+  )
+
+  if (confirmed) {
+    assignedStudents.forEach(student => {
+      student.lecturer = lecturerId
+    })
+
+    alert(` Đã phân công ${assignedStudents.length} sinh viên cho giảng viên ${lecturerName}`)
+  } else {
+    console.log(' Người dùng đã hủy thao tác phân công.')
+  }
 }
 
 onMounted(() => {
