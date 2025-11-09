@@ -101,9 +101,9 @@
       </aside>
 
       <!-- Main content -->
-      <main class="flex-1 p-8 overflow-y-auto">
+      <main class="flex-1 p-8 overflow-auto">
         <!-- 1. Home -->
-        <div v-if="currentView === 'dashboard'">
+        <div v-if="currentView === 'home'">
           <h2 class="text-2xl font-bold text-indigo-600 mb-6 text-center">TRANG CHỦ - THỐNG KÊ TỔNG QUAN</h2>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white p-6 rounded-lg shadow-md">
@@ -163,7 +163,7 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Trang qlgv -->
         <div v-if="currentView === 'teachers'">
           <div class="flex justify-between items-center mb-6">
@@ -773,15 +773,45 @@ function setCurrentView(view) { currentView.value = view }
 const showForm = ref(false)
 const formMode = ref('add') // 'add' or 'edit'
 
-function openAddForm() {
+async function refreshCurrentViewData(resource) {
+  if (resource === 'students') await fetchStudents()
+  if (resource === 'teachers') await fetchTeachers()
+  if (resource === 'topics') await fetchTopics()
+  if (resource === 'assignments') await fetchStudents() // assignments normalized from students in your code
+}
+
+function openAddForm(view = null) {
+  if (view) currentView.value = view
   formMode.value = 'add'
+  editingId.value = null
+  // reset formData relevant fields
+  Object.keys(formData).forEach(k => formData[k] = (typeof formData[k] === 'number') ? 0 : '')
+  // set sensible defaults:
+  formData.status = 'Chưa gặp'
+  formData.TrangThai = 'Chờ sinh viên chọn'
   showForm.value = true
 }
 
 function openEditForm(item) {
   formMode.value = 'edit'
   showForm.value = true
-  // Có thể load dữ liệu item vào form ở đây
+  editingId.value = item.id ?? item.mssv ?? item.MaDT ?? null
+  // copy known fields (map tolerant)
+  formData.mssv = item.mssv ?? item.MSSV ?? ''
+  formData.name = item.name ?? ((item.Ho ?? '') + ' ' + (item.Ten ?? '')).trim() ?? ''
+  formData.group = item.group ?? item.Nhom ?? ''
+  formData.email = item.email ?? ''
+  formData.phone = item.phone ?? ''
+  formData.topic = item.topic ?? item.Huong_de_tai ?? ''
+  formData.lecturer = item.lecturer ?? item.MaGV ?? item.Giang_vien_hd ?? ''
+  formData.status = item.status ?? item.Trang_Thai ?? 'Chưa gặp'
+  formData.note = item.note ?? item.Ghi_chu ?? ''
+  // topic / teacher
+  formData.MaDT = item.MaDT ?? ''
+  formData.TenDT = item.TenDT ?? item.Ten ?? ''
+  formData.SoLuong = item.SoLuong ?? item.So_luong ?? 1
+  formData.MaGV = item.MaGV ?? ''
+  formData.So_luong_sinh_vien = item.So_luong_sinh_vien ?? item.SoLuong ?? 0
 }
 
 function closeForm() {
@@ -797,6 +827,7 @@ function getFormTitle() {
   }
   return titles[currentView.value] || ''
 }
+
 
 // simple data holders
 const assignments = ref([])
