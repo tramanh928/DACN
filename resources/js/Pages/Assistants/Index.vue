@@ -358,74 +358,6 @@
             </table>
           </div>
         </div>
-         <!-- Trang qldt -->
-        <div v-if="currentView === 'topics'">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-indigo-600">QUẢN LÝ ĐỀ TÀI</h2>
-            <div class="flex items-center gap-4">
-              <input
-                v-model="topicSearch"
-                type="text"
-                placeholder="Tìm kiếm đề tài..."
-                class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-              />
-              <button @click="openAddForm" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-                Thêm
-              </button>
-              <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
-                Xuất file Excel
-              </button>
-            </div>
-          </div>
-
-          <!-- Table -->
-          <div class="overflow-x-auto">
-            <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200">
-              <thead class="bg-indigo-100 text-indigo-700">
-                <tr>
-                  <th class="p-3 text-left">Mã đề tài</th>
-                  <th class="p-3 text-left">Tên đề tài</th>
-                  <th class="p-3 text-left">Giảng viên</th>
-                  <th class="p-3 text-left">Số lượng</th>
-                  <th class="p-3 text-left">Trạng thái</th>
-                  <th class="p-3 text-left">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(topic, i) in topics" :key="topic.MaDT" class="hover:bg-indigo-50">
-                  <td class="p-3">{{ topic.MaDT }}</td>
-                  <td class="p-3">{{ topic.TenDT }}</td>
-                  <td class="p-3">{{ topic.MaGV }}</td>
-                  <td class="p-3">{{ topic.SoLuong }}</td>
-                  <td class="p-3">
-                    <span
-                      :class="{
-                        'bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold': topic.status === 'Chờ sinh viên chọn',
-                        'bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-semibold': topic.status === 'Đã được chọn',
-                        'bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold': topic.status === 'Đã khóa'
-                      }"
-                    >
-                      {{ topic.TrangThai }}
-                    </span>
-                  </td>
-                  <td class="p-3">
-                    <div class="flex gap-2">
-                      <button @click="openEditForm(topic)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
-                        Sửa
-                      </button>
-                      <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
-                        Xóa
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-if="topics.length === 0">
-                  <td class="p-3 italic text-sm text-gray-500" colspan="6">Không có dữ liệu từ database</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
 
           <!-- Form Modal -->
           <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -572,25 +504,43 @@
           </div>
 
         <!-- BẢNG PHÂN CÔNG -->
-          <div v-if="currentView === 'assignments'">
-            <div class="flex justify-between items-center mb-6">
-              <h2 class="text-2xl font-bold text-indigo-600">BẢNG PHÂN CÔNG LUẬN VĂN</h2>
-              <div class="flex items-center gap-4">
-                <input
-                  v-model="assignmentSearch"
-                  type="text"
-                  placeholder="Tìm kiếm theo MSSV / tên / đề tài..."
-                  class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                />
-                <button @click="openImportForm" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-                  Import
-                </button>
-                <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition" @click="exportExcel">
-                  Xuất file Excel
-                </button>
-              </div>
-            </div>
+        <div v-if="currentView === 'assignments'">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-indigo-600">BẢNG PHÂN CÔNG LUẬN VĂN</h2>
+            <div class="flex items-center gap-4">
+              <input
+                v-model="assignmentSearch"
+                type="text"
+                placeholder="Tìm kiếm theo MSSV / tên / đề tài..."
+                class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              />
 
+              <!-- ✅ Import Excel Button -->
+              <button
+                @click="$refs.excelInput.click()"
+                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+              >
+                Import
+              </button>
+
+              <!-- ✅ Hidden file input -->
+              <input
+                ref="excelInput"
+                type="file"
+                accept=".xlsx,.xls"
+                class="hidden"
+                @change="handleExcelImport"
+              />
+
+              <!-- Export button -->
+              <button
+                class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition"
+                @click="exportExcel"
+              >
+                Xuất file Excel
+              </button>
+            </div>
+          </div>
             <!-- Table -->
             <div class="overflow-x-auto">
               <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200">
@@ -756,8 +706,8 @@ function toggleMenu() { showMenu.value = !showMenu.value }
 function goProfile() { router.visit('/profile') }
 function logout() { router.post(route('logout')) }
 
-// receive Inertia props: user and students
-const props = defineProps({
+// receive Inertia pageProps: user and students
+const pageProps = defineProps({
   user: { type: Object, default: () => ({ name: 'User' }) },
   students: { type: Array, default: () => [] }
 })
@@ -980,11 +930,11 @@ function normalizeStudents(list) {
   })
 }
 
-// init from props
-assignments.value = normalizeStudents(props.students)
+// init from pageProps
+assignments.value = normalizeStudents(pageProps.students)
 
 // keep assignments in sync if Inertia prop changes
-watch(() => props.students, (newVal) => {
+watch(() => pageProps.students, (newVal) => {
   assignments.value = normalizeStudents(newVal)
 }, { deep: true })
 
@@ -993,6 +943,36 @@ watch(() => props.students, (newVal) => {
 function exportExcel() {
   window.open(route('students.export'), '_blank')
 }
+const handleExcelImport = async (e) => {
+  const file = e.target.files[0];
+  if (!file) {
+    alert('Không có file được chọn!');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('file', file); // must match Laravel's expected name
+
+  console.log('Uploading:', {
+    name: file.name,
+    type: file.type,
+    size: file.size,
+  });
+
+  try {
+    const res = await axios.post('/import-temp', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    console.log('✅ Response:', res.data);
+    alert(res.data.message || 'Import thành công!');
+  } catch (err) {
+    console.error('❌ Upload error:', err.response?.data || err.message);
+    alert('Import thất bại! Kiểm tra định dạng file.');
+  }
+};
+
+
 const showAssignModal = ref(false)
 const showStudentModal = ref(false)
 const selectedLecturer = ref(null)

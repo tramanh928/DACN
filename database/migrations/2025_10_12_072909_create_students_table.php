@@ -16,10 +16,10 @@ return new class extends Migration
         $table->string('Ho_va_Ten', 120);
         $table->string('email')->unique()->nullable(); 
         $table->string('sdt')->nullable();
-        $table->date('Ngay_Sinh')->nullable();
         $table->string('Lop')->nullable(); 
         $table->string('Nhom')->nullable();
         $table->string('MaDT', 50)->nullable();
+        $table->string('HuongDeTai')->nullable();
         $table->string('Giang_vien_huong_dan', 20)->nullable();
         $table->boolean('Da_phan_cong')->default(false);
         $table->timestamps();

@@ -4,29 +4,36 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DeTai extends Model
 {
     use HasFactory;
 
-    // Table name (optional — only if it’s not the plural form)
-    protected $table = 'detai';
+    protected $table = 'DeTai';
 
-    // Columns that can be mass-assigned
+    // Khóa chính
+    protected $primaryKey = 'MaDT';
+    public $incrementing = false; 
+    protected $keyType = 'string';
+
     protected $fillable = [
         'MaDT',
-        'TenDT',
+        'TenDeTai',
         'MaGV',
         'SoLuong',
         'TrangThai',
     ];
 
-    // If you don’t want timestamps (created_at, updated_at)
     public $timestamps = true;
 
-    // Optional: define relationship if GiangVien links to a teacher
-    public function giangVien()
+    protected $casts = [
+        'SoLuong' => 'integer',
+    ];
+
+
+    public function giangVien(): BelongsTo
     {
-        return $this->belongsTo(Teacher::class, 'GiangVien', 'MaGV');
+        return $this->belongsTo(GiangVien::class, 'MaGV', 'MaGV');
     }
 }

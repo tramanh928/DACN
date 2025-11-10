@@ -3,102 +3,86 @@
 namespace App\Http\Controllers;
 
 use App\Models\ThuKy;
-use App\Http\Controllers\Controller;
+use App\Models\SinhVien;
+use App\Models\GiangVien;
+use App\Models\DeTai;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class AssistantController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // List all assistants
     public function index()
     {
-        $assistants = ThuKy::all();
-        return view('assistants.index', compact('assistants'));
+        return ThuKy::all()->map(function ($assistant) {
+            return [
+                'MaTK' => $assistant->MaTK,
+                'name' => $assistant->full_name, // Ho_va_Ten from ThuKy
+                'email' => $assistant->email,
+                'sdt' => $assistant->sdt ?? '',
+                'Ngay_Sinh' => $assistant->Ngay_Sinh ? $assistant->Ngay_Sinh->toDateString() : null,
+            ];
+        });
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Show a single assistant
+    public function show(ThuKy $assistant)
     {
-        return view('assistants.create');
+        return $assistant;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Create a new assistant
     public function store(Request $request)
     {
         $data = $request->validate([
-            'Ho'=>'required|string|max:120',
-            'Ten'=>'nullable|string|max:120',
-            'email'=>'nullable|email|unique:thu_kys,email',
-            'MaTK'=>'nullable|unique:thu_kys,MaTK',
-            'sdt'=>'nullable|string|max:15',
-            'Ngay_Sinh'=>'nullable|date',
+            'MaTK'      => 'required|string|unique:ThuKy,MaTK',
+            'Ho_va_Ten' => 'required|string|max:120',
+            'email'     => 'nullable|email|unique:ThuKy,email',
+            'sdt'       => 'nullable|string|max:15',
+            'Ngay_Sinh' => 'nullable|date',
         ]);
-        ThuKy::create($data);
-        return redirect()->route('assistants.index')->with('success','Assistant created.');
+
+        return ThuKy::create($data);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Assistant $assistant)
-    {
-        return view('assistants.show', compact('assistant'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Assistant $assistant)
-    {
-        return view('assistants.edit', compact('assistant'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Assistant $assistant)
+    // Update an assistant
+    public function update(Request $request, ThuKy $assistant)
     {
         $data = $request->validate([
-            'Ho'=>'required|string|max:120',
-            'Ten'=>'nullable|string|max:120',
-            'email'=>'nullable|email|unique:thu_kys,email,'.$assistant->id,
-            'MaTK'=>'nullable|unique:thu_kys,MaTK,'.$assistant->id,
-            'sdt'=>'nullable|string|max:15',
-            'Ngay_Sinh'=>'nullable|date',
+            'MaTK'      => 'required|string|unique:ThuKy,MaTK,' . $assistant->MaTK . ',MaTK',
+            'Ho_va_Ten' => 'required|string|max:120',
+            'email'     => 'nullable|email|unique:ThuKy,email,' . $assistant->MaTK . ',MaTK',
+            'sdt'       => 'nullable|string|max:15',
+            'Ngay_Sinh' => 'nullable|date',
         ]);
+
         $assistant->update($data);
-        return redirect()->route('assistants.index')->with('success','Assistant updated.');
+
+        return $assistant;
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Assistant $assistant)
+    // Delete an assistant
+    public function destroy(ThuKy $assistant)
     {
-        $assistant->delete();
-        return redirect()->route('assistants.index')->with('success','Assistant deleted.');
+        return $assistant->delete();
     }
 
-    public function getStats(Request $request)
+    // Get basic stats
+    public function getStats()
     {
         try {
-            $totalStudents = class_exists(SinhVien::class) ? SinhVien::count() : DB::table('sinhvien')->count();
-            $totalTeachers = class_exists(GiangVien::class) ? GiangVien::count() : DB::table('giangvien')->count();
-            $totalTopics   = class_exists(DeTai::class) ? DeTai::count() : DB::table('detai')->count();
+            $totalStudents = class_exists(SinhVien::class) ? SinhVien::count() : DB::table('SinhVien')->count();
+            $totalTeachers = class_exists(GiangVien::class) ? GiangVien::count() : DB::table('GiangVien')->count();
+            $totalTopics   = class_exists(DeTai::class) ? DeTai::count() : DB::table('DeTai')->count();
+
             return response()->json([
                 'students' => (int) $totalStudents,
                 'teachers' => (int) $totalTeachers,
                 'topics'   => (int) $totalTopics,
             ]);
         } catch (\Throwable $e) {
-            \Log::error('StatsController@index error: '.$e->getMessage(), ['trace'=>$e->getTraceAsString()]);
+            Log::error('AssistantController@getStats error: '.$e->getMessage(), ['trace'=>$e->getTraceAsString()]);
             return response()->json(['error' => 'Unable to get stats'], 500);
         }
     }

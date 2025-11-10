@@ -4,95 +4,71 @@ namespace App\Http\Controllers;
 
 use App\Models\GiangVien;
 use Illuminate\Http\Request;
+use App\Exports\TeachersExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TeacherController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // List all teachers
     public function index()
     {
-        $teachers = GiangVien::all()->map(function ($teacher) {
-        return [
-            'id' => $teacher->id,
-            'MaGV' => $teacher->MaGV,
-            'name' => trim($teacher->Ho . ' ' . $teacher->Ten), // combine Ho + Ten
-            'email' => $teacher->email,
-            'Khoa' => $teacher->Khoa,
-            'So_luong_sinh_vien' => $teacher->So_luong_sinh_vien,
-        ];
-    });
-        return response()->json($teachers);
+        return GiangVien::all()->map(function ($teacher) {
+            return [
+                'MaGV' => $teacher->MaGV,
+                'name' => $teacher->Ho_va_Ten,
+                'email' => $teacher->email,
+                'So_luong_sinh_vien' => $teacher->So_luong_sinh_vien ?? 0,
+            ];
+        });
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Show a single teacher
+    public function show(GiangVien $teacher)
     {
-        return view('teachers.create');
+        return $teacher;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Create a new teacher
     public function store(Request $request)
     {
         $data = $request->validate([
-            'Ho'=>'required|string|max:120',
-            'Ten'=>'nullable|string|max:120',
-            'email'=>'nullable|email|unique:giang_viens,email',
-            'MaGV'=>'nullable|unique:giang_viens,MaGV',
-            'sdt'=>'nullable|string|max:15',
-            'Ngay_Sinh'=>'nullable|date',
-            'Khoa'=>'nullable|string|max:100',
-            'So_luong_sinh_vien'=>'nullable|integer|min:0',
+            'MaGV'               => 'required|string|unique:GiangVien,MaGV',
+            'Ho_va_Ten'          => 'required|string|max:120',
+            'email'              => 'nullable|email|unique:GiangVien,email',
+            'sdt'                => 'nullable|string|max:15',
+            'Ngay_Sinh'          => 'nullable|date',
+            'So_luong_sinh_vien' => 'nullable|integer|min:0',
         ]);
-        GiangVien::create($data);
-        return redirect()->route('teachers.index')->with('success','Teacher created.');
+
+        return GiangVien::create($data);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Teacher $teacher)
-    {
-        return view('teachers.show', compact('teacher'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Teacher $teacher)
-    {
-            return view('teachers.edit', compact('teacher'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Teacher $teacher)
+    // Update a teacher
+    public function update(Request $request, GiangVien $teacher)
     {
         $data = $request->validate([
-            'Ho'=>'required|string|max:120',
-            'Ten'=>'nullable|string|max:120',
-            'email'=>'nullable|email|unique:giang_viens,email,'.$teacher->id,
-            'MaGV'=>'nullable|unique:giang_viens,MaGV,'.$teacher->id,
-            'sdt'=>'nullable|string|max:15',
-            'Ngay_Sinh'=>'nullable|date',
-            'Khoa'=>'nullable|string|max:100',
-            'So_luong_sinh_vien'=>'nullable|integer|min:0',
+            'MaGV'               => 'required|string|unique:GiangVien,MaGV,' . $teacher->MaGV . ',MaGV',
+            'Ho_va_Ten'          => 'required|string|max:120',
+            'email'              => 'nullable|email|unique:GiangVien,email,' . $teacher->MaGV . ',MaGV',
+            'sdt'                => 'nullable|string|max:15',
+            'Ngay_Sinh'          => 'nullable|date',
+            'So_luong_sinh_vien' => 'nullable|integer|min:0',
         ]);
+
         $teacher->update($data);
-        return redirect()->route('teachers.index')->with('success','Teacher updated.');
+
+        return $teacher;
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Teacher $teacher)
+    // Delete a teacher
+    public function destroy(GiangVien $teacher)
     {
-        $teacher->delete();
-        return redirect()->route('teachers.index')->with('success','Teacher deleted.');
+        return $teacher->delete();
+    }
+
+    // Optional: Export teachers to Excel
+    public function export()
+    {
+        return Excel::download(new TeachersExport, 'GiangVien.xlsx');
     }
 }

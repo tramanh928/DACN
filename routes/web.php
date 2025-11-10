@@ -6,9 +6,9 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TeacherController;
-use App\Http\Controllers\EventController;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\DeTaiController;
+use App\Http\Controllers\ImportController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -63,9 +63,7 @@ Route::post('/logout', function (Request $request) {
 
 Route::resource('students', StudentController::class)->middleware(['auth', 'verified']);
 Route::resource('teachers', TeacherController::class)->middleware(['auth', 'verified']);
-Route::resource('events', EventController::class)->middleware(['auth', 'verified']);
 Route::resource('assistants', AssistantController::class)->middleware(['auth', 'verified']);
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -82,3 +80,9 @@ Route::get('/stats', [AssistantController::class, 'getStats']);
 Route::post('/teachers/getAll', [TeacherController::class, 'index']);
 Route::post('/students/getAll', [StudentController::class, 'index']);
 Route::post('/topics/getAll', [DeTaiController::class, 'index']);
+
+//Route cho Import Excel
+
+Route::post('/import-temp', [ImportController::class, 'import'])->withoutMiddleware(['web']); // TEMP TEST
+
+Route::post('/process-temp', [ImportController::class, 'process'])->name('process.temp');
