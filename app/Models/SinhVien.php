@@ -7,9 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SinhVien extends Model
 {
-
-    protected $table = 'SinhVien';
-
+    protected $table = 'sinhvien';
 
     protected $primaryKey = 'MSSV';
     public $incrementing = false;
@@ -22,6 +20,7 @@ class SinhVien extends Model
         'Ho_va_Ten',
         'email',
         'sdt',
+        'Ngay_Sinh',
         'Lop',
         'Nhom',
         'MaDT',
@@ -33,21 +32,14 @@ class SinhVien extends Model
 
     protected $casts = [
         'Da_phan_cong' => 'boolean',
-        'Ngay_Sinh' => 'date',
+        'Ngay_Sinh'   => 'date',
     ];
-
-    public function getFullNameAttribute(): ?string
-    {
-        return $this->Ho_va_Ten ? trim($this->Ho_va_Ten) : null;
-    }
-
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
- 
     public function giangVienHuongDan(): BelongsTo
     {
         return $this->belongsTo(GiangVien::class, 'Giang_vien_huong_dan', 'MaGV');

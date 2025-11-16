@@ -86,3 +86,18 @@ Route::post('/topics/getAll', [DeTaiController::class, 'index']);
 Route::post('/import-temp', [ImportController::class, 'import'])->withoutMiddleware(['web']); // TEMP TEST
 
 Route::post('/process-temp', [ImportController::class, 'process'])->name('process.temp');
+
+//Route để thêm dữ liệu
+Route::post('/add-student', [StudentController::class, 'store']);
+Route::post('/add-teacher', [TeacherController::class, 'store']);
+Route::post('/add-topic', [DeTaiController::class, 'store']);
+
+//Route để xóa dữ liệu
+Route::post('/delete-student/{mssv}', [StudentController::class, 'destroy']);
+Route::post('/delete-teacher/{MaGV}', [TeacherController::class, 'destroy']);
+Route::post('/delete-topic/{MaDT}', [DeTaiController::class, 'destroy']);
+
+//Route để cập nhật dữ liệu
+Route::put('/update-student/{mssv}', [StudentController::class, 'update']);
+Route::put('/update-teacher/{MaGV}', [TeacherController::class, 'update']);
+Route::put('/update-topic/{MaDT}', [DeTaiController::class, 'update']);

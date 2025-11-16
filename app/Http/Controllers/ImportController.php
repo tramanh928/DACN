@@ -14,13 +14,8 @@ use App\Models\GiangVien;
 
 class ImportController extends Controller
 {
-    /**
-     * Generate email from Vietnamese full name
-     * Example: "Bùi Nhật Bằng" -> "bang.buinhat@stu.edu.vn"
-     */
     private function generateEmailFromName(string $name): string
     {
-        // Clean and convert to ASCII safely
         $ascii = Str::ascii($name);
         $ascii = strtolower(trim($ascii));
 
@@ -41,11 +36,6 @@ class ImportController extends Controller
 
     public function import(Request $request)
     {
-        Log::info('📥 ImportController@import triggered', [
-            'hasFile' => $request->hasFile('file'),
-            'file' => $request->hasFile('file') ? $request->file('file')->getClientOriginalName() : null,
-        ]);
-
         try {
             if (!$request->hasFile('file')) {
                 return response()->json(['error' => 'Không có file được tải lên'], 400);

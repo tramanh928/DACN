@@ -9,7 +9,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class TeacherController extends Controller
 {
-    // List all teachers
+    // Liệt kê tất cả giáo viên
     public function index()
     {
         return GiangVien::all()->map(function ($teacher) {
@@ -18,41 +18,54 @@ class TeacherController extends Controller
                 'name' => $teacher->Ho_va_Ten,
                 'email' => $teacher->email,
                 'So_luong_sinh_vien' => $teacher->So_luong_sinh_vien ?? 0,
+                'sdt'   => $teacher->sdt ?? '-',
             ];
         });
     }
 
-    // Show a single teacher
+    // Hiển thị thông tin một giáo viên
     public function show(GiangVien $teacher)
     {
         return $teacher;
     }
 
-    // Create a new teacher
+    // Tạo mới giáo viên
+    private function generateUniqueMaGV()
+    {
+        do {
+            $number = rand(0, 99); 
+            $maGV = 'GV' . $number;
+        } while (GiangVien::where('MaGV', $maGV)->exists());
+
+        return $maGV;
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([
-            'MaGV'               => 'required|string|unique:GiangVien,MaGV',
-            'Ho_va_Ten'          => 'required|string|max:120',
-            'email'              => 'nullable|email|unique:GiangVien,email',
-            'sdt'                => 'nullable|string|max:15',
-            'Ngay_Sinh'          => 'nullable|date',
-            'So_luong_sinh_vien' => 'nullable|integer|min:0',
+            'name'  => 'required|string|max:120',
+            'email' => 'nullable|email|unique:GiangVien,email',
+            'sdt'   => 'nullable|string|max:15',
         ]);
+
+        $data['Ho_va_Ten'] = $data['name'];
+        unset($data['name']);
+
+        $data['MaGV'] = $this->generateUniqueMaGV();
 
         return GiangVien::create($data);
     }
 
-    // Update a teacher
-    public function update(Request $request, GiangVien $teacher)
+
+    // Cập nhật thông tin giáo viên
+    public function update(Request $request, $MaGV)
     {
+        $teacher = GiangVien::where('MaGV', $MaGV)->firstOrFail();
+
         $data = $request->validate([
-            'MaGV'               => 'required|string|unique:GiangVien,MaGV,' . $teacher->MaGV . ',MaGV',
-            'Ho_va_Ten'          => 'required|string|max:120',
-            'email'              => 'nullable|email|unique:GiangVien,email,' . $teacher->MaGV . ',MaGV',
-            'sdt'                => 'nullable|string|max:15',
-            'Ngay_Sinh'          => 'nullable|date',
-            'So_luong_sinh_vien' => 'nullable|integer|min:0',
+            'Ho_va_Ten' => 'required|string|max:120',
+            'email'     => 'nullable|email|unique:GiangVien,email,' . $teacher->MaGV . ',MaGV',
+            'sdt'       => 'nullable|string|max:15',
         ]);
 
         $teacher->update($data);
@@ -60,13 +73,15 @@ class TeacherController extends Controller
         return $teacher;
     }
 
-    // Delete a teacher
-    public function destroy(GiangVien $teacher)
+
+    // Xóa một giáo viên
+    public function destroy(Request $request)
     {
+        $teacher = GiangVien::where('MaGV', $request->MaGV)->firstOrFail();
         return $teacher->delete();
     }
 
-    // Optional: Export teachers to Excel
+    // Xuất danh sách giáo viên ra file Excel
     public function export()
     {
         return Excel::download(new TeachersExport, 'GiangVien.xlsx');

@@ -10,7 +10,7 @@ class DeTai extends Model
 {
     use HasFactory;
 
-    protected $table = 'DeTai';
+    protected $table = 'detai';
 
     // Khóa chính
     protected $primaryKey = 'MaDT';

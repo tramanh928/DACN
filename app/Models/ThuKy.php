@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ThuKy extends Model
 {
 
-    protected $table = 'ThuKy';
+    protected $table = 'thuky';
 
     protected $primaryKey = 'MaTK';
     public $incrementing = false; 

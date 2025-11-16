@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class DeTaiController extends Controller
 {
-    // List all DeTai
+    // Liệt kê tất cả đề tài
     public function index()
     {
         return DeTai::with('giangVien')->get()->map(function($d) {
@@ -21,27 +21,35 @@ class DeTaiController extends Controller
         });
     }
 
-    // Show single DeTai
+    // Hiển thị thông tin một đề tài
     public function show(DeTai $detai)
     {
         return $detai->load('giangVien');
     }
 
-    // Store new DeTai
+    // Tạo mới đề tài
+    private function generateUniqueMaDT()
+    {
+        do {
+            $number = rand(0, 99); 
+            $maDT = 'DT' . $number;
+        } while (DeTai::where('MaDT', $maDT)->exists());
+
+        return $maDT;
+    }
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'MaDT'     => 'required|string|unique:DeTai,MaDT|max:50',
             'TenDT'    => 'required|string|max:255',
             'MaGV'     => 'nullable|string|exists:GiangVien,MaGV',
             'SoLuong'  => 'required|integer|min:1',
             'TrangThai'=> 'required|string|in:Mở,Đóng,Chờ',
         ]);
-
+        $validated['MaDT'] = $this->generateUniqueMaDT();
         return DeTai::create($validated);
     }
 
-    // Update existing DeTai
+    // Cập nhật thông tin đề tài
     public function update(Request $request, DeTai $detai)
     {
         $validated = $request->validate([
@@ -56,7 +64,7 @@ class DeTaiController extends Controller
         return $detai->load('giangVien');
     }
 
-    // Delete DeTai
+    // Xóa một đề tài
     public function destroy(DeTai $detai)
     {
         $detai->delete();

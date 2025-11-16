@@ -12,7 +12,7 @@ class GiangVien extends Model
     // use HasFactory;
 
     // Tên bảng phải khớp migration
-    protected $table = 'GiangVien';
+    protected $table = 'giangvien';
 
     // Khóa chính không phải id mặc định
     protected $primaryKey = 'MaGV';

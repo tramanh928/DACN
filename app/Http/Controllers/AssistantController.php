@@ -12,13 +12,13 @@ use Illuminate\Support\Facades\Log;
 
 class AssistantController extends Controller
 {
-    // List all assistants
+    // Liệt kê tất cả thư ký
     public function index()
     {
         return ThuKy::all()->map(function ($assistant) {
             return [
                 'MaTK' => $assistant->MaTK,
-                'name' => $assistant->full_name, // Ho_va_Ten from ThuKy
+                'name' => $assistant->Ho_va_Ten,
                 'email' => $assistant->email,
                 'sdt' => $assistant->sdt ?? '',
                 'Ngay_Sinh' => $assistant->Ngay_Sinh ? $assistant->Ngay_Sinh->toDateString() : null,
@@ -26,13 +26,13 @@ class AssistantController extends Controller
         });
     }
 
-    // Show a single assistant
+    // Hiển thị thông tin một thư ký
     public function show(ThuKy $assistant)
     {
         return $assistant;
     }
 
-    // Create a new assistant
+    // Tạo mới thư ký
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -46,7 +46,7 @@ class AssistantController extends Controller
         return ThuKy::create($data);
     }
 
-    // Update an assistant
+    // Cập nhật thông tin thư ký
     public function update(Request $request, ThuKy $assistant)
     {
         $data = $request->validate([
@@ -62,13 +62,13 @@ class AssistantController extends Controller
         return $assistant;
     }
 
-    // Delete an assistant
+    // Xóa một thư ký
     public function destroy(ThuKy $assistant)
     {
         return $assistant->delete();
     }
 
-    // Get basic stats
+    // Thống kê tổng số sinh viên, giáo viên, đề tài
     public function getStats()
     {
         try {
