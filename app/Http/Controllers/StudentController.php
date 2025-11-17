@@ -29,7 +29,7 @@ class StudentController extends Controller
     // Hiển thị thông tin một sinh viên
     public function show(SinhVien $student)
     {
-        return $student->load(['giangVienHuongDan', 'giangVienPhanBien', 'deTai']);
+        return $student->load(['giangVienHuongDan', 'deTai']);
     }
 
     // Tạo mới sinh viên
@@ -50,8 +50,10 @@ class StudentController extends Controller
     }
 
     // Cập nhật thông tin sinh viên
-    public function update(Request $request, SinhVien $student)
+   public function update(Request $request, $MSSV)
     {
+        $student = SinhVien::where('MSSV', $MSSV)->firstOrFail();
+
         $data = $request->validate([
             'Ho_va_Ten'            => 'required|string|max:120',
             'email'                => 'nullable|email|unique:SinhVien,email,' . $student->MSSV . ',MSSV',
@@ -64,12 +66,13 @@ class StudentController extends Controller
 
         $student->update($data);
 
-        return $student->load(['giangVienHuongDan', 'giangVienPhanBien', 'deTai']);
+        return $student->load(['giangVienHuongDan', 'deTai']);
     }
 
     // Xóa một sinh viên
-    public function destroy(SinhVien $student)
+    public function destroy(Request $request)
     {
+        $student = SinhVien::where('MSSV', $request->mssv)->firstOrFail();
         return $student->delete();
     }
 

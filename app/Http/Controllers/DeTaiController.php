@@ -13,8 +13,9 @@ class DeTaiController extends Controller
         return DeTai::with('giangVien')->get()->map(function($d) {
             return [
                 'MaDT'     => $d->MaDT,
-                'TenDeTai' => $d->TenDT,
-                'GiangVien'=> $d->giangVien ? $d->giangVien->Ho_va_Ten : '',
+                'TenDeTai' => $d->TenDeTai,
+                'MaGV'     => $d->MaGV,
+                'GiangVien'=> $d->MaGV ? $d->giangVien->Ho_va_Ten : '',
                 'SoLuong'  => $d->SoLuong,
                 'TrangThai'=> $d->TrangThai,
             ];
@@ -28,24 +29,13 @@ class DeTaiController extends Controller
     }
 
     // Tạo mới đề tài
-    private function generateUniqueMaDT()
-    {
-        do {
-            $number = rand(0, 99); 
-            $maDT = 'DT' . $number;
-        } while (DeTai::where('MaDT', $maDT)->exists());
-
-        return $maDT;
-    }
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'TenDT'    => 'required|string|max:255',
+            'MaDT'    => 'required|string|unique:DeTai,MaDT',
+            'TenDeTai'    => 'required|string|max:255',
             'MaGV'     => 'nullable|string|exists:GiangVien,MaGV',
-            'SoLuong'  => 'required|integer|min:1',
-            'TrangThai'=> 'required|string|in:Mở,Đóng,Chờ',
         ]);
-        $validated['MaDT'] = $this->generateUniqueMaDT();
         return DeTai::create($validated);
     }
 
@@ -53,7 +43,7 @@ class DeTaiController extends Controller
     public function update(Request $request, DeTai $detai)
     {
         $validated = $request->validate([
-            'TenDT'    => 'required|string|max:255',
+            'TenDeTai' => 'required|string|max:255',
             'MaGV'     => 'nullable|string|exists:GiangVien,MaGV',
             'SoLuong'  => 'required|integer|min:1',
             'TrangThai'=> 'required|string|in:Mở,Đóng,Chờ',

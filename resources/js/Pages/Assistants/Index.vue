@@ -320,8 +320,8 @@
               <tbody>
                 <tr v-for="(topic, i) in topics" :key="topic.MaDT" class="hover:bg-indigo-50">
                   <td class="p-3 text-center">{{ topic.MaDT }}</td>
-                  <td class="p-3 text-center">{{ topic.TenDT }}</td>
-                  <td class="p-3 text-center">{{ topic.MaGV }}</td>
+                  <td class="p-3 text-center">{{ topic.TenDeTai }}</td>
+                  <td class="p-3 text-center">{{ topic.GiangVien }}</td>
                   <td class="p-3 text-center">{{ topic.SoLuong }}</td>
                   <td class="p-3 text-center">
                     <span
@@ -429,15 +429,15 @@
                   <div class="grid grid-cols-2 gap-4">
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">MSSV</label>
-                      <input v-model="formData.student.mssv" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập MSSV">
+                      <input :disabled="formMode !== 'add'" v-model="formData.student.MSSV" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập MSSV">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
-                      <input v-model="formData.student.name" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
+                      <input v-model="formData.student.Ho_va_Ten" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Nhóm</label>
-                      <input v-model="formData.student.group" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập nhóm">
+                      <input v-model="formData.student.Nhom" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập nhóm">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -455,26 +455,17 @@
                   <div class="grid grid-cols-2 gap-4">
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Mã đề tài</label>
-                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập mã đề tài">
+                      <input v-model="formData.topic.MaDT" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập mã đề tài">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Tên đề tài</label>
-                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên đề tài">
+                      <input v-model="formData.topic.TenDeTai" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên đề tài">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Giảng viên</label>
-                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên giảng viên">
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
-                      <input type="number" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập số lượng">
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
-                      <select class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                        <option value="Chờ sinh viên chọn">Chờ sinh viên chọn</option>
-                        <option value="Đã được chọn">Đã được chọn</option>
-                        <option value="Đã khóa">Đã khóa</option>
+                      <select v-model="formData.topic.MaGV" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                          <option value="">-- Chọn giảng viên --</option>
+                          <option v-for="teacher in teachers" :key="teacher.MaGV" :value="teacher.MaGV"> {{ teacher.name }} </option>
                       </select>
                     </div>
                   </div>
@@ -505,7 +496,6 @@
                 class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
               />
 
-              <!-- ✅ Import Excel Button -->
               <button
                 @click="$refs.excelInput.click()"
                 class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
@@ -513,7 +503,6 @@
                 Import
               </button>
 
-              <!-- ✅ Hidden file input -->
               <input
                 ref="excelInput"
                 type="file"
@@ -522,7 +511,6 @@
                 @change="handleExcelImport"
               />
 
-              <!-- Export button -->
               <button
                 class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition"
                 @click="exportExcel"
@@ -704,7 +692,7 @@ function toggleMenu() { showMenu.value = !showMenu.value }
 function goProfile() { router.visit('/profile') }
 function logout() { router.post(route('logout')) }
 
-// receive Inertia pageProps: user and students
+
 const pageProps = defineProps({
   user: { type: Object, default: () => ({ name: 'User' }) },
   students: { type: Array, default: () => [] }
@@ -713,25 +701,13 @@ const pageProps = defineProps({
 axios.defaults.withCredentials = true
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
 
-// Current view 
+
 const currentView = ref('home')
 function setCurrentView(view) { currentView.value = view }
 
-// Form modal state
-const showForm = ref(false)
-const formMode = ref('add') // 'add' or 'edit'
 
-async function refreshCurrentViewData(resource) {
-  if (resource === 'students') await fetchStudents()
-  if (resource === 'teachers') await fetchTeachers()
-  if (resource === 'topics') await fetchTopics()
-  if (resource === 'assignments') {
-    await fetchStudents() // assignments normalized from students in your code
-    await fetchTeachers()
-    await fetchTopics()
-    assignments.value = normalizeStudents(students, teachers, topics)
-  }
-}
+const showForm = ref(false)
+const formMode = ref('add') // 'add' hoặc 'edit'
 
 function openAddForm() {
   formMode.value = 'add'
@@ -742,15 +718,19 @@ function openAddForm() {
   } else if (currentView.value === 'students') {
     formData.value.student = { MSSV: "", Ho_va_Ten: "", email: "", sdt: "", Nhom: "" }
   } else if (currentView.value === 'topics') {
-    formData.value.topic = { MaDT: "", TenDT: "", GiangVien: "", So_luong: 1 }
+    formData.value.topic = { MaDT: "", TenDeTai: "", MaGV: "" }
   }
 
   showForm.value = true
 }
 
+function groupIsFull(group) {
+  return students.value.filter(s => s.group == group).length >= 2;
+}
+
+
 async function updateItem() {
   try {
-    // --- UPDATE TEACHER ---
     if (currentView.value === "teachers") {
       await axios.put("/update-teacher/" + editingId.value, {
         Ho_va_Ten: formData.value.teacher.name,
@@ -762,27 +742,29 @@ async function updateItem() {
       return closeForm();
     }
 
-    // --- UPDATE STUDENT ---
-    if (currentView.value === "students") {
-      await axios.put("/update-student/" + editingId.value, {
-        MSSV: formData.value.student.MSSV,
-        Ho_va_Ten: formData.value.student.Ho_va_Ten,
-        email: formData.value.student.email,
-        sdt: formData.value.student.sdt,
-        Nhom: formData.value.student.Nhom,
-      });
+      if (currentView.value === "students") {
+        if (groupIsFull(formData.value.student.Nhom)) {
+          alert("Nhóm này đã đủ 2 sinh viên!");
+          return;
+        }
 
-      fetchStudents();
-      return closeForm();
-    }
+        await axios.put("/update-student/" + editingId.value, {
+          MSSV: formData.value.student.MSSV,
+          Ho_va_Ten: formData.value.student.Ho_va_Ten,
+          email: formData.value.student.email,
+          sdt: formData.value.student.sdt,
+          Nhom: formData.value.student.Nhom,
+        });
 
-    // --- UPDATE TOPIC ---
+        fetchStudents();
+        return closeForm();
+      }
+
     if (currentView.value === "topics") {
       await axios.put("/update-topic/" + editingId.value, {
         MaDT: formData.value.topic.MaDT,
-        TenDT: formData.value.topic.TenDT,
-        GiangVien: formData.value.topic.GiangVien,
-        So_luong: formData.value.topic.So_luong,
+        TenDeTai: formData.value.topic.TenDeTai,
+        MaGV: formData.value.topic.MaGV,
       });
 
       fetchTopics();
@@ -821,11 +803,22 @@ async function addItem() {
       return closeForm();
     }
 
-    if (currentView.value === "students") {
+   if (currentView.value === "students") {
+
+      await fetchStudents(); // Ensure we have the latest list
+
+      const group = formData.value.student.Nhom;
+
+      if (groupIsFull(group)) {
+          alert(`Nhóm ${group} đã đủ 2 sinh viên!`);
+          return;
+      }
+
       await axios.post("/add-student", formData.value.student);
-      fetchStudents();
+      await fetchStudents();
       return closeForm();
     }
+
 
     if (currentView.value === "topics") {
       await axios.post("/add-topic", formData.value.topic);
@@ -859,13 +852,12 @@ function openEditForm(item) {
     }
     editingId.value = item.mssv || item.id || null
   } else if (currentView.value === 'topics') {
-    formData.value.topic = {
-      MaDT: item.MaDT || '',
-      TenDT: item.TenDT || '',
-      GiangVien: item.MaGV || '',
-      So_luong: item.SoLuong || 1,
-    }
-    editingId.value = item.MaDT || null
+      formData.value.topic = {
+        MaDT: item.MaDT || '',
+        TenDeTai: item.TenDeTai || '',
+        MaGV: item.MaGV || '',
+      }
+      editingId.value = item.MaDT || null
   }
 }
 
@@ -898,8 +890,8 @@ const formData = ref({
   },
   topic: {
     MaDT: "",
-    TenDT: "",
-    GiangVien: "",
+    TenDeTai: "",
+    MaGV: "",
     So_luong: 1,
   }
 });
