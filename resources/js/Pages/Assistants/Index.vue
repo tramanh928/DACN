@@ -660,6 +660,20 @@
           </div>
         <!-- Đánh giá 50% -->
         <div v-if="currentView === 'evaluation50'">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-indigo-600">ĐÁNH GIÁ 50%</h2>
+            <div class="flex items-center gap-4">
+              <input
+                v-model="evaluationSearch"
+                type="text"
+                placeholder="Tìm MSSV / tên..."
+                class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              />
+              <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
+                Xuất file Excel
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Phân công phản biện -->

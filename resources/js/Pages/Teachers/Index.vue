@@ -23,10 +23,10 @@
       </div>
     </header>
 
-    <!-- Body -->
-    <div class="flex">
+    <!-- Body: đảm bảo chiều cao đầy đủ để nền trắng của sidebar không bị cắt -->
+    <div class="flex h-[calc(100vh-4rem)]"> <!-- trừ chiều cao header (py-4 ≈ 4rem) -->
       <!-- Sidebar  -->
-      <aside class="w-64 bg-white border-r p-6 h-full">
+      <aside class="w-64 bg-white border-r p-6 min-h-full">
         <nav class="flex flex-col space-y-4 text-indigo-700 font-medium">
           <button 
             @click="setCurrentView('dashboard')" 
@@ -95,24 +95,24 @@
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-indigo-100 text-indigo-700">
                 <tr>
-                  <th class="p-3 text-left">STT</th>
-                  <th class="p-3 text-left">MSSV</th>
-                  <th class="p-3 text-left">Họ và tên</th>
-                  <th class="p-3 text-left">Lớp</th>
-                  <th class="p-3 text-left">SĐT</th>
-                  <th class="p-3 text-left">Email</th>
-                  <th class="p-3 text-left">Nhóm</th>
+                  <th class="p-3 text-center">STT</th>
+                  <th class="p-3 text-center">MSSV</th>
+                  <th class="p-3 text-center">Họ và tên</th>
+                  <th class="p-3 text-center">Lớp</th>
+                  <th class="p-3 text-center">SĐT</th>
+                  <th class="p-3 text-center">Email</th>
+                  <th class="p-3 text-center">Nhóm</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="(s, idx) in students" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
                   <td class="p-3">{{ idx + 1 }}</td>
                   <td class="p-3">{{ s.mssv }}</td>
-                  <td class="p-3">{{ s.name }}</td>
-                  <td class="p-3">{{ s.Lop || '-' }}</td>
-                  <td class="p-3">{{ s.phone || '-' }}</td>
-                  <td class="p-3">{{ s.email || '-' }}</td>
-                  <td class="p-3">{{ s.group || '-' }}</td>
+                  <td class="p-3 ">{{ s.name }}</td>
+                  <td class="p-3 ">{{ s.Lop || '-' }}</td>
+                  <td class="p-3 ">{{ s.phone || '-' }}</td>
+                  <td class="p-3 ">{{ s.email || '-' }}</td>
+                  <td class="p-3 ">{{ s.group || '-' }}</td>
                 </tr>
               </tbody>
             </table>
@@ -139,59 +139,33 @@
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-indigo-100 text-indigo-700">
                 <tr>
-                  <th class="p-3 text-left">MSSV</th>
-                  <th class="p-3 text-left">Nhóm</th>
-                  <th class="p-3 text-left">Tên đề tài</th>
-                  <th class="p-3 text-left">Mô tả đề tài</th>
-                  <th class="p-3 text-left">Trạng thái</th>
-                  <th class="p-3 text-left">Thao tác</th>
+                  <th class="p-3 text-center">MSSV</th>
+                  <th class="p-3 text-center">Nhóm</th>
+                  <th class="p-3 text-center">Tên đề tài</th>
+                  <th class="p-3 text-center">Mô tả đề tài</th>
+                  <th class="p-3 text-center">Trạng thái</th>
+                  <th class="p-3 text-center">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td colspan="7" class="p-4 text-center text-gray-500">
+                <tr v-if="displayedTopics.length === 0">
+                  <td colspan="6" class="p-4 text-center text-gray-500">
                     Chưa có phân công đề tài
                   </td>
                 </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Evaluation 50% view placeholder -->
-        <div v-if="currentView === 'evaluation50'">
-          <h2 class="text-2xl font-bold text-indigo-600 mb-6">ĐÁNH GIÁ 50%</h2>
-          <div class="bg-white rounded shadow overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-indigo-100 text-indigo-700">
-                <tr>
-                  <th class="p-3 text-left">STT</th>
-                  <th class="p-3 text-left">MSSV</th>
-                  <th class="p-3 text-left">Họ và tên</th>
-                  <th class="p-3 text-left">Lớp</th>
-                  <th class="p-3 text-left">Nhóm</th>
-                  <th class="p-3 text-left">Tên đề tài</th>
-                  <th class="p-3 text-left">Điểm</th>
-                  <th class="p-3 text-left">Ghi chú</th>
-                  <th class="p-3 text-left">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(s, idx) in students" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
-                  <td class="p-3">{{ idx + 1 }}</td>
-                  <td class="p-3">{{ s.mssv }}</td>
-                  <td class="p-3">{{ s.name }}</td>
-                  <td class="p-3">{{ s.Lop || '-' }}</td>
-                  <td class="p-3">{{ s.Lop || '-' }}</td>
-                  <td class="p-3">{{ s.Lop || '-' }}</td>
-                  <td class="p-3">{{ s.group || '-' }}</td>
-                  <td class="p-3">
+                <tr v-for="(t, idx) in displayedTopics" :key="t.id || idx" class="hover:bg-indigo-50">
+                  <td class="p-3 text-center">{{ t.mssv || '-' }}</td>
+                  <td class="p-3 text-center">{{ t.group || '-' }}</td>
+                  <td class="p-3 text-center">{{ t.title || t.ten_de_tai || '-' }}</td>
+                  <td class="p-3 text-center">{{ t.description || '-' }}</td>
+                  <td class="p-3 text-center">{{ t.status || '-' }}</td>
+                  <td class="p-3 text-center">
                     <div class="flex gap-2 justify-center">
-                      <button @click="openEditForm(s)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
-                        Tạo nhóm
+                      <button type="button" class="bg-blue-500 text-white px-3 py-1 rounded text-sm opacity-90" >
+                        Phân công
                       </button>
-                      <button @click="deleteItem(s.mssv)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
-                        Xóa
+                      <button type="button" class="bg-indigo-500 text-white px-3 py-1 rounded text-sm opacity-90" >
+                        Xuất nhiệm vụ
                       </button>
                     </div>
                   </td>
@@ -201,6 +175,72 @@
           </div>
         </div>
 
+        <!-- Evaluation 50% view -->
+        <div v-if="currentView === 'evaluation50'">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-indigo-600">ĐÁNH GIÁ 50%</h2>
+            <div class="flex items-center gap-4">
+              <input
+                v-model="evaluationSearch"
+                type="text"
+                placeholder="Tìm MSSV / tên..."
+                class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              />
+              <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
+                Lưu
+              </button>
+            </div>
+          </div>
+          <div class="bg-white rounded shadow overflow-x-auto">
+            <table class="min-w-full text-sm divide-y divide-gray-200">
+              <thead class="bg-indigo-100 text-indigo-700">
+                <tr>
+                  <th class="p-3 text-center">STT</th>
+                  <th class="p-3 text-center">MSSV</th>
+                  <th class="p-3 text-center">Họ và tên</th>
+                  <th class="p-3 text-center">Lớp</th>
+                  <th class="p-3 text-center">Nhóm</th>
+                  <th class="p-3 text-center">Tên đề tài</th>
+                  <th class="p-3 text-center">Điểm</th>
+                  <th class="p-3 text-center">Ghi chú</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(s, idx) in students" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
+                  <td class="p-3 text-center">{{ idx + 1 }}</td>
+                  <td class="p-3 text-center">{{ s.mssv }}</td>
+                  <td class="p-3 text-center">{{ s.name }}</td>
+                  <td class="p-3 text-center">{{ s.Lop || s.class || '-' }}</td>
+                  <td class="p-3 text-center">{{ s.group || '-' }}</td>
+                  <td class="p-3 text-center">{{ s.topic || s.title || '-' }}</td>
+                  <td class="p-3 w-40 text-center">
+                    <div class="inline-block">
+                      <input
+                        v-model="evaluationMap[s.mssv].score"
+                        type="text"
+                        class="w-28 px-2 py-1 border rounded text-sm mx-auto block"
+                        placeholder="0 - 100"
+                      />
+                      <div class="text-sm text-gray-600 mt-1">%</div>
+                    </div>
+                  </td>
+                  <td class="p-3 text-center">
+                    <input
+                      v-model="evaluationMap[s.mssv].note"
+                      type="text"
+                      class="w-full px-2 py-1 border rounded text-sm mx-auto block"
+                      placeholder="Ghi chú..."
+                    />
+                  </td>
+                </tr>
+
+                <tr v-if="filteredEvaluationList.length === 0">
+                  <td colspan="8" class="p-4 text-center text-gray-500">Không có sinh viên để đánh giá</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
         <!-- Review Score view placeholder -->
         <div v-if="currentView === 'reviewScore'">
           <h2 class="text-2xl font-bold text-indigo-600 mb-6">ĐIỂM PHẢN BIỆN - HƯỚNG DẪN</h2>
@@ -230,7 +270,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { router } from '@inertiajs/vue3'
 import axios from 'axios'
 
@@ -255,6 +295,17 @@ const totalTopics = ref(0)
 const students = ref([])
 const topics = ref([])
 
+// Evaluation 50% map 
+const evaluationMap = reactive({})
+
+// Khởi tạo entry cho mỗi sinh viên khi danh sách students thay đổi
+watch(students, (list) => {
+  (list || []).forEach(s => {
+    const id = (s.mssv ?? s.student_id ?? '')
+    if (id && !evaluationMap[id]) evaluationMap[id] = { score: '', note: '' }
+  })
+}, { immediate: true })
+
 // Search models
 const studentSearch = ref('')
 const topicSearch = ref('')
@@ -264,6 +315,25 @@ const showForm = ref(false)
 const formMode = ref('add') // 'add'|'edit'
 const editingItem = ref(null)
 const editingIndex = ref(null)
+
+// --- Đánh giá 50%: state và helpers ---
+const evaluationSearch = ref('')
+
+const filteredEvaluationList = computed(() => {
+  const q = (evaluationSearch.value || '').toString().toLowerCase().trim()
+  return (students.value || []).filter(s => {
+    if (!q) return true
+    return ((s.mssv || '') + ' ' + (s.name || '')).toLowerCase().includes(q)
+  })
+})
+
+// khởi tạo evaluationMap khi students thay đổi
+watch(students, (list) => {
+  (list || []).forEach(s => {
+    const id = s.mssv ?? s.MSSV ?? ''
+    if (!evaluationMap[id]) evaluationMap[id] = { score: s.evaluation50?.score ?? '', note: s.evaluation50?.note ?? '' }
+  })
+}, { immediate: true })
 
 function openAddStudent() { formMode.value = 'add'; editingItem.value = null; showForm.value = true }
 function openEditStudent(item, idx) { formMode.value = 'edit'; editingItem.value = item; editingIndex.value = idx; showForm.value = true }
