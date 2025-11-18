@@ -101,3 +101,6 @@ Route::post('/delete-topic/{MaDT}', [DeTaiController::class, 'destroy']);
 Route::put('/update-student/{mssv}', [StudentController::class, 'update']);
 Route::put('/update-teacher/{MaGV}', [TeacherController::class, 'update']);
 Route::put('/update-topic/{MaDT}', [DeTaiController::class, 'update']);
+
+//Route phân công
+Route::put('/assign-students/{mssv}', [StudentController::class, 'edit']);

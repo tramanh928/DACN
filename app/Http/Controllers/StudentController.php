@@ -69,6 +69,16 @@ class StudentController extends Controller
         return $student->load(['giangVienHuongDan', 'deTai']);
     }
 
+    public function edit(Request $request, $MSSV)
+    {
+        $student = SinhVien::where('MSSV', $MSSV)->firstOrFail();
+        $data = $request->validate([
+            'Giang_vien_huong_dan' => 'required|string|exists:GiangVien,MaGV'
+        ]);
+        $student->update($data);
+        return $student->load(['giangVienHuongDan', 'deTai']);
+    }
+
     // Xóa một sinh viên
     public function destroy(Request $request)
     {

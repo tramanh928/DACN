@@ -904,6 +904,7 @@ const assignments = ref([])
 const students = ref([])
 const teachers = ref([])
 const topics = ref([])
+const svpc = ref([])
 
 // Search models for each view (UI only, no filtering logic)
 const assignmentSearch = ref('')
@@ -1024,8 +1025,9 @@ const showStudentModal = ref(false)
 const selectedLecturer = ref(null)
 
 // Mở modal danh sách giảng viên
-function openAssignPanel() {
+function openAssignPanel(item) {
   showAssignModal.value = true
+  svpc.value = item
 }
 
 // Đóng modal danh sách giảng viên và cả modal sinh viên nếu đang mở
@@ -1065,27 +1067,26 @@ function studentsAssignedTo(lecturer) {
     return assigned === id || assigned === (lecturer.name ?? '')
   }) || []
 }
-function confirmAllAssignments(lecturer) {
+async function confirmAllAssignments(lecturer) {
   if (!lecturer || !students.value) return
 
   const lecturerId = lecturer.MaGV ?? lecturer.id ?? lecturer.name
   const lecturerName = lecturer.name ?? lecturer.HoTen ?? 'giảng viên'
 
   const assignedStudents = studentsAssignedTo(lecturer)
-
   // Hiển thị hộp thoại xác nhận
   const confirmed = window.confirm(
-    `Bạn có chắc muốn phân công ${assignedStudents.length} sinh viên cho giảng viên ${lecturerName}?`
+    `Bạn có chắc muốn phân công sinh viên ${svpc.value.name} cho giảng viên ${lecturerName}?`
   )
 
   if (confirmed) {
-    assignedStudents.forEach(student => {
-      student.lecturer = lecturerId
-    })
-
-    alert(` Đã phân công ${assignedStudents.length} sinh viên cho giảng viên ${lecturerName}`)
-  } else {
-    console.log(' Người dùng đã hủy thao tác phân công.')
+    await axios.put(`/assign-students/${svpc.value.mssv}`, {
+      Giang_vien_huong_dan: lecturerId,
+    });
+    alert(` Đã phân công sinh viên ${svpc.value.name} cho giảng viên ${lecturerName}`)
+    fetchStudents()
+    fetchTeachers()
+    closeAssignPanel()
   }
 }
 
