@@ -455,7 +455,7 @@
                   <div class="grid grid-cols-2 gap-4">
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Mã đề tài</label>
-                      <input v-model="formData.topic.MaDT" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập mã đề tài">
+                      <input :disabled="formMode !== 'add'" v-model="formData.topic.MaDT" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập mã đề tài">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Tên đề tài</label>

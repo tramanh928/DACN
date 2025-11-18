@@ -40,24 +40,25 @@ class DeTaiController extends Controller
     }
 
     // Cập nhật thông tin đề tài
-    public function update(Request $request, DeTai $detai)
+   public function update(Request $request, $MaDT)
     {
-        $validated = $request->validate([
-            'TenDeTai' => 'required|string|max:255',
-            'MaGV'     => 'nullable|string|exists:GiangVien,MaGV',
-            'SoLuong'  => 'required|integer|min:1',
-            'TrangThai'=> 'required|string|in:Mở,Đóng,Chờ',
-        ]);
+            $detai = DeTai::where('MaDT', $MaDT)->firstOrFail();
+        {
+            $validated = $request->validate([
+                'TenDeTai' => 'required|string|max:255',
+                'MaGV'     => 'nullable|string|exists:GiangVien,MaGV',
+            ]);
 
-        $detai->update($validated);
+            $detai->update($validated);
 
-        return $detai->load('giangVien');
+            return $detai->load('giangVien');
+        }
     }
 
     // Xóa một đề tài
-    public function destroy(DeTai $detai)
+     public function destroy(Request $request)
     {
-        $detai->delete();
-        return ['message' => 'Đề tài đã được xóa thành công!'];
+        $detai = DeTai::where('MaDT', $request->MaDT)->firstOrFail();
+        return $detai->delete();
     }
 }
