@@ -186,16 +186,15 @@
 
           <!-- Table -->
           <div class="overflow-x-auto">
-            <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200">
+            <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200 text-center">
               <thead class="bg-indigo-100 text-indigo-700">
                 <tr>
-                  <th class="p-3 text-left">Mã GV</th>
-                  <th class="p-3 text-left">Họ và tên</th>
-                  <th class="p-3 text-left">Email</th>
-                  <th class="p-3 text-left">Khoa</th>
-                  <th class="p-3 text-left">Số đề tài HD</th>
-                  <th class="p-3 text-left">Trạng thái</th>
-                  <th class="p-3 text-left">Thao tác</th>
+                  <th class="p-3 text-center">Mã GV</th>
+                  <th class="p-3 text-center">Họ và tên</th>
+                  <th class="p-3 text-center">Email</th>
+                  <th class="p-3 text-center">Số điện thoại</th>
+                  <th class="p-3 text-center">Số lượng sinh viên</th>
+                  <th class="p-3 text-center">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -203,19 +202,14 @@
                   <td class="p-3">{{ teacher.MaGV}}</td>
                   <td class="p-3">{{ teacher.name }}</td>
                   <td class="p-3">{{ teacher.email }}</td>
-                  <td class="p-3">{{ teacher.Khoa }}</td>
-                  <td class="p-3">{{ teacher.So_luong_sinh_vien }}</td>
+                  <td class="p-3">{{ teacher.sdt }}</td>
+                  <td class="p-3">{{ teacher.So_luong_sinh_vien}}</td>
                   <td class="p-3">
-                    <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold">
-                      Hoạt động
-                    </span>
-                  </td>
-                  <td class="p-3">
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 justify-center">
                       <button @click="openEditForm(teacher)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
                         Sửa
                       </button>
-                      <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
+                      <button @click="deleteItem(teacher.MaGV)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
                         Xóa
                       </button>
                     </div>
@@ -252,15 +246,15 @@
 
           <!-- Table -->
           <div class="overflow-x-auto">
-            <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200">
+            <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200 text-center">
               <thead class="bg-indigo-100 text-indigo-700">
                 <tr>
-                  <th class="p-3 text-left">MSSV</th>
-                  <th class="p-3 text-left">Họ và tên</th>
-                  <th class="p-3 text-left">Nhóm</th>
-                  <th class="p-3 text-left">Email</th>
-                  <th class="p-3 text-left">Số điện thoại</th>
-                  <th class="p-3 text-left">Thao tác</th>
+                  <th class="p-3 text-center">MSSV</th>
+                  <th class="p-3 text-center">Họ và tên</th>
+                  <th class="p-3 text-center">Nhóm</th>
+                  <th class="p-3 text-center">Email</th>
+                  <th class="p-3 text-center">Số điện thoại</th>
+                  <th class="p-3 text-center">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -271,11 +265,11 @@
                   <td class="p-3">{{ s.email || '-' }}</td>
                   <td class="p-3">{{ s.phone || '-' }}</td>
                   <td class="p-3">
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 justify-center">
                       <button @click="openEditForm(s)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
                         Sửa
                       </button>
-                      <button @click="confirmDeleteStudent(s)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
+                      <button @click="deleteItem(s.mssv)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
                         Xóa
                       </button>
                     </div>
@@ -289,8 +283,8 @@
             </table>
           </div>
         </div>
-        
-         <!-- Trang qldt -->
+
+        <!-- Trang qldt -->
         <div v-if="currentView === 'topics'">
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-indigo-600">QUẢN LÝ ĐỀ TÀI</h2>
@@ -315,21 +309,21 @@
             <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200">
               <thead class="bg-indigo-100 text-indigo-700">
                 <tr>
-                  <th class="p-3 text-left">Mã đề tài</th>
-                  <th class="p-3 text-left">Tên đề tài</th>
-                  <th class="p-3 text-left">Giảng viên</th>
-                  <th class="p-3 text-left">Số lượng</th>
-                  <th class="p-3 text-left">Trạng thái</th>
-                  <th class="p-3 text-left">Thao tác</th>
+                  <th class="p-3 text-center">Mã đề tài</th>
+                  <th class="p-3 text-center">Tên đề tài</th>
+                  <th class="p-3 text-center">Giảng viên</th>
+                  <th class="p-3 text-center">Số lượng</th>
+                  <th class="p-3 text-center">Trạng thái</th>
+                  <th class="p-3 text-center">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="(topic, i) in topics" :key="topic.MaDT" class="hover:bg-indigo-50">
-                  <td class="p-3">{{ topic.MaDT }}</td>
-                  <td class="p-3">{{ topic.TenDT }}</td>
-                  <td class="p-3">{{ topic.MaGV }}</td>
-                  <td class="p-3">{{ topic.SoLuong }}</td>
-                  <td class="p-3">
+                  <td class="p-3 text-center">{{ topic.MaDT }}</td>
+                  <td class="p-3 text-center">{{ topic.TenDeTai }}</td>
+                  <td class="p-3 text-center">{{ topic.GiangVien }}</td>
+                  <td class="p-3 text-center">{{ topic.SoLuong }}</td>
+                  <td class="p-3 text-center">
                     <span
                       :class="{
                         'bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold': topic.status === 'Chờ sinh viên chọn',
@@ -341,11 +335,11 @@
                     </span>
                   </td>
                   <td class="p-3">
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 justify-center">
                       <button @click="openEditForm(topic)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
                         Sửa
                       </button>
-                      <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
+                      <button @click="deleteItem(topic.MaDT)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
                         Xóa
                       </button>
                     </div>
@@ -380,23 +374,23 @@
                   <div class="grid grid-cols-2 gap-4">
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">MSSV</label>
-                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập MSSV">
+                      <input v-model="formData.mssv" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập MSSV" >
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
-                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
+                      <input v-model="formData.name" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Nhóm</label>
-                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập nhóm">
+                      <input v-model="formData.group" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập nhóm">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Đề tài LVTN</label>
-                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập đề tài">
+                      <input v-model="formData.topic" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập đề tài">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Giảng viên HD</label>
-                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên giảng viên">
+                      <input v-model="formData.lecturer" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên giảng viên">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
@@ -416,20 +410,16 @@
                 <div v-if="currentView === 'teachers'">
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-1">Mã GV</label>
-                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập mã giảng viên">
-                    </div>
-                    <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
-                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
+                      <input v-model="formData.teacher.name" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                      <input type="email" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập email">
+                      <input v-model="formData.teacher.email" type="email" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập email">
                     </div>
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-1">Số đề tài HD</label>
-                      <input type="number" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập số đề tài">
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                      <input v-model="formData.teacher.sdt" type="tel" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập số điện thoại">
                     </div>
                   </div>
                 </div>
@@ -439,23 +429,23 @@
                   <div class="grid grid-cols-2 gap-4">
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">MSSV</label>
-                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập MSSV">
+                      <input :disabled="formMode !== 'add'" v-model="formData.student.MSSV" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập MSSV">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
-                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
+                      <input v-model="formData.student.Ho_va_Ten" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập họ và tên">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Nhóm</label>
-                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập nhóm">
+                      <input v-model="formData.student.Nhom" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập nhóm">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                      <input type="email" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập email">
+                      <input v-model="formData.student.email" type="email" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập email">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
-                      <input type="tel" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập số điện thoại">
+                      <input v-model="formData.student.sdt" type="tel" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập số điện thoại">
                     </div>
                   </div>
                 </div>
@@ -465,26 +455,17 @@
                   <div class="grid grid-cols-2 gap-4">
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Mã đề tài</label>
-                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập mã đề tài">
+                      <input :disabled="formMode !== 'add'" v-model="formData.topic.MaDT" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập mã đề tài">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Tên đề tài</label>
-                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên đề tài">
+                      <input v-model="formData.topic.TenDeTai" type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên đề tài">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Giảng viên</label>
-                      <input type="text" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập tên giảng viên">
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
-                      <input type="number" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Nhập số lượng">
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
-                      <select class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                        <option value="Chờ sinh viên chọn">Chờ sinh viên chọn</option>
-                        <option value="Đã được chọn">Đã được chọn</option>
-                        <option value="Đã khóa">Đã khóa</option>
+                      <select v-model="formData.topic.MaGV" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                          <option value="">-- Chọn giảng viên --</option>
+                          <option v-for="teacher in teachers" :key="teacher.MaGV" :value="teacher.MaGV"> {{ teacher.name }} </option>
                       </select>
                     </div>
                   </div>
@@ -496,7 +477,7 @@
                 <button @click="closeForm" class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition">
                   Hủy
                 </button>
-                <button class="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition">
+                <button @click="formMode === 'add' ? addItem() : updateItem()" class="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition">
                   {{ formMode === 'add' ? 'Thêm' : 'Cập nhật' }}
                 </button>
               </div>
@@ -504,76 +485,99 @@
           </div>
 
         <!-- BẢNG PHÂN CÔNG -->
-          <div v-if="currentView === 'assignments'">
-            <div class="flex justify-between items-center mb-6">
-              <h2 class="text-2xl font-bold text-indigo-600">BẢNG PHÂN CÔNG LUẬN VĂN</h2>
-              <div class="flex items-center gap-4">
-                <input
-                  v-model="assignmentSearch"
-                  type="text"
-                  placeholder="Tìm kiếm theo MSSV / tên / đề tài..."
-                  class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                />
-                <button @click="openImportForm" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-                  Import
-                </button>
-                <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition" @click="exportExcel">
-                  Xuất file Excel
-                </button>
-              </div>
-            </div>
+        <div v-if="currentView === 'assignments'">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-indigo-600">BẢNG PHÂN CÔNG LUẬN VĂN</h2>
+            <div class="flex items-center gap-4">
+              <input
+                v-model="assignmentSearch"
+                type="text"
+                placeholder="Tìm kiếm theo MSSV / tên / đề tài..."
+                class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              />
 
+              <button
+                @click="$refs.excelInput.click()"
+                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+              >
+                Import
+              </button>
+
+              <input
+                ref="excelInput"
+                type="file"
+                accept=".xlsx,.xls"
+                class="hidden"
+                @change="handleExcelImport"
+              />
+
+              <button
+                class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition"
+                @click="exportExcel"
+              >
+                Xuất file Excel
+              </button>
+            </div>
+          </div>
             <!-- Table -->
             <div class="overflow-x-auto">
-              <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200">
+              <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200 text-center">
                 <thead class="bg-indigo-100 text-indigo-700">
                   <tr>
-                    <th class="p-3 text-left">MSSV</th>
-                    <th class="p-3 text-left">Họ và tên SV</th>
-                    <th class="p-3 text-left">Nhóm</th>
-                    <th class="p-3 text-left">Đề tài LVTN</th>
-                    <th class="p-3 text-left">Giảng viên HD</th>
-                    <th class="p-3 text-left">Trạng thái gặp GV</th>
-                    <th class="p-3 text-left">Ghi chú</th>
-                    <th class="p-3 text-left">Thao tác</th>
+                    <th class="p-3 text-center min-w-[90px]">MSSV</th>
+                    <th class="p-3 text-center min-w-[150px]">Họ và tên SV</th>
+                    <th class="p-3 text-center min-w-[70px]">Nhóm</th>
+                    <th class="p-3 text-center min-w-[260px]">Đề tài LVTN</th>
+                    <th class="p-3 text-center min-w-[200px]">Giảng viên HD</th>
+                    <th class="p-3 text-center min-w-[120px]">Ghi chú</th>
+                    <th class="p-3 text-center min-w-[120px]">Thao tác</th>
                   </tr>
                 </thead>
+
                 <tbody>
-                  <tr v-for="(item, i) in assignments" :key="i" class="hover:bg-indigo-50">
+                  <tr
+                    v-for="(item, i) in assignments"
+                    :key="i"
+                    class="hover:bg-indigo-50"
+                  >
                     <td class="p-3">{{ item.mssv }}</td>
                     <td class="p-3">{{ item.name }}</td>
                     <td class="p-3">{{ item.group }}</td>
+
+                    <!-- Wider columns -->
                     <td class="p-3">{{ item.topic }}</td>
                     <td class="p-3">{{ item.lecturer }}</td>
-                    <td class="p-3">
-                      <span
-                        :class="{
-                          'bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold': item.status === 'Đã gặp',
-                          'bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold': item.status === 'Chưa gặp'
-                        }"
-                      >
-                        {{ item.status }}
-                      </span>
-                    </td>
+
                     <td class="p-3 text-gray-600 italic">{{ item.note }}</td>
+
                     <td class="p-3">
-                      <div class="flex gap-2">
-                        <button @click="openAssignPanel(item)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                      <div class="flex gap-2 justify-center">
+                        <button
+                          @click="openAssignPanel(item)"
+                          class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition"
+                        >
                           Phân công
                         </button>
-                        <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
+
+                        <button
+                          class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition"
+                        >
                           Xóa
                         </button>
                       </div>
                     </td>
                   </tr>
+
                   <tr v-if="assignments.length === 0">
-                    <td class="p-3 italic text-sm text-gray-500" colspan="8">Không có dữ liệu từ database</td>
+                    <td class="p-3 italic text-sm text-gray-500" colspan="8">
+                      Không có dữ liệu từ database
+                    </td>
                   </tr>
                 </tbody>
               </table>
             </div>
-          </div>
+        </div>
+
 
           <!-- Modal: danh sách giảng viên -->
           <div v-if="showAssignModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
@@ -688,8 +692,8 @@ function toggleMenu() { showMenu.value = !showMenu.value }
 function goProfile() { router.visit('/profile') }
 function logout() { router.post(route('logout')) }
 
-// receive Inertia props: user and students
-const props = defineProps({
+
+const pageProps = defineProps({
   user: { type: Object, default: () => ({ name: 'User' }) },
   students: { type: Array, default: () => [] }
 })
@@ -697,96 +701,168 @@ const props = defineProps({
 axios.defaults.withCredentials = true
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
 
-// Current view 
-const currentView = ref('dashboard')
+
+const currentView = ref('home')
 function setCurrentView(view) { currentView.value = view }
 
-// Form modal state
+
 const showForm = ref(false)
-const formMode = ref('add') // 'add' or 'edit'
+const formMode = ref('add') // 'add' hoặc 'edit'
 
-async function refreshCurrentViewData(resource) {
-  if (resource === 'students') await fetchStudents()
-  if (resource === 'teachers') await fetchTeachers()
-  if (resource === 'topics') await fetchTopics()
-  if (resource === 'assignments') await fetchStudents() // assignments normalized from students in your code
-}
-
-function openAddForm(view = null) {
-  if (view) currentView.value = view
+function openAddForm() {
   formMode.value = 'add'
   editingId.value = null
-  // reset formData relevant fields
-  Object.keys(formData).forEach(k => formData[k] = (typeof formData[k] === 'number') ? 0 : '')
-  // set sensible defaults:
-  formData.status = 'Chưa gặp'
-  formData.TrangThai = 'Chờ sinh viên chọn'
+  // reset form data for the current view
+  if (currentView.value === 'teachers') {
+    formData.value.teacher = { name: "", email: "", sdt: "" }
+  } else if (currentView.value === 'students') {
+    formData.value.student = { MSSV: "", Ho_va_Ten: "", email: "", sdt: "", Nhom: "" }
+  } else if (currentView.value === 'topics') {
+    formData.value.topic = { MaDT: "", TenDeTai: "", MaGV: "" }
+  }
+
   showForm.value = true
 }
+
+function groupIsFull(group) {
+  return students.value.filter(s => s.group == group).length >= 2;
+}
+
+
+async function updateItem() {
+  try {
+    if (currentView.value === "teachers") {
+      await axios.put("/update-teacher/" + editingId.value, {
+        Ho_va_Ten: formData.value.teacher.name,
+        email: formData.value.teacher.email,
+        sdt: formData.value.teacher.sdt,
+      });
+
+      fetchTeachers();
+      return closeForm();
+    }
+
+      if (currentView.value === "students") {
+        if (groupIsFull(formData.value.student.Nhom)) {
+          alert("Nhóm này đã đủ 2 sinh viên!");
+          return;
+        }
+
+        await axios.put("/update-student/" + editingId.value, {
+          MSSV: formData.value.student.MSSV,
+          Ho_va_Ten: formData.value.student.Ho_va_Ten,
+          email: formData.value.student.email,
+          sdt: formData.value.student.sdt,
+          Nhom: formData.value.student.Nhom,
+        });
+
+        fetchStudents();
+        return closeForm();
+      }
+
+    if (currentView.value === "topics") {
+      await axios.put("/update-topic/" + editingId.value, {
+        MaDT: formData.value.topic.MaDT,
+        TenDeTai: formData.value.topic.TenDeTai,
+        MaGV: formData.value.topic.MaGV,
+      });
+
+      fetchTopics();
+      return closeForm();
+    }
+  } catch (error) {
+    console.error(error.response?.data || error);
+    alert("Lỗi khi cập nhật dữ liệu!");
+  }
+}
+
+
+async function deleteItem(id) {
+  try {
+    if (currentView.value === "teachers") {
+      await axios.post("/delete-teacher/" + id);
+      fetchTeachers();
+    } else if (currentView.value === "students") {
+      await axios.post("/delete-student/" + id);
+      fetchStudents();
+    } else if (currentView.value === "topics") {
+      await axios.post("/delete-topic/" + id);
+      fetchTopics();
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Lỗi khi xóa dữ liệu!");
+  }
+}
+
+async function addItem() {
+  try {
+    if (currentView.value === "teachers") {
+      await axios.post("/add-teacher", formData.value.teacher);
+      fetchTeachers();
+      return closeForm();
+    }
+
+   if (currentView.value === "students") {
+
+      await fetchStudents(); // Ensure we have the latest list
+
+      const group = formData.value.student.Nhom;
+
+      if (groupIsFull(group)) {
+          alert(`Nhóm ${group} đã đủ 2 sinh viên!`);
+          return;
+      }
+
+      await axios.post("/add-student", formData.value.student);
+      await fetchStudents();
+      return closeForm();
+    }
+
+
+    if (currentView.value === "topics") {
+      await axios.post("/add-topic", formData.value.topic);
+      fetchTopics();
+      return closeForm();
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Lỗi khi thêm dữ liệu!");
+  }
+}
+
 
 function openEditForm(item) {
   formMode.value = 'edit'
   showForm.value = true
-  editingId.value = item.id ?? item.mssv ?? item.MaDT ?? null
-  // copy known fields (map tolerant)
-  formData.mssv = item.mssv ?? item.MSSV ?? ''
-  formData.name = item.name ?? ((item.Ho ?? '') + ' ' + (item.Ten ?? '')).trim() ?? ''
-  formData.group = item.group ?? item.Nhom ?? ''
-  formData.email = item.email ?? ''
-  formData.phone = item.phone ?? ''
-  formData.topic = item.topic ?? item.Huong_de_tai ?? ''
-  formData.lecturer = item.lecturer ?? item.MaGV ?? item.Giang_vien_hd ?? ''
-  formData.status = item.status ?? item.Trang_Thai ?? 'Chưa gặp'
-  formData.note = item.note ?? item.Ghi_chu ?? ''
-  // topic / teacher
-  formData.MaDT = item.MaDT ?? ''
-  formData.TenDT = item.TenDT ?? item.Ten ?? ''
-  formData.SoLuong = item.SoLuong ?? item.So_luong ?? 1
-  formData.MaGV = item.MaGV ?? ''
-  formData.So_luong_sinh_vien = item.So_luong_sinh_vien ?? item.SoLuong ?? 0
+  if (currentView.value === 'teachers') {
+    formData.value.teacher = {
+      name: item.name || '',
+      email: item.email || '',
+      sdt: item.sdt || '',
+    }
+    editingId.value = item.MaGV || item.id || null
+  } else if (currentView.value === 'students') {
+    formData.value.student = {
+      MSSV: item.mssv || '',
+      Ho_va_Ten: item.name || '',
+      email: item.email || '',
+      sdt: item.phone || '',
+      Nhom: item.group || '',
+    }
+    editingId.value = item.mssv || item.id || null
+  } else if (currentView.value === 'topics') {
+      formData.value.topic = {
+        MaDT: item.MaDT || '',
+        TenDeTai: item.TenDeTai || '',
+        MaGV: item.MaGV || '',
+      }
+      editingId.value = item.MaDT || null
+  }
 }
 
 function closeForm() {
   showForm.value = false
-}
-
-async function submitForm() {
-  errorsClear()
-  try {
-    // xác định resource
-    let resource = ''
-    if (currentView.value === 'students') resource = 'students'
-    else if (currentView.value === 'teachers') resource = 'teachers'
-    else if (currentView.value === 'topics') resource = 'topics'
-    else if (currentView.value === 'assignments') resource = 'assignments'
-
-    const payload = { ...formData } // gửi tất cả, backend ignore các trường thừa
-
-    let resp
-    if (formMode.value === 'add') {
-      resp = await axios.post(`/api/${resource}`, payload)
-    } else {
-      // editingId required
-      if (!editingId.value) throw new Error('Missing id for update')
-      resp = await axios.put(`/api/${resource}/${editingId.value}`, payload)
-    }
-
-    // update local lists (có thể reload toàn bộ list từ server)
-    await refreshCurrentViewData(resource)
-    closeForm()
-  } catch (err) {
-    if (err.response && err.response.status === 422) {
-      const d = err.response.data.errors ?? {}
-      Object.assign(errors, d)
-    } else {
-      console.error(err)
-      alert('Lỗi khi lưu dữ liệu. Kiểm tra console.')
-    }
-  }
-}
-
-function errorsClear() {
-  Object.keys(errors).forEach(k => delete errors[k])
 }
 
 function getFormTitle() {
@@ -799,28 +875,27 @@ function getFormTitle() {
   return titles[currentView.value] || ''
 }
 
-const formData = reactive({
-  // student defaults
-  mssv: '',
-  name: '',
-  group: '',
-  email: '',
-  phone: '',
-  // assignment fields (shared)
-  topic: '',
-  lecturer: '',
-  status: 'Chưa gặp',
-  note: '',
-  // teacher/topic specific
-  MaGV: '',
-  So_luong_sinh_vien: 0,
-  MaDT: '',
-  TenDT: '',
-  SoLuong: 1,
-  TrangThai: 'Chờ sinh viên chọn'
-})
+const formData = ref({
+  teacher: {
+    name: "",
+    email: "",
+    sdt: "",
+  },
+  student: {
+    MSSV: "",
+    Ho_va_Ten: "",
+    email: "",
+    sdt: "",
+    Nhom: "",
+  },
+  topic: {
+    MaDT: "",
+    TenDeTai: "",
+    MaGV: "",
+    So_luong: 1,
+  }
+});
 
-const errors = reactive({}) // validation errors
 
 let editingId = ref(null)
 
@@ -829,6 +904,7 @@ const assignments = ref([])
 const students = ref([])
 const teachers = ref([])
 const topics = ref([])
+const svpc = ref([])
 
 // Search models for each view (UI only, no filtering logic)
 const assignmentSearch = ref('')
@@ -880,58 +956,78 @@ const fetchTeachers = async () => {
 const fetchStudents = async () => {
   try {
     const response = await axios.post('/students/getAll')
-    students.value = response.data
+
+    students.value = response.data.sort((a, b) => Number(a.group) - Number(b.group))
+
+    assignments.value = normalizeStudents(
+      students.value,
+      teachers.value,
+      topics.value
+    )
   } catch (error) {
     console.error('Error fetching students:', error)
   }
 }
 
+
+
 // normalize incoming student objects to match table fields
-function normalizeStudents(list) {
-  return (list || []).map(s => {
-    if (s.mssv && s.name && s.topic) {
-      return {
-        mssv: s.mssv ?? '',
-        name: s.name ?? '',
-        group: s.group ?? '',
-        topic: s.topic ?? '',
-        lecturer: s.lecturer ?? s.Giang_vien_hd ?? '',
-        status: s.status ?? s.Trang_Thai ?? 'Chưa gặp',
-        note: s.note ?? s.Ghi_chu ?? ''
-      }
-    }
-    return {
-      mssv: s.mssv ?? s.MSSV ?? s.msv ?? '',
-      name: ((s.Ho ?? '') + ' ' + (s.Ten ?? '')).trim() || s.name || '',
-      group: s.Nhom ?? s.nhom ?? s.group ?? '',
-      topic: s.Huong_de_tai ?? s.de_tai ?? s.topic ?? '',
-      lecturer: s.Giang_vien_hd ?? s.gv_hd ?? s.lecturer ?? '',
-      status: s.Trang_Thai ?? s.trang_thai ?? s.status ?? 'Chưa gặp',
-      note: s.Ghi_chu ?? s.note ?? ''
-    }
-  })
+function normalizeStudents(students) {
+  return (students || []).map(s => ({
+    mssv: s.mssv ?? '',
+    name: s.name ?? '',
+    group: s.group ?? '',
+    topic: s.topic ?? '',
+    lecturer: s.lecturer ?? '',
+    status: s.status ?? 'Chưa gặp',
+    note: s.note ?? ''
+  }))
 }
 
-// init from props
-assignments.value = normalizeStudents(props.students)
-
-// keep assignments in sync if Inertia prop changes
-watch(() => props.students, (newVal) => {
-  assignments.value = normalizeStudents(newVal)
-}, { deep: true })
 
 
 // Export excel function (only for assignments)
 function exportExcel() {
   window.open(route('students.export'), '_blank')
 }
+const handleExcelImport = async (e) => {
+  const file = e.target.files[0];
+  if (!file) {
+    alert('Không có file được chọn!');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('file', file); // must match Laravel's expected name
+
+  console.log('Uploading:', {
+    name: file.name,
+    type: file.type,
+    size: file.size,
+  });
+
+  try {
+    const res = await axios.post('/import-temp', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    console.log('✅ Response:', res.data);
+    alert(res.data.message || 'Import thành công!');
+  } catch (err) {
+    console.error('❌ Upload error:', err.response?.data || err.message);
+    alert('Import thất bại! Kiểm tra định dạng file.');
+  }
+};
+
+
 const showAssignModal = ref(false)
 const showStudentModal = ref(false)
 const selectedLecturer = ref(null)
 
 // Mở modal danh sách giảng viên
-function openAssignPanel() {
+function openAssignPanel(item) {
   showAssignModal.value = true
+  svpc.value = item
 }
 
 // Đóng modal danh sách giảng viên và cả modal sinh viên nếu đang mở
@@ -971,27 +1067,26 @@ function studentsAssignedTo(lecturer) {
     return assigned === id || assigned === (lecturer.name ?? '')
   }) || []
 }
-function confirmAllAssignments(lecturer) {
+async function confirmAllAssignments(lecturer) {
   if (!lecturer || !students.value) return
 
   const lecturerId = lecturer.MaGV ?? lecturer.id ?? lecturer.name
   const lecturerName = lecturer.name ?? lecturer.HoTen ?? 'giảng viên'
 
   const assignedStudents = studentsAssignedTo(lecturer)
-
   // Hiển thị hộp thoại xác nhận
   const confirmed = window.confirm(
-    `Bạn có chắc muốn phân công ${assignedStudents.length} sinh viên cho giảng viên ${lecturerName}?`
+    `Bạn có chắc muốn phân công sinh viên ${svpc.value.name} cho giảng viên ${lecturerName}?`
   )
 
   if (confirmed) {
-    assignedStudents.forEach(student => {
-      student.lecturer = lecturerId
-    })
-
-    alert(` Đã phân công ${assignedStudents.length} sinh viên cho giảng viên ${lecturerName}`)
-  } else {
-    console.log(' Người dùng đã hủy thao tác phân công.')
+    await axios.put(`/assign-students/${svpc.value.mssv}`, {
+      Giang_vien_huong_dan: lecturerId,
+    });
+    alert(` Đã phân công sinh viên ${svpc.value.name} cho giảng viên ${lecturerName}`)
+    fetchStudents()
+    fetchTeachers()
+    closeAssignPanel()
   }
 }
 

@@ -7,78 +7,58 @@ use Illuminate\Http\Request;
 
 class DeTaiController extends Controller
 {
-    /**
-     * Display a listing of all DeTai.
-     */
+    // Liệt kê tất cả đề tài
     public function index()
     {
-        // Get all records
-        $detais = DeTai::All();
-        return response()->json($detais);
+        return DeTai::with('giangVien')->get()->map(function($d) {
+            return [
+                'MaDT'     => $d->MaDT,
+                'TenDeTai' => $d->TenDeTai,
+                'MaGV'     => $d->MaGV,
+                'GiangVien'=> $d->MaGV ? $d->giangVien->Ho_va_Ten : '',
+                'SoLuong'  => $d->SoLuong,
+                'TrangThai'=> $d->TrangThai,
+            ];
+        });
     }
 
-    /**
-     * Store a newly created DeTai.
-     */
+    // Hiển thị thông tin một đề tài
+    public function show(DeTai $detai)
+    {
+        return $detai->load('giangVien');
+    }
+
+    // Tạo mới đề tài
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'MaDeTai' => 'required|unique:de_tais,MaDeTai|max:50',
-            'TenDeTai' => 'required|string|max:255',
-            'MoTa' => 'nullable|string',
-            'GiangVien' => 'nullable|integer',
-            'SoLuong' => 'required|integer|min:1',
-            'TrangThai' => 'required|string|max:100',
+            'MaDT'    => 'required|string|unique:DeTai,MaDT',
+            'TenDeTai'    => 'required|string|max:255',
+            'MaGV'     => 'nullable|string|exists:GiangVien,MaGV',
         ]);
-
-        $detai = DeTai::create($validated);
-
-        return response()->json([
-            'message' => 'Đề tài đã được thêm thành công!',
-            'data' => $detai
-        ], 201);
+        return DeTai::create($validated);
     }
 
-    /**
-     * Display the specified DeTai.
-     */
-    public function show($id)
+    // Cập nhật thông tin đề tài
+   public function update(Request $request, $MaDT)
     {
-        $detai = DeTai::findOrFail($id);
-        return response()->json($detai);
+            $detai = DeTai::where('MaDT', $MaDT)->firstOrFail();
+        {
+            $validated = $request->validate([
+                'TenDeTai' => 'required|string|max:255',
+                'MaGV'     => 'nullable|string|exists:GiangVien,MaGV',
+            ]);
+
+            $detai->update($validated);
+
+            return $detai->load('giangVien');
+        }
     }
 
-    /**
-     * Update the specified DeTai.
-     */
-    public function update(Request $request, $id)
+    // Xóa một đề tài
+     public function destroy(Request $request)
     {
-        $detai = DeTai::findOrFail($id);
-
-        $validated = $request->validate([
-            'TenDeTai' => 'required|string|max:255',
-            'MoTa' => 'nullable|string',
-            'GiangVien' => 'nullable|integer',
-            'SoLuong' => 'required|integer|min:1',
-            'TrangThai' => 'required|string|max:100',
-        ]);
-
-        $detai->update($validated);
-
-        return response()->json([
-            'message' => 'Cập nhật đề tài thành công!',
-            'data' => $detai
-        ]);
-    }
-
-    /**
-     * Remove the specified DeTai.
-     */
-    public function destroy($id)
-    {
-        $detai = DeTai::findOrFail($id);
-        $detai->delete();
-
-        return response()->json(['message' => 'Đề tài đã được xóa thành công!']);
+        $detai = DeTai::where('MaDT', $request->MaDT)->firstOrFail();
+        return $detai->delete();
     }
 }

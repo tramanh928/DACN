@@ -6,9 +6,9 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TeacherController;
-use App\Http\Controllers\EventController;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\DeTaiController;
+use App\Http\Controllers\ImportController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -63,9 +63,7 @@ Route::post('/logout', function (Request $request) {
 
 Route::resource('students', StudentController::class)->middleware(['auth', 'verified']);
 Route::resource('teachers', TeacherController::class)->middleware(['auth', 'verified']);
-Route::resource('events', EventController::class)->middleware(['auth', 'verified']);
 Route::resource('assistants', AssistantController::class)->middleware(['auth', 'verified']);
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -82,3 +80,27 @@ Route::get('/stats', [AssistantController::class, 'getStats']);
 Route::post('/teachers/getAll', [TeacherController::class, 'index']);
 Route::post('/students/getAll', [StudentController::class, 'index']);
 Route::post('/topics/getAll', [DeTaiController::class, 'index']);
+
+//Route cho Import Excel
+
+Route::post('/import-temp', [ImportController::class, 'import'])->withoutMiddleware(['web']); // TEMP TEST
+
+Route::post('/process-temp', [ImportController::class, 'process'])->name('process.temp');
+
+//Route để thêm dữ liệu
+Route::post('/add-student', [StudentController::class, 'store']);
+Route::post('/add-teacher', [TeacherController::class, 'store']);
+Route::post('/add-topic', [DeTaiController::class, 'store']);
+
+//Route để xóa dữ liệu
+Route::post('/delete-student/{mssv}', [StudentController::class, 'destroy']);
+Route::post('/delete-teacher/{MaGV}', [TeacherController::class, 'destroy']);
+Route::post('/delete-topic/{MaDT}', [DeTaiController::class, 'destroy']);
+
+//Route để cập nhật dữ liệu
+Route::put('/update-student/{mssv}', [StudentController::class, 'update']);
+Route::put('/update-teacher/{MaGV}', [TeacherController::class, 'update']);
+Route::put('/update-topic/{MaDT}', [DeTaiController::class, 'update']);
+
+//Route phân công
+Route::put('/assign-students/{mssv}', [StudentController::class, 'edit']);

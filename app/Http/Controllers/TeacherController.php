@@ -4,95 +4,86 @@ namespace App\Http\Controllers;
 
 use App\Models\GiangVien;
 use Illuminate\Http\Request;
+use App\Exports\TeachersExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TeacherController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Liệt kê tất cả giáo viên
     public function index()
     {
-        $teachers = GiangVien::all()->map(function ($teacher) {
-        return [
-            'id' => $teacher->id,
-            'MaGV' => $teacher->MaGV,
-            'name' => trim($teacher->Ho . ' ' . $teacher->Ten), // combine Ho + Ten
-            'email' => $teacher->email,
-            'Khoa' => $teacher->Khoa,
-            'So_luong_sinh_vien' => $teacher->So_luong_sinh_vien,
-        ];
-    });
-        return response()->json($teachers);
+        return GiangVien::all()->map(function ($teacher) {
+            return [
+                'MaGV' => $teacher->MaGV,
+                'name' => $teacher->Ho_va_Ten,
+                'email' => $teacher->email,
+                'So_luong_sinh_vien' => $teacher->So_luong_sinh_vien ?? 0,
+                'sdt'   => $teacher->sdt ?? '-',
+            ];
+        });
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Hiển thị thông tin một giáo viên
+    public function show(GiangVien $teacher)
     {
-        return view('teachers.create');
+        return $teacher;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Tạo mới giáo viên
+    private function generateUniqueMaGV()
+    {
+        do {
+            $number = rand(0, 99); 
+            $maGV = 'GV' . $number;
+        } while (GiangVien::where('MaGV', $maGV)->exists());
+
+        return $maGV;
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([
-            'Ho'=>'required|string|max:120',
-            'Ten'=>'nullable|string|max:120',
-            'email'=>'nullable|email|unique:giang_viens,email',
-            'MaGV'=>'nullable|unique:giang_viens,MaGV',
-            'sdt'=>'nullable|string|max:15',
-            'Ngay_Sinh'=>'nullable|date',
-            'Khoa'=>'nullable|string|max:100',
-            'So_luong_sinh_vien'=>'nullable|integer|min:0',
+            'name'  => 'required|string|max:120',
+            'email' => 'nullable|email|unique:GiangVien,email',
+            'sdt'   => 'nullable|string|max:15',
         ]);
-        GiangVien::create($data);
-        return redirect()->route('teachers.index')->with('success','Teacher created.');
+
+        $data['Ho_va_Ten'] = $data['name'];
+        unset($data['name']);
+
+        $data['MaGV'] = $this->generateUniqueMaGV();
+
+        return GiangVien::create($data);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Teacher $teacher)
-    {
-        return view('teachers.show', compact('teacher'));
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Teacher $teacher)
+    // Cập nhật thông tin giáo viên
+    public function update(Request $request, $MaGV)
     {
-            return view('teachers.edit', compact('teacher'));
-    }
+        $teacher = GiangVien::where('MaGV', $MaGV)->firstOrFail();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Teacher $teacher)
-    {
         $data = $request->validate([
-            'Ho'=>'required|string|max:120',
-            'Ten'=>'nullable|string|max:120',
-            'email'=>'nullable|email|unique:giang_viens,email,'.$teacher->id,
-            'MaGV'=>'nullable|unique:giang_viens,MaGV,'.$teacher->id,
-            'sdt'=>'nullable|string|max:15',
-            'Ngay_Sinh'=>'nullable|date',
-            'Khoa'=>'nullable|string|max:100',
-            'So_luong_sinh_vien'=>'nullable|integer|min:0',
+            'Ho_va_Ten' => 'required|string|max:120',
+            'email'     => 'nullable|email|unique:GiangVien,email,' . $teacher->MaGV . ',MaGV',
+            'sdt'       => 'nullable|string|max:15',
         ]);
+
         $teacher->update($data);
-        return redirect()->route('teachers.index')->with('success','Teacher updated.');
+
+        return $teacher;
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Teacher $teacher)
+
+    // Xóa một giáo viên
+    public function destroy(Request $request)
     {
-        $teacher->delete();
-        return redirect()->route('teachers.index')->with('success','Teacher deleted.');
+        $teacher = GiangVien::where('MaGV', $request->MaGV)->firstOrFail();
+        return $teacher->delete();
+    }
+
+    // Xuất danh sách giáo viên ra file Excel
+    public function export()
+    {
+        return Excel::download(new TeachersExport, 'GiangVien.xlsx');
     }
 }

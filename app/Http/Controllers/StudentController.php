@@ -3,107 +3,91 @@
 namespace App\Http\Controllers;
 
 use App\Models\SinhVien;
-use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Exports\StudentsExport;
-use Maatwebsite\Excel\Facades\Excel; 
+use Maatwebsite\Excel\Facades\Excel;
 
 class StudentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Liệt kê tất cả sinh viên
     public function index()
-{
-    $students = SinhVien::all()->map(function($s) {
-        return [
-            'mssv'     => $s->mssv,
-            'name'     => trim($s->Ho . ' ' . ($s->Ten ?? '')),
-            'group'    => $s->Nhom,
-            'topic'    => $s->Huong_de_tai,
-            'email'    => $s->email,
-            'phone'    => $s->sdt,
-            'lecturer' => $s->Giang_vien_hd ?? '',
-            'status'   => $s->Trang_Thai ?? 'Chưa gặp',
-            'note'     => $s->Ghi_chu ?? '',
-        ];
-    });
-    return response()->json($students);
-}
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
     {
-        return view('students.create');
+        return SinhVien::with(['giangVienHuongDan', 'deTai'])->get()->map(function($s) {
+            return [
+                'mssv'               => $s->MSSV,
+                'name'               => $s->Ho_va_Ten,
+                'Lop'                => $s->Lop,
+                'group'              => $s->Nhom,
+                'topic'              => $s->deTai ? $s->deTai->TenDT : '',
+                'email'              => $s->email,
+                'phone'              => $s->sdt,
+                'lecturer'           => $s->giangVienHuongDan ? $s->giangVienHuongDan->Ho_va_Ten : '',
+                'status'             => $s->Da_phan_cong ? 'Đã phân công' : 'Chưa phân công',
+            ];
+        });
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Hiển thị thông tin một sinh viên
+    public function show(SinhVien $student)
+    {
+        return $student->load(['giangVienHuongDan', 'deTai']);
+    }
+
+    // Tạo mới sinh viên
     public function store(Request $request)
     {
         $data = $request->validate([
-            'Ho'=>'required|string|max:120',
-            'Ten'=>'nullable|string|max:120',
-            'email'=>'nullable|email|unique:sinh_viens,email',
-            'mssv'=>'nullable|unique:sinh_viens,mssv',
-            'sdt'=>'nullable|string|max:15',
-            'Ngay_Sinh'=>'nullable|date',
-            'Lop'=>'nullable|string|max:50',
-            'Nhom'=>'nullable|string|max:50',
-            'Huong_de_tai'=>'nullable|string|max:255',
+            'MSSV'                 => 'required|string|unique:SinhVien,MSSV',
+            'Ho_va_Ten'            => 'required|string|max:120',
+            'email'                => 'nullable|email|unique:SinhVien,email',
+            'sdt'                  => 'nullable|string|max:15',
+            'Lop'                  => 'nullable|string|max:50',
+            'Nhom'                 => 'nullable|string|max:50',
+            'MaDT'                 => 'nullable|string|exists:DeTai,MaDT',
+            'Giang_vien_huong_dan' => 'nullable|string|exists:GiangVien,MaGV',
         ]);
-        SinhVien::create($data);
-        return redirect()->route('students.index')->with('success','Student created.');
+
+        return SinhVien::create($data);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(SinhVien $student)
+    // Cập nhật thông tin sinh viên
+   public function update(Request $request, $MSSV)
     {
-        return view('students.show', compact('student'));
-    }
+        $student = SinhVien::where('MSSV', $MSSV)->firstOrFail();
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(SinhVien $student)
-    {
-         return view('students.edit', compact('student'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, SinhVien $student)
-    {
         $data = $request->validate([
-            'Ho'=>'required|string|max:120',
-            'Ten'=>'nullable|string|max:120',
-            'email'=>'nullable|email|unique:sinh_viens,email,'.$student->id,
-            'mssv'=>'nullable|unique:sinh_viens,mssv,'.$student->id,
-            'sdt'=>'nullable|string|max:15',
-            'Ngay_Sinh'=>'nullable|date',
-            'Lop'=>'nullable|string|max:50',
-            'Nhom'=>'nullable|string|max:50',
-            'Huong_de_tai'=>'nullable|string|max:255',
+            'Ho_va_Ten'            => 'required|string|max:120',
+            'email'                => 'nullable|email|unique:SinhVien,email,' . $student->MSSV . ',MSSV',
+            'sdt'                  => 'nullable|string|max:15',
+            'Lop'                  => 'nullable|string|max:50',
+            'Nhom'                 => 'nullable|string|max:50',
+            'MaDT'                 => 'nullable|string|exists:DeTai,MaDT',
+            'Giang_vien_huong_dan' => 'nullable|string|exists:GiangVien,MaGV',
+        ]);
+
+        $student->update($data);
+
+        return $student->load(['giangVienHuongDan', 'deTai']);
+    }
+
+    public function edit(Request $request, $MSSV)
+    {
+        $student = SinhVien::where('MSSV', $MSSV)->firstOrFail();
+        $data = $request->validate([
+            'Giang_vien_huong_dan' => 'required|string|exists:GiangVien,MaGV'
         ]);
         $student->update($data);
-        return redirect()->route('students.index')->with('success','Student updated.');
+        return $student->load(['giangVienHuongDan', 'deTai']);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(SinhVien $student)
+    // Xóa một sinh viên
+    public function destroy(Request $request)
     {
-        $student->delete();
-        return redirect()->route('students.index')->with('success','Student deleted.');
+        $student = SinhVien::where('MSSV', $request->mssv)->firstOrFail();
+        return $student->delete();
     }
 
+    // Xuất danh sách sinh viên ra file Excel
     public function export()
     {
         return Excel::download(new StudentsExport, 'DSSV.xlsx');
