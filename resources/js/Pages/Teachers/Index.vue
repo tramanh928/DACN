@@ -102,15 +102,17 @@
                   <th class="p-3 text-left">SĐT</th>
                   <th class="p-3 text-left">Email</th>
                   <th class="p-3 text-left">Nhóm</th>
-                  <th class="p-3 text-left">Ghi chú</th>
-                  <th class="p-3 text-left">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td colspan="9" class="p-4 text-center text-gray-500">
-                    Chưa có dữ liệu sinh viên
-                  </td>
+                <tr v-for="(s, idx) in students" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
+                  <td class="p-3">{{ idx + 1 }}</td>
+                  <td class="p-3">{{ s.mssv }}</td>
+                  <td class="p-3">{{ s.name }}</td>
+                  <td class="p-3">{{ s.Lop || '-' }}</td>
+                  <td class="p-3">{{ s.phone || '-' }}</td>
+                  <td class="p-3">{{ s.email || '-' }}</td>
+                  <td class="p-3">{{ s.group || '-' }}</td>
                 </tr>
               </tbody>
             </table>
@@ -137,7 +139,6 @@
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-indigo-100 text-indigo-700">
                 <tr>
-                  <th class="p-3 text-left">MSGV</th>
                   <th class="p-3 text-left">MSSV</th>
                   <th class="p-3 text-left">Nhóm</th>
                   <th class="p-3 text-left">Tên đề tài</th>
@@ -160,7 +161,44 @@
         <!-- Evaluation 50% view placeholder -->
         <div v-if="currentView === 'evaluation50'">
           <h2 class="text-2xl font-bold text-indigo-600 mb-6">ĐÁNH GIÁ 50%</h2>
-          <div class="bg-white rounded shadow p-6 text-gray-600">Chưa có dữ liệu.</div>
+          <div class="bg-white rounded shadow overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-indigo-100 text-indigo-700">
+                <tr>
+                  <th class="p-3 text-left">STT</th>
+                  <th class="p-3 text-left">MSSV</th>
+                  <th class="p-3 text-left">Họ và tên</th>
+                  <th class="p-3 text-left">Lớp</th>
+                  <th class="p-3 text-left">Nhóm</th>
+                  <th class="p-3 text-left">Tên đề tài</th>
+                  <th class="p-3 text-left">Điểm</th>
+                  <th class="p-3 text-left">Ghi chú</th>
+                  <th class="p-3 text-left">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(s, idx) in students" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
+                  <td class="p-3">{{ idx + 1 }}</td>
+                  <td class="p-3">{{ s.mssv }}</td>
+                  <td class="p-3">{{ s.name }}</td>
+                  <td class="p-3">{{ s.Lop || '-' }}</td>
+                  <td class="p-3">{{ s.Lop || '-' }}</td>
+                  <td class="p-3">{{ s.Lop || '-' }}</td>
+                  <td class="p-3">{{ s.group || '-' }}</td>
+                  <td class="p-3">
+                    <div class="flex gap-2 justify-center">
+                      <button @click="openEditForm(s)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                        Tạo nhóm
+                      </button>
+                      <button @click="deleteItem(s.mssv)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
+                        Xóa
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <!-- Review Score view placeholder -->
@@ -300,7 +338,7 @@ const statusOptions = [
 const fetchStudents = async () => {
   try {
     const res = await axios.post('/students/getAll')
-    students.value = res.data || []
+    students.value = res.data.sort((a, b) => Number(a.group) - Number(b.group))
     totalStudents.value = students.value.length
   } catch (err) {}
 }
@@ -313,7 +351,6 @@ const fetchTopics = async () => {
 }
 
 onMounted(() => {
-  // totals default 0; load lists only if backend present
   fetchStudents()
   fetchTopics()
 })

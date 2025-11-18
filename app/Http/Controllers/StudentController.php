@@ -16,6 +16,7 @@ class StudentController extends Controller
             return [
                 'mssv'               => $s->MSSV,
                 'name'               => $s->Ho_va_Ten,
+                'Lop'                => $s->Lop,
                 'group'              => $s->Nhom,
                 'topic'              => $s->deTai ? $s->deTai->TenDT : '',
                 'email'              => $s->email,
