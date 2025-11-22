@@ -29,6 +29,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -80,4 +81,18 @@ class User extends Authenticatable
     public function isSinhVien():bool {return $this->role === 'SinhVien';}
     public function isGiangVien():bool {return $this->role === 'GiangVien';}
     public function isThuKy():bool {return $this->role === 'ThuKy';}
+    public function giangVien()
+    {
+        return $this->hasOne(GiangVien::class);
+    }
+
+        public function sinhVien()
+    {
+        return $this->hasOne(SinhVien::class);
+    }
+
+        public function thuKy()
+    {
+        return $this->hasOne(ThuKy::class);
+    }
 }

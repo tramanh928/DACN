@@ -106,13 +106,13 @@
               </thead>
               <tbody>
                 <tr v-for="(s, idx) in students" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
-                  <td class="p-3">{{ idx + 1 }}</td>
-                  <td class="p-3">{{ s.mssv }}</td>
-                  <td class="p-3 ">{{ s.name }}</td>
-                  <td class="p-3 ">{{ s.Lop || '-' }}</td>
-                  <td class="p-3 ">{{ s.phone || '-' }}</td>
-                  <td class="p-3 ">{{ s.email || '-' }}</td>
-                  <td class="p-3 ">{{ s.group || '-' }}</td>
+                  <td class="p-3 text-center" >{{ idx + 1 }}</td>
+                  <td class="p-3 text-center">{{ s.mssv }}</td>
+                  <td class="p-3 text-center">{{ s.name }}</td>
+                  <td class="p-3 text-center">{{ s.Lop || '-' }}</td>
+                  <td class="p-3 text-center">{{ s.phone || '-' }}</td>
+                  <td class="p-3 text-center">{{ s.email || '-' }}</td>
+                  <td class="p-3 text-center"><input v-model="s.group" @keyup.enter="updateGroup(s)" class="border p-1 w-16 text-center"/></td>
                 </tr>
               </tbody>
             </table>
@@ -210,18 +210,18 @@
                   <td class="p-3 text-center">{{ idx + 1 }}</td>
                   <td class="p-3 text-center">{{ s.mssv }}</td>
                   <td class="p-3 text-center">{{ s.name }}</td>
-                  <td class="p-3 text-center">{{ s.Lop || s.class || '-' }}</td>
+                  <td class="p-3 text-center">{{ s.Lop   || '-' }}</td>
                   <td class="p-3 text-center">{{ s.group || '-' }}</td>
                   <td class="p-3 text-center">{{ s.topic || s.title || '-' }}</td>
-                  <td class="p-3 w-40 text-center">
-                    <div class="inline-block">
+                  <td class="p-3 text-center">
+                    <div class="flex items-center justify-center gap-2">
                       <input
                         v-model="evaluationMap[s.mssv].score"
                         type="text"
-                        class="w-28 px-2 py-1 border rounded text-sm mx-auto block"
+                        class="w-20 px-1 py-1 border rounded text-sm"
                         placeholder="0 - 100"
                       />
-                      <div class="text-sm text-gray-600 mt-1">%</div>
+                      <span class="text-sm text-gray-600">%</span>
                     </div>
                   </td>
                   <td class="p-3 text-center">
@@ -335,29 +335,6 @@ watch(students, (list) => {
   })
 }, { immediate: true })
 
-function openAddStudent() { formMode.value = 'add'; editingItem.value = null; showForm.value = true }
-function openEditStudent(item, idx) { formMode.value = 'edit'; editingItem.value = item; editingIndex.value = idx; showForm.value = true }
-async function deleteStudent(item) {
-  if (!confirm('Xác nhận xóa sinh viên này?')) return
-  try {
-    // nếu có endpoint: await axios.delete(`/students/${item.id}`)
-    // local remove for UI
-    students.value = students.value.filter(s => (s.mssv ?? s.student_id) !== (item.mssv ?? item.student_id))
-    totalStudents.value = students.value.length
-  } catch (err) { /* handle */ }
-}
-
-function openAddTopic() { formMode.value = 'add'; editingItem.value = null; showForm.value = true }
-function openEditTopic(item, idx) { formMode.value = 'edit'; editingItem.value = item; editingIndex.value = idx; showForm.value = true }
-async function deleteTopic(item) {
-  if (!confirm('Xác nhận xóa phân công này?')) return
-  try {
-    // nếu có endpoint: await axios.delete(`/topics/${item.id}`)
-    topics.value = topics.value.filter(t => t !== item)
-    totalTopics.value = topics.value.length
-  } catch (err) { /* handle */ }
-}
-
 function closeForm() { showForm.value = false; editingItem.value = null; editingIndex.value = null }
 function saveForm() {
   // placeholder: lưu dữ liệu -> gọi backend hoặc cập nhật local arrays
@@ -372,18 +349,19 @@ function exportStudents() {
 function exportTopics() {
   try { window.open(route('topics.export'), '_blank') } catch { /* fallback */ }
 }
-
-// Filtering/computed lists
-const displayedStudents = computed(() => {
-  const q = (studentSearch.value || '').toString().toLowerCase().trim()
-  if (!q) return students.value
-  return students.value.filter(s => {
-    const mssv = (s.mssv ?? s.student_id ?? '').toString().toLowerCase()
-    const name = (s.name ?? s.ho_ten ?? '').toString().toLowerCase()
-    const cls = (s.class ?? s.lop ?? '').toString().toLowerCase()
-    return mssv.includes(q) || name.includes(q) || cls.includes(q)
+function updateGroup(student) {
+  axios.post('/update-student-group', {
+    mssv: student.mssv,
+    group: student.group
   })
-})
+  .then(res => {
+    alert('Cập nhật nhóm thành công!');
+  })
+  .catch(err => {
+    alert(err.response.data.error || 'Cập nhật nhóm thất bại!');
+  });
+  fetchStudents();
+}
 
 const displayedTopics = computed(() => {
   const q = (topicSearch.value || '').toString().toLowerCase().trim()
@@ -407,7 +385,10 @@ const statusOptions = [
 // fetch students/topics if backend available (kept optional)
 const fetchStudents = async () => {
   try {
-    const res = await axios.post('/students/getAll')
+    const teacher = await axios.post('/teacher-by-id/' + props.user.id);
+    const res = await axios.post('/students-by-teacher/' + teacher.data.MaGV);
+    console.log('Fetched students:', res.data);
+    console.log('Teacher data:', teacher.data);
     students.value = res.data.sort((a, b) => Number(a.group) - Number(b.group))
     totalStudents.value = students.value.length
   } catch (err) {}

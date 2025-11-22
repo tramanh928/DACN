@@ -29,6 +29,12 @@ class TeacherController extends Controller
         return $teacher;
     }
 
+    public function getTeacherById(Request $request, $user_id)
+    {
+        $teacher = GiangVien::where('user_id', $user_id)->firstOrFail();
+        return $teacher;
+    }
+
     // Tạo mới giáo viên
     private function generateUniqueMaGV()
     {

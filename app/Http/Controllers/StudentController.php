@@ -33,6 +33,23 @@ class StudentController extends Controller
         return $student->load(['giangVienHuongDan', 'deTai']);
     }
 
+    public function getStudentsByTeacher(Request $request, $MaGV)
+    {
+        return SinhVien::where('Giang_vien_huong_dan', $MaGV)->get()->map(function($s) {
+            return [
+                'mssv'               => $s->MSSV,
+                'name'               => $s->Ho_va_Ten,
+                'Lop'                => $s->Lop,
+                'group'              => $s->Nhom,
+                'topic'              => $s->deTai ? $s->deTai->TenDT : '',
+                'email'              => $s->email,
+                'phone'              => $s->sdt,
+                'lecturer'           => $s->giangVienHuongDan ? $s->giangVienHuongDan->Ho_va_Ten : '',
+                'status'             => $s->Da_phan_cong ? 'Đã phân công' : 'Chưa phân công',
+            ];
+        });
+    }
+
     // Tạo mới sinh viên
     public function store(Request $request)
     {
@@ -78,6 +95,53 @@ class StudentController extends Controller
         ]);
         $student->update($data);
         return $student->load(['giangVienHuongDan', 'deTai']);
+    }
+
+    //Tạo nhóm, gộp nhóm sinh viên
+    public function updateStudentGroup(Request $request){
+        $data = $request->validate([
+            'mssv' => 'required|string|exists:SinhVien,MSSV',
+            'group' => 'required|string|max:50',
+        ]);
+
+        $mssv = $request->mssv;
+        $group = $request->group;
+
+        $student = SinhVien::where('MSSV', $mssv)->first();
+        if (!$student) {
+            return response()->json(['error' => 'Sinh viên không tồn tại'], 404);
+        }
+
+        $sameGroup = SinhVien::where('Nhom', $group)->get();
+
+        // CASE 1: group empty → OK
+        if ($sameGroup->count() === 0) {
+            $student->Nhom = $group;
+            $student->save();
+            return response()->json(['success' => true]);
+        }
+
+        // Check if same Giang Vien Huong Dan
+        foreach ($sameGroup as $sv) {
+            if ($sv->Giang_vien_huong_dan !== $student->Giang_vien_huong_dan) {
+                return response()->json([
+                    'error' => 'Nhóm này thuộc giảng viên khác!'
+                ], 400);
+            }
+        }
+
+        // Check if group already full (max 2 members)
+        if ($sameGroup->count() >= 2) {
+            return response()->json([
+                'error' => 'Nhóm này đã đủ 2 thành viên!'
+            ], 400);
+        }
+
+        // If everything is OK → update
+        $student->Nhom = $group;
+        $student->save();
+
+        return response()->json(['success' => true]);
     }
 
     // Xóa một sinh viên

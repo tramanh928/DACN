@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SinhVien extends Model
 {
-    protected $table = 'sinhvien';
+    protected $table = 'SinhVien';
 
     protected $primaryKey = 'MSSV';
     public $incrementing = false;

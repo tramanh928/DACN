@@ -16,7 +16,6 @@ return new class extends Migration
         $table->string('Ho_va_Ten', 120);
         $table->string('email')->unique();
         $table->string('sdt')->nullable();
-        $table->date('Ngay_Sinh')->nullable();
         $table->timestamps();
         $table->foreignId('user_id')->unique()->constrained('users')->onDelete('cascade');
 });

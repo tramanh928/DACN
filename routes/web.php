@@ -26,29 +26,36 @@ Route::get('/dashboard', function () {
     }
     switch ($user->role) {
         case 'GiangVien':
-            return Inertia::render('Teachers/Index', ['user' => $user]);
+            return Inertia::render('Teachers/Index', [
+                'user' => $user
+            ]);
         case 'ThuKy':
-    $students = \App\Models\SinhVien::all()->map(function($s) {
-        return [
-            'mssv'     => $s->mssv,
-            'name'     => trim($s->Ho . ' ' . ($s->Ten ?? '')),
-            'group'    => $s->Nhom,
-            'topic'    => $s->Huong_de_tai,
-            'lecturer' => $s->Giang_vien_huong_dan ?? '',
-            'status'   => $s->Trang_Thai ?? 'Chưa gặp',
-            'note'     => $s->Ghi_chu ?? '',
-        ];
-    });
+            $students = \App\Models\SinhVien::all()->map(function ($s) {
 
-    return Inertia::render('Assistants/Index', [  // <-- Inertia render, not JSON
-        'user' => $user,
-        'students' => $students,
-    ]);
+                return [
+                    'mssv'     => $s->MSSV,
+                    'name'     => $s->Ho_va_Ten,            
+                    'group'    => $s->Nhom,                   
+                    'topic'    => $s->HuongDeTai,             
+                    'lecturer' => $s->Giang_vien_huong_dan,   
+                    'status'   => $s->Da_phan_cong ? 'Đã phân công' : 'Chưa phân công',
+                    'note'     => null,                   
+                ];
+            });
+
+            return Inertia::render('Assistants/Index', [
+                'user' => $user,
+                'students' => $students,
+            ]);
         case 'SinhVien':
         default:
-            return Inertia::render('Students/Index', ['user' => $user]);
+            return Inertia::render('Students/Index', [
+                'user' => $user
+            ]);
     }
+
 })->middleware(['auth', 'verified'])->name('dashboard');
+
 
 Route::post('/logout', function (Request $request) {
     Auth::logout(); // Đăng xuất user
@@ -104,3 +111,10 @@ Route::put('/update-topic/{MaDT}', [DeTaiController::class, 'update']);
 
 //Route phân công
 Route::put('/assign-students/{mssv}', [StudentController::class, 'edit']);
+
+//Route lấy dssv theo gv
+Route::post('/teacher-by-id/{user_id}', [TeacherController::class, 'getTeacherById']);
+Route::post('/students-by-teacher/{MaGV}', [StudentController::class, 'getStudentsByTeacher']);
+
+//Route tạo nhóm, gộp nhóm
+Route::post('/update-student-group', [StudentController::class, 'updateStudentGroup']);
