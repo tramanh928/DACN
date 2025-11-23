@@ -22,6 +22,7 @@ class DeTai extends Model
         'TenDeTai',
         'MaGV',
         'SoLuong',
+        'MoTa',
         'TrangThai',
     ];
 
@@ -36,4 +37,9 @@ class DeTai extends Model
     {
         return $this->belongsTo(GiangVien::class, 'MaGV', 'MaGV');
     }
+    public function sinhviens()
+    {
+        return $this->hasMany(SinhVien::class, 'MaDT', 'MaDT');
+    }
+    
 }

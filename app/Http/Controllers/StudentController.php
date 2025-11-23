@@ -22,7 +22,9 @@ class StudentController extends Controller
                 'email'              => $s->email,
                 'phone'              => $s->sdt,
                 'lecturer'           => $s->giangVienHuongDan ? $s->giangVienHuongDan->Ho_va_Ten : '',
-                'status'             => $s->Da_phan_cong ? 'Đã phân công' : 'Chưa phân công',
+                'status'             => $s->deTai ? $s->deTai->TrangThai : '-',
+                'score'              => $s->Diem,
+                'note'               => $s->GhiChu,
             ];
         });
     }
@@ -41,11 +43,14 @@ class StudentController extends Controller
                 'name'               => $s->Ho_va_Ten,
                 'Lop'                => $s->Lop,
                 'group'              => $s->Nhom,
-                'topic'              => $s->deTai ? $s->deTai->TenDT : '',
+                'topic'              => $s->deTai ? $s->deTai->TenDeTai : '',
+                'description'        => $s->deTai ? $s->deTai->MoTa : '',
                 'email'              => $s->email,
                 'phone'              => $s->sdt,
                 'lecturer'           => $s->giangVienHuongDan ? $s->giangVienHuongDan->Ho_va_Ten : '',
-                'status'             => $s->Da_phan_cong ? 'Đã phân công' : 'Chưa phân công',
+                'status'             => $s->deTai ? $s->deTai->TrangThai : '-',
+                'score'              => $s->Diem,
+                'note'               => $s->GhiChu,
             ];
         });
     }
@@ -86,6 +91,31 @@ class StudentController extends Controller
 
         return $student->load(['giangVienHuongDan', 'deTai']);
     }
+
+    public function updateScore(Request $request)
+    {
+        $data = $request->validate([
+            'Diem' => 'required|numeric|min:0|max:100',
+            'MSSV' => 'required|string|exists:SinhVien,MSSV',
+        ]);
+        $MSSV = $request->MSSV;
+        $student = SinhVien::where('MSSV', $MSSV)->firstOrFail();
+        $student->update($data);
+        return $student->load(['giangVienHuongDan', 'deTai']);
+    }
+
+    public function updateNote(Request $request)
+    {
+        $data = $request->validate([
+            'GhiChu' => 'nullable|string|max:255',
+            'MSSV' => 'required|string|exists:SinhVien,MSSV',
+        ]);
+        $MSSV = $request->MSSV;
+        $student = SinhVien::where('MSSV', $MSSV)->firstOrFail();
+        $student->update($data);
+        return $student->load(['giangVienHuongDan', 'deTai']);
+    }
+
 
     public function edit(Request $request, $MSSV)
     {

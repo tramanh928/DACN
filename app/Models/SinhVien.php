@@ -23,9 +23,11 @@ class SinhVien extends Model
         'Ngay_Sinh',
         'Lop',
         'Nhom',
+        'Diem',
         'MaDT',
         'HuongDeTai',
         'Giang_vien_huong_dan',
+        'GhiChu',
         'Da_phan_cong',
         'user_id',
     ];

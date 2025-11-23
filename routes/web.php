@@ -116,5 +116,16 @@ Route::put('/assign-students/{mssv}', [StudentController::class, 'edit']);
 Route::post('/teacher-by-id/{user_id}', [TeacherController::class, 'getTeacherById']);
 Route::post('/students-by-teacher/{MaGV}', [StudentController::class, 'getStudentsByTeacher']);
 
+//Route lấy đề tài theo giảng viên
+Route::post('/topics-by-teacher/{MaGV}', [DeTaiController::class, 'getTopicsByTeacher']);
+
 //Route tạo nhóm, gộp nhóm
 Route::post('/update-student-group', [StudentController::class, 'updateStudentGroup']);
+
+//Route phân công
+Route::post('/save-topic', [DeTaiController::class, 'saveTopic']);
+Route::post('/assign-topic-to-student', [DeTaiController::class, 'assignTopicToStudent']);
+
+//Route cập nhật điểm và ghi chú
+Route::post('/update-score', [StudentController::class, 'updateScore']);
+Route::post('/update-note', [StudentController::class, 'updateNote']);

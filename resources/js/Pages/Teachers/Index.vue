@@ -86,7 +86,6 @@
                 placeholder="Tìm kiếm sinh viên..."
                 class="border rounded px-3 py-2 text-sm w-64"
               />
-              <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Thêm</button>
               <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Xuất file Excel</button>
             </div>
           </div>
@@ -130,7 +129,6 @@
                 placeholder="Tìm theo MSGV / MSSV / tên đề tài"
                 class="border rounded px-3 py-2 text-sm w-64"
               />
-              <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Thêm</button>
               <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Xuất file Excel</button>
             </div>
           </div>
@@ -140,6 +138,7 @@
               <thead class="bg-indigo-100 text-indigo-700">
                 <tr>
                   <th class="p-3 text-center">MSSV</th>
+                  <th class="p-3 text-center">Họ và tên</th>
                   <th class="p-3 text-center">Nhóm</th>
                   <th class="p-3 text-center">Tên đề tài</th>
                   <th class="p-3 text-center">Mô tả đề tài</th>
@@ -155,13 +154,14 @@
                 </tr>
                 <tr v-for="(t, idx) in displayedTopics" :key="t.id || idx" class="hover:bg-indigo-50">
                   <td class="p-3 text-center">{{ t.mssv || '-' }}</td>
+                  <td class="p-3 text-center">{{ t.name }}</td>
                   <td class="p-3 text-center">{{ t.group || '-' }}</td>
-                  <td class="p-3 text-center">{{ t.title || t.ten_de_tai || '-' }}</td>
+                  <td class="p-3 text-center">{{ t.topic || '-' }}</td>
                   <td class="p-3 text-center">{{ t.description || '-' }}</td>
                   <td class="p-3 text-center">{{ t.status || '-' }}</td>
                   <td class="p-3 text-center">
                     <div class="flex gap-2 justify-center">
-                      <button type="button" class="bg-blue-500 text-white px-3 py-1 rounded text-sm opacity-90" >
+                      <button @click="openAssignForm(t)" type="button" class="bg-blue-500 text-white px-3 py-1 rounded text-sm opacity-90" >
                         Phân công
                       </button>
                       <button type="button" class="bg-indigo-500 text-white px-3 py-1 rounded text-sm opacity-90" >
@@ -216,7 +216,8 @@
                   <td class="p-3 text-center">
                     <div class="flex items-center justify-center gap-2">
                       <input
-                        v-model="evaluationMap[s.mssv].score"
+                        @keyup.enter="updateScore(s)"
+                        v-model="s.score"
                         type="text"
                         class="w-20 px-1 py-1 border rounded text-sm"
                         placeholder="0 - 100"
@@ -226,7 +227,8 @@
                   </td>
                   <td class="p-3 text-center">
                     <input
-                      v-model="evaluationMap[s.mssv].note"
+                      @keyup.enter="updateNote(s)"
+                      v-model="s.note"
                       type="text"
                       class="w-full px-2 py-1 border rounded text-sm mx-auto block"
                       placeholder="Ghi chú..."
@@ -253,15 +255,50 @@
     <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div class="bg-white rounded shadow-lg w-[90%] max-w-2xl p-6">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">{{ formMode === 'add' ? 'Thêm' : 'Sửa' }}</h3>
-          <button @click="closeForm" class="text-gray-600 hover:text-gray-800">Đóng</button>
+          <h3 class="text-lg font-semibold">{{ formMode === 'add' ? 'Phân công đề tài' : 'Sửa' }}</h3>
         </div>
 
         <!-- Form content placeholder -->
-        <div class="space-y-3 text-sm text-gray-700">
-          <p>Form (điền chi tiết ở đây). Chọn lưu để gửi đến backend.</p>
-          <div class="flex justify-end mt-4">
-            <button @click="saveForm" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Lưu</button>
+       <div class="space-y-4 text-sm text-gray-700">
+          <!-- TenDT -->
+          <div>
+            <label class="block font-medium mb-1">Tên đề tài</label>
+            <input
+              v-model="formData.TenDT"
+              type="text"
+              class="w-full border rounded px-3 py-2"
+              placeholder="Nhập tên đề tài"
+            />
+          </div>
+
+          <!-- MoTa -->
+          <div>
+            <label class="block font-medium mb-1">Mô tả</label>
+            <textarea
+              v-model="formData.MoTa"
+              class="w-full border rounded px-3 py-2"
+              rows="4"
+              placeholder="Nhập mô tả đề tài"
+            ></textarea>
+          </div>
+
+          <!-- TrangThai -->
+          <div>
+            <label class="block font-medium mb-1">Trạng thái</label>
+            <select
+              v-model="formData.TrangThai"
+              class="w-full border rounded px-3 py-2"
+            >
+              <option value="">-- Chọn trạng thái --</option>
+              <option value="Được tiếp tục">Được tiếp tục</option>
+              <option value="Bị đình chỉ">Bị đình chỉ</option>
+            </select>
+          </div>
+
+          <!-- Save Button -->
+          <div class="flex justify-end mt-4 gap-x-3">
+            <button @click="saveForm" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600"> Lưu </button>
+            <button @click="closeForm" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Đóng</button>
           </div>
         </div>
       </div>
@@ -294,6 +331,13 @@ const totalTopics = ref(0)
 // Students & topics data
 const students = ref([])
 const topics = ref([])
+const formData = ref({
+  MSSV: '',
+  MaGV: '',
+  TenDT: '',
+  MoTa: '',
+  TrangThai: '',
+})
 
 // Evaluation 50% map 
 const evaluationMap = reactive({})
@@ -336,11 +380,34 @@ watch(students, (list) => {
 }, { immediate: true })
 
 function closeForm() { showForm.value = false; editingItem.value = null; editingIndex.value = null }
-function saveForm() {
-  // placeholder: lưu dữ liệu -> gọi backend hoặc cập nhật local arrays
-  // sau khi lưu, đóng modal
-  showForm.value = false
+async function saveForm() {
+  try {
+    const res = await axios.post('/save-topic', {
+      TenDT: formData.value.TenDT,
+      MoTa: formData.value.MoTa,
+      TrangThai: formData.value.TrangThai,
+      MaGV: formData.value.MaGV
+    });
+
+    const newMaDT = res.data.data.MaDT;  
+    const mssv = formData.value.MSSV;
+    // Update student with this MaDT
+    await axios.post('/assign-topic-to-student', {
+      MSSV: mssv,
+      MaDT: newMaDT
+    });
+
+    alert("Lưu đề tài & cập nhật sinh viên thành công!");
+    showForm.value = false;
+    fetchStudents();
+    fetchTopics();
+
+  } catch (err) {
+    alert(err.response?.data?.error || "Lỗi khi lưu form");
+  }
 }
+
+
 
 // Export functions
 function exportStudents() {
@@ -348,6 +415,32 @@ function exportStudents() {
 }
 function exportTopics() {
   try { window.open(route('topics.export'), '_blank') } catch { /* fallback */ }
+}
+function updateScore(student) {
+  axios.post('/update-score', {
+    MSSV: student.mssv,
+    Diem: student.score
+  })
+  .then(res => {
+    alert('Cập nhật điểm thành công!');
+  })
+  .catch(err => {
+    alert(err.response.data.error || 'Cập nhật điểm thất bại!');
+  });
+  fetchStudents();
+}
+function updateNote(student) {
+  axios.post('/update-note', {
+    MSSV: student.mssv,
+    GhiChu: student.note
+  })
+  .then(res => {
+    alert('Cập nhật ghi chú thành công!');
+  })
+  .catch(err => {
+    alert(err.response.data.error || 'Cập nhật ghi chú thất bại!');
+  });
+  fetchStudents();
 }
 function updateGroup(student) {
   axios.post('/update-student-group', {
@@ -363,9 +456,22 @@ function updateGroup(student) {
   fetchStudents();
 }
 
+async function openAssignForm(student){
+  formMode.value = 'add'
+  const teacher = await axios.post('/teacher-by-id/' + props.user.id);
+  formData.value = {
+    MSSV: student ? student.mssv || '' : '',
+    MaGV: teacher.data.MaGV || '',
+    TenDT: student ? student.topic || '' : '',
+    MoTa: student ? student.description || '' : '',
+    TrangThai: student ? student.status || '' : '',
+  }
+  showForm.value = true
+}
+
 const displayedTopics = computed(() => {
   const q = (topicSearch.value || '').toString().toLowerCase().trim()
-  const base = topics.value
+  const base = students.value
   if (!q) return base
   return base.filter(t => {
     const msgv = (t.msgv ?? t.teacher_id ?? '').toString().toLowerCase()
@@ -375,12 +481,7 @@ const displayedTopics = computed(() => {
   })
 })
 
-// status options
-const statusOptions = [
-  'Chờ sinh viên chọn',
-  'Đã được chọn',
-  'Đã khóa'
-]
+
 
 // fetch students/topics if backend available (kept optional)
 const fetchStudents = async () => {
@@ -395,7 +496,8 @@ const fetchStudents = async () => {
 }
 const fetchTopics = async () => {
   try {
-    const res = await axios.post('/topics/getAll')
+    const teacher = await axios.post('/teacher-by-id/' + props.user.id);
+    const res = await axios.post('/topics-by-teacher/' + teacher.data.MaGV);
     topics.value = res.data || []
     totalTopics.value = topics.value.length
   } catch (err) {}
