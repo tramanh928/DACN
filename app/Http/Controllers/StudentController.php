@@ -43,6 +43,7 @@ class StudentController extends Controller
                 'name'               => $s->Ho_va_Ten,
                 'Lop'                => $s->Lop,
                 'group'              => $s->Nhom,
+                'code'               => $s->MaDT, 
                 'topic'              => $s->deTai ? $s->deTai->TenDeTai : '',
                 'description'        => $s->deTai ? $s->deTai->MoTa : '',
                 'email'              => $s->email,

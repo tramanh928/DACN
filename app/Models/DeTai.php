@@ -37,7 +37,7 @@ class DeTai extends Model
     {
         return $this->belongsTo(GiangVien::class, 'MaGV', 'MaGV');
     }
-    public function sinhviens()
+    public function SinhVien()
     {
         return $this->hasMany(SinhVien::class, 'MaDT', 'MaDT');
     }

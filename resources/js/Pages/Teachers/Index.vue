@@ -164,7 +164,7 @@
                       <button @click="openAssignForm(t)" type="button" class="bg-blue-500 text-white px-3 py-1 rounded text-sm opacity-90" >
                         Phân công
                       </button>
-                      <button type="button" class="bg-indigo-500 text-white px-3 py-1 rounded text-sm opacity-90" >
+                      <button @click="downloadTemplate(t.code)" type="button" class="bg-indigo-500 text-white px-3 py-1 rounded text-sm opacity-90" >
                         Xuất nhiệm vụ
                       </button>
                     </div>
@@ -342,6 +342,19 @@ const formData = ref({
 // Evaluation 50% map 
 const evaluationMap = reactive({})
 
+async function downloadTemplate(MaDT) {
+  const res = await axios.get(`/nhiem-vu-template/${MaDT}`, {
+    responseType: 'blob'
+  });
+
+  const url = window.URL.createObjectURL(new Blob([res.data]));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Form_NhiemvuLVTN - 2SV.docx';
+  a.click();
+};
+
+
 // Khởi tạo entry cho mỗi sinh viên khi danh sách students thay đổi
 watch(students, (list) => {
   (list || []).forEach(s => {
@@ -383,18 +396,11 @@ function closeForm() { showForm.value = false; editingItem.value = null; editing
 async function saveForm() {
   try {
     const res = await axios.post('/save-topic', {
+      MSSV: formData.value.MSSV,
       TenDT: formData.value.TenDT,
       MoTa: formData.value.MoTa,
       TrangThai: formData.value.TrangThai,
       MaGV: formData.value.MaGV
-    });
-
-    const newMaDT = res.data.data.MaDT;  
-    const mssv = formData.value.MSSV;
-    // Update student with this MaDT
-    await axios.post('/assign-topic-to-student', {
-      MSSV: mssv,
-      MaDT: newMaDT
     });
 
     alert("Lưu đề tài & cập nhật sinh viên thành công!");

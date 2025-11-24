@@ -9,6 +9,7 @@ use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\DeTaiController;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\ExportController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -124,8 +125,11 @@ Route::post('/update-student-group', [StudentController::class, 'updateStudentGr
 
 //Route phân công
 Route::post('/save-topic', [DeTaiController::class, 'saveTopic']);
-Route::post('/assign-topic-to-student', [DeTaiController::class, 'assignTopicToStudent']);
 
 //Route cập nhật điểm và ghi chú
 Route::post('/update-score', [StudentController::class, 'updateScore']);
 Route::post('/update-note', [StudentController::class, 'updateNote']);
+
+//Rpoute xuất file mẫu nhiệm vụ
+Route::get('/nhiem-vu-template/{MaDT}', [ExportController::class, 'downloadTemplate']);
+Route::post('/confirm-template', [ExportController::class, 'confirmTemplate']);
