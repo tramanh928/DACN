@@ -243,10 +243,45 @@
             </table>
           </div>
         </div>
+
         <!-- Review Score view placeholder -->
         <div v-if="currentView === 'reviewScore'">
-          <h2 class="text-2xl font-bold text-indigo-600 mb-6">ĐIỂM PHẢN BIỆN - HƯỚNG DẪN</h2>
-          <div class="bg-white rounded shadow p-6 text-gray-600">Chưa có dữ liệu.</div>
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-indigo-600">ĐIỂM PHẢN BIỆN - HƯỚNG DẪN</h2>
+            <div>
+              <input v-model="reviewScoreSearch" type="text" placeholder="Tìm mã hoặc tên đề tài..." class="border rounded px-3 py-2 text-sm w-64" />
+            </div>
+          </div>
+
+          <div class="bg-white rounded shadow overflow-x-auto">
+            <table class="min-w-full text-sm divide-y divide-gray-200">
+              <thead class="bg-indigo-100 text-indigo-700">
+                <tr>
+                  <th class="p-3 text-center">STT</th>
+                  <th class="p-3 text-center">Mã đề tài</th>
+                  <th class="p-3 text-center">Tên đề tài</th>
+                  <th class="p-3 text-center">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(t, idx) in reviewScoreList" :key="t.MaDT || t.id || idx" class="hover:bg-indigo-50">
+                  <td class="p-3 text-center">{{ idx + 1 }}</td>
+                  <td class="p-3 text-center">{{ t.MaDT || t.id || '-' }}</td>
+                  <td class="p-3 text-center">{{ t.TenDT || '-' }}</td>
+                  <td class="p-3 text-center">
+                    <div class="flex justify-center gap-2">
+                      <button type="button" @click="openReviewScoreModal(t)" class="bg-yellow-400 text-black px-3 py-1 rounded hover:bg-yellow-500 transition">
+                        Chấm điểm
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr v-if="(reviewScoreList || []).length === 0">
+                  <td colspan="4" class="p-4 text-center text-gray-500">Không có đề tài</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
     </div>
@@ -507,6 +542,32 @@ const fetchTopics = async () => {
     topics.value = res.data || []
     totalTopics.value = topics.value.length
   } catch (err) {}
+}
+
+// --- Điểm phản biện - hướng dẫn ---
+const reviewScoreSearch = ref('')
+const showReviewScoreModal = ref(false)
+const reviewScoreForm = ref({
+  MaDT: '',
+  TenDeTai: '',
+  Diem: ''
+})
+
+const reviewScoreList = computed(() => {
+  const q = (reviewScoreSearch.value || '').toString().toLowerCase().trim()
+  return (topics.value || []).filter(t => {
+    if (!q) return true
+    return ((t.MaDT || t.id || '').toString().toLowerCase().includes(q) ||
+            (t.TenDT || '').toString().toLowerCase().includes(q))
+  })
+})
+
+function openReviewScoreModal(topic) {
+  reviewScoreForm.value.MaDT = topic.MaDT ?? topic.id ?? ''
+  reviewScoreForm.value.TenDeTai = topic.TenDT ?? ''
+  reviewScoreForm.value.Diem = topic.review_score ?? topic.Diem ?? ''
+  reviewScoreForm.value.GhiChu = topic.review_note ?? topic.GhiChu ?? ''
+  showReviewScoreModal.value = true
 }
 
 onMounted(() => {

@@ -97,6 +97,13 @@
           >
             Phân công hội đồng
           </button>
+
+          <button 
+            @click="setCurrentView('timeAllocation')" 
+            :class="currentView === 'timeAllocation' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
+          >
+            Phân bổ thời gian
+          </button>
         </nav>
       </aside>
 
@@ -543,11 +550,8 @@
                     <td class="p-3">{{ item.mssv }}</td>
                     <td class="p-3">{{ item.name }}</td>
                     <td class="p-3">{{ item.group }}</td>
-
-                    <!-- Wider columns -->
                     <td class="p-3">{{ item.topic }}</td>
                     <td class="p-3">{{ item.lecturer }}</td>
-
                     <td class="p-3 text-gray-600 italic">{{ item.note }}</td>
 
                     <td class="p-3">
@@ -678,8 +682,144 @@
 
         <!-- Phân công phản biện -->
         <div v-if="currentView === 'reviewAssignment'">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-indigo-600">PHÂN CÔNG PHẢN BIỆN</h2>
+            <div class="flex items-center gap-4">
+              <input
+                v-model="reviewSearch"
+                type="text"
+                placeholder="Tìm kiếm theo đề tài..."
+                class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              />
+              <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
+                Xuất file Excel
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto bg-white rounded shadow">
+            <table class="min-w-full text-sm divide-y divide-gray-200">
+              <thead class="bg-indigo-100 text-indigo-700">
+                <tr>
+                  <th class="p-3 text-center">STT</th>
+                  <th class="p-3 text-center">Mã đề tài</th>
+                  <th class="p-3 text-center">Tên đề tài</th>
+                  <th class="p-3 text-center">Giảng viên phản biện</th>
+                  <th class="p-3 text-center">Ghi chú</th>
+                  <th class="p-3 text-center">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(t, idx) in topics" :key="t.MaDT || idx" class="hover:bg-indigo-50">
+                  <td class="p-3 text-center">{{ idx + 1 }}</td>
+                  <td class="p-3 text-center">{{ t.MaDT || '-' }}</td>
+                  <td class="p-3 text-center">{{ t.TenDeTai || t.title || '-' }}</td>
+                  <td class="p-3 text-center">{{ t.reviewer || '-' }}</td>
+                  <td class="p-3 text-center">{{ t.reviewNote || '-' }}</td>
+                  <td class="p-3 text-center">
+                    <div class="flex gap-2 justify-center">
+                      <button @click="openReviewerList(t)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                        Phân công
+                      </button>
+                      <button class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
+                        Xóa
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr v-if="topics.length === 0">
+                  <td colspan="8" class="p-4 text-center text-gray-500">Không có đề tài để phân công phản biện</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
+        <!-- Modal: danh sách phản biện viên -->
+        <div v-if="showReviewerModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div class="bg-white rounded-lg w-[95%] max-w-3xl p-4 max-h-[90vh] overflow-auto">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold">Danh sách giảng viên phản biện cho: {{ selectedTopic?.TenDeTai || '-' }}</h3>
+              <button
+                @click="closeReviewerModal"
+                type="button"
+                class="bg-sky-500 text-white px-3 py-1 rounded text-sm hover:bg-sky-600 transition"
+              >
+                Đóng
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm divide-y divide-gray-200">
+                <thead class="bg-indigo-100 text-indigo-700">
+                  <tr>
+                    <th class="p-3 text-left">STT</th>
+                    <th class="p-3 text-left">MSGV</th>
+                    <th class="p-3 text-left">Họ và tên phản biện</th>
+                    <th class="p-3 text-left">Số đề tài đã phân công</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(gv, idx) in availableReviewers" :key="gv.MaGV || idx" class="hover:bg-indigo-50">
+                    <td class="p-3 ">{{ idx + 1 }}</td>
+                    <td class="p-3 ">{{ gv.MaGV ?? gv.id ?? '-' }}</td>
+                    <td class="p-3 flex items-center justify-between">
+                      <span>{{ gv.name ?? gv.HoTen ?? '-' }}</span>
+                      <button @click="openReviewerTopicList(gv)" class="ml-2 text-indigo-600 hover:text-indigo-800 text-lg">▶</button>
+                    </td>
+                    <td class="p-3">{{ countReviewAssigned(gv) }}</td>
+                  </tr>
+                  <tr v-if="availableReviewers.length === 0">
+                    <td colspan="4" class="p-3 italic text-sm text-gray-500">Không có phản biện viên</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal: danh sách đề tài của phản biện viên -->
+        <div v-if="showReviewTopicModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div class="bg-white rounded-lg w-[95%] max-w-3xl p-4 max-h-[90vh] overflow-auto">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold text-indigo-700">
+                Danh sách đề tài của giảng viên  {{ selectedReviewer?.name ?? selectedReviewer?.HoTen ?? '-' }} phản biện 
+              </h3>
+              <div class="flex gap-2">
+                <button
+                  @click="confirmReviewAssignment(selectedReviewer)"
+                  type="button"
+                  class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition"
+                >
+                  Xác nhận
+                </button>
+                <button @click="closeReviewerTopicList" class="bg-sky-500 text-white px-3 py-1 rounded text-sm hover:bg-sky-600 transition">
+                    Đóng
+                  </button>
+              </div>
+            </div>
+
+            <table class="min-w-full text-sm divide-y divide-gray-200">
+              <thead class="bg-indigo-100 text-indigo-700">
+                <tr>
+                  <th class="p-3 text-left">Mã đề tài</th>
+                  <th class="p-3 text-left">Tên đề tài</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="t in reviewTopicsAssignedTo(selectedReviewer)" :key="t.MaDT" class="hover:bg-indigo-50">
+                  <td class="p-3">{{ t.MaDT }}</td>
+                  <td class="p-3">{{ t.TenDeTai }}</td>
+                </tr>
+                <tr v-if="reviewTopicsAssignedTo(selectedReviewer).length === 0">
+                  <td colspan="2" class="p-3 italic text-sm text-gray-500">
+                    Không có đề tài được phân công
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
         <!-- Chấm điểm -->
         <div v-if="currentView === 'grading'">
         </div>
@@ -691,13 +831,35 @@
         <!-- Phân công hội đồng -->
         <div v-if="currentView === 'committeeAssignment'">
         </div>
+
+        <!-- Phân bổ thời gian -->
+        <div v-if="currentView === 'timeAllocation'">
+          <h2 class="text-2xl font-bold text-indigo-600 mb-6">PHÂN BỔ THỜI GIAN</h2>
+
+          <div class="bg-white rounded shadow overflow-x-auto">
+            <table class="min-w-full text-sm divide-y divide-gray-200">
+              <thead class="bg-indigo-100 text-indigo-700">
+                <tr>
+                  <th class="p-3 text-center min-w-[90px]">Sự kiện</th>
+                    <th class="p-3 text-center min-w-[150px]">Ngày bắt đầu</th>
+                    <th class="p-3 text-center min-w-[70px]">Ngày kết thúc</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="5" class="p-4 text-center text-gray-500">Chưa có dữ liệu phân bổ thời gian</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </main>
      </div>
    </div>
 </template>
 
 <script setup>
-import { onMounted, ref, watch, reactive } from 'vue'
+import { onMounted, ref, watch, reactive, computed } from 'vue'
 import { router } from '@inertiajs/vue3'
 import axios from 'axios'
 
@@ -1101,6 +1263,117 @@ async function confirmAllAssignments(lecturer) {
     fetchStudents()
     fetchTeachers()
     closeAssignPanel()
+  }
+}
+
+// --- Phân công phản biện: state & logic ---
+const reviewSearch = ref('')
+const showReviewerModal = ref(false)
+const selectedTopic = ref(null)
+
+const showReviewTopicModal = ref(false)
+const selectedReviewer = ref(null)
+
+function openReviewerTopicList(reviewer) {
+  selectedReviewer.value = reviewer
+  showReviewTopicModal.value = true
+}
+
+function closeReviewerTopicList() {
+  selectedReviewer.value = null
+  showReviewTopicModal.value = false
+}
+
+// danh sách đề tài cần phân công (chưa có reviewer)
+const reviewTopics = computed(() => {
+  return (topics.value || []).map(t => ({
+    ...t,
+    reviewerName: t.reviewerName ?? t.reviewer_name ?? (t.reviewer ? findTeacherName(t.reviewer) : '')
+  })).filter(t => {
+    return true
+  })
+})
+
+function reviewTopicsAssignedTo(reviewer) {
+  if (!reviewer) return []
+  const id = (reviewer.MaGV ?? reviewer.id ?? reviewer.name).toString()
+  return (topics.value || []).filter(t => {
+    const rev = (t.reviewer ?? t.reviewer_id ?? t.reviewerName ?? '').toString()
+    return rev === id || rev === (reviewer.name ?? '')
+  }) || []
+}
+
+
+
+function openReviewerList(topic) {
+  selectedTopic.value = topic
+  showReviewerModal.value = true
+}
+
+function closeReviewerModal() {
+  showReviewerModal.value = false
+  selectedTopic.value = null
+}
+
+// Đếm số đề tài đã phân công cho phản biện viên
+function countReviewAssigned(gv) {
+  if (!gv) return 0
+  const id = gv.MaGV ?? gv.id ?? gv.name
+  return (topics.value || []).filter(t => {
+    const reviewer = (t.reviewer ?? t.reviewer_id ?? '').toString()
+    return reviewer === id || reviewer === (gv.name ?? '')
+  }).length || 0
+}
+
+function findTeacherName(idOrName) {
+  if (!idOrName) return ''
+  const found = (teachers.value || []).find(gv => {
+    const id = (gv.MaGV ?? gv.id ?? '').toString()
+    return id === idOrName.toString() || (gv.name || gv.HoTen || '').toString() === idOrName.toString()
+  })
+  return found ? (found.name ?? found.HoTen ?? '') : ''
+}
+
+// available reviewers: loại bỏ giảng viên là người hướng dẫn (MaGV stored in topic.MaGV)
+const availableReviewers = computed(() => {
+  if (!selectedTopic.value) return teachers.value || []
+  const advisorId = (selectedTopic.value.MaGV ?? selectedTopic.value.advisor_id ?? '').toString().trim()
+  return (teachers.value || []).filter(gv => {
+    const gvId = (gv.MaGV ?? gv.id ?? '').toString().trim()
+    return gvId.length > 0 && gvId !== advisorId
+  })
+})
+
+function deleteTopicReviewer(topic) {
+  // UI-only delete: remove reviewer field locally (or call API if desired)
+  if (!topic) return
+  const confirmed = window.confirm(`Xóa thông tin phản biện của đề tài "${topic.TenDeTai || topic.MaDT}" ?`)
+  if (!confirmed) return
+  // if backend route exists, call it; else update local array
+  axios.post(`/remove-reviewer/${topic.MaDT}`).then(() => {
+    fetchTopics()
+  }).catch(() => {
+    // fallback local remove of reviewer property
+    const idx = topics.value.findIndex(t => t.MaDT === topic.MaDT)
+    if (idx !== -1) {
+      topics.value[idx].reviewer = ''
+      topics.value[idx].reviewerName = ''
+    }
+  })
+}
+
+async function confirmReviewAssignment(gv) {
+  if (!gv || !selectedTopic.value) return
+  const reviewerId = gv.MaGV ?? gv.id ?? gv.name
+  const confirmed = window.confirm(`Phân công đề tài "${selectedTopic.value.TenDeTai || selectedTopic.value.MaDT}" cho phản biện viên ${gv.name || gv.HoTen || reviewerId}?`)
+  if (!confirmed) return
+  try {
+    await axios.put(`/assign-reviewer/${selectedTopic.value.MaDT}`, { reviewer: reviewerId })
+    fetchTopics()
+    closeReviewerModal()
+  } catch (err) {
+    console.error('Lỗi phân công phản biện:', err)
+    alert('Lỗi khi phân công phản biện ')
   }
 }
 
