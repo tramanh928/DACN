@@ -319,7 +319,6 @@
                   <th class="p-3 text-center">Mã đề tài</th>
                   <th class="p-3 text-center">Tên đề tài</th>
                   <th class="p-3 text-center">Giảng viên</th>
-                  <th class="p-3 text-center">Số lượng</th>
                   <th class="p-3 text-center">Trạng thái</th>
                   <th class="p-3 text-center">Thao tác</th>
                 </tr>
@@ -329,7 +328,6 @@
                   <td class="p-3 text-center">{{ topic.MaDT }}</td>
                   <td class="p-3 text-center">{{ topic.TenDeTai }}</td>
                   <td class="p-3 text-center">{{ topic.GiangVien }}</td>
-                  <td class="p-3 text-center">{{ topic.SoLuong }}</td>
                   <td class="p-3 text-center">
                     <span
                       :class="{
@@ -859,8 +857,14 @@
 
         <!-- Phân bổ thời gian -->
         <div v-if="currentView === 'timeAllocation'">
-          <h2 class="text-2xl font-bold text-indigo-600 mb-6">PHÂN BỔ THỜI GIAN</h2>
-
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-indigo-600">PHÂN BỔ THỜI GIAN</h2>
+            <div class="flex items-center gap-4">
+              <button @click="showAddTimeModal = true" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
+                Thêm sự kiện
+              </button>
+            </div>
+          </div>
           <div class="bg-white rounded shadow overflow-x-auto">
             <table class="min-w-full text-sm divide-y divide-gray-200">
               <thead class="bg-indigo-100 text-indigo-700">
@@ -868,16 +872,151 @@
                   <th class="p-3 text-center min-w-[90px]">Sự kiện</th>
                     <th class="p-3 text-center min-w-[150px]">Ngày bắt đầu</th>
                     <th class="p-3 text-center min-w-[70px]">Ngày kết thúc</th>
+                    <th class="p-3 text-center min-w-[70px]">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td colspan="5" class="p-4 text-center text-gray-500">Chưa có dữ liệu phân bổ thời gian</td>
+                <tr v-if="timeAllocations.length === 0">
+                  <td colspan="3" class="p-4 text-center text-gray-500">
+                    Chưa có dữ liệu phân bổ thời gian
+                  </td>
                 </tr>
+                <tr v-for="(item, index) in timeAllocations" :key="index">
+                    <!-- Display Event Name -->
+                    <td class="p-3 text-center">{{ item.TenSuKien }}</td>
+
+                    <!-- Display Start Date -->
+                    <td class="p-3 text-center">{{ item.NgayBatDau }}</td>
+
+                    <!-- Display End Date -->
+                    <td class="p-3 text-center">{{ item.NgayKetThuc }}</td>
+
+                    <!-- Edit Button -->
+                    <td class="p-3 text-center">
+                      <div class="flex gap-2 justify-center">
+                      <button @click="openTimeEditForm(item)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition">
+                        Sửa
+                      </button>
+                      <button @click="deleteEvent(item.id)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition">
+                        Xóa
+                      </button>
+                      </div>
+                    </td>
+                  </tr>
               </tbody>
             </table>
           </div>
         </div>
+        <!-- Modal: Edit Event -->
+          <div v-if="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div class="bg-white rounded-lg w-[95%] max-w-md p-4 max-h-[90vh] overflow-auto">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-indigo-700">Sửa sự kiện</h3>
+                <button @click="showEditModal = false" class="bg-sky-500 text-white px-3 py-1 rounded text-sm hover:bg-sky-600 transition">
+                  Đóng
+                </button>
+              </div>
+
+              <div class="flex flex-col gap-3">
+                <div>
+                  <label class="block text-sm font-medium mb-1">Tên sự kiện</label>
+                  <input 
+                    type="text" 
+                    v-model="editEvent.TenSuKien" 
+                    class="border p-2 rounded w-full"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium mb-1">Ngày bắt đầu</label>
+                  <input 
+                    type="datetime-local" 
+                    v-model="editEvent.NgayBatDau" 
+                    class="border p-2 rounded w-full"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium mb-1">Ngày kết thúc</label>
+                  <input 
+                    type="datetime-local" 
+                    v-model="editEvent.NgayKetThuc" 
+                    class="border p-2 rounded w-full"
+                  >
+                </div>
+
+                <div class="flex justify-end gap-2 mt-2">
+                  <button 
+                    @click="saveEdit()" 
+                    class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition"
+                  >
+                    Lưu
+                  </button>
+                  <button 
+                    @click="showEditModal = false" 
+                    class="bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400 transition"
+                  >
+                    Hủy
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        <!-- Modal: Add Time Allocation -->
+          <div v-if="showAddTimeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div class="bg-white rounded-lg w-[95%] max-w-md p-4 max-h-[90vh] overflow-auto">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-indigo-700">Thêm sự kiện mới</h3>
+                <button @click="showAddTimeModal = false" class="bg-sky-500 text-white px-3 py-1 rounded text-sm hover:bg-sky-600 transition">
+                  Đóng
+                </button>
+              </div>
+
+              <div class="flex flex-col gap-3">
+                <div>
+                  <label class="block text-sm font-medium mb-1">Tên sự kiện</label>
+                  <input 
+                    type="text" 
+                    v-model="newEvent.TenSuKien" 
+                    class="border p-2 rounded w-full"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium mb-1">Ngày bắt đầu</label>
+                  <input 
+                    type="datetime-local" 
+                    v-model="newEvent.NgayBatDau" 
+                    class="border p-2 rounded w-full"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium mb-1">Ngày kết thúc</label>
+                  <input 
+                    type="datetime-local" 
+                    v-model="newEvent.NgayKetThuc" 
+                    class="border p-2 rounded w-full"
+                  >
+                </div>
+
+                <div class="flex justify-end gap-2 mt-2">
+                  <button 
+                    @click="addEvent()" 
+                    class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition"
+                  >
+                    Lưu
+                  </button>
+                  <button 
+                    @click="showAddTimeModal = false" 
+                    class="bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400 transition"
+                  >
+                    Hủy
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
       </main>
      </div>
    </div>
@@ -902,6 +1041,83 @@ const pageProps = defineProps({
 axios.defaults.withCredentials = true
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
 
+//Thời gian
+const timeAllocations = ref([]);
+
+const showAddTimeModal = ref(false);
+const newEvent = ref({
+  TenSuKien: '',
+  NgayBatDau: '',
+  NgayKetThuc: ''
+});
+
+const showEditModal = ref(false);
+const editEvent = ref({
+  id: null,
+  TenSuKien: '',
+  NgayBatDau: '',
+  NgayKetThuc: ''
+});
+
+const loadTimeAllocations = async () => {
+  try {
+    const response = await axios.get('/thoi-gian');
+    timeAllocations.value = response.data;
+  } catch (error) {
+    console.error('Failed to load time allocations:', error);
+  }
+};
+
+const addEvent = async () => {
+  if (!newEvent.value.TenSuKien || !newEvent.value.NgayBatDau || !newEvent.value.NgayKetThuc) {
+    alert('Vui lòng nhập đầy đủ thông tin!');
+    return;
+  }
+
+  try {
+    await axios.post('/thoi-gian', newEvent.value);
+    newEvent.value = { TenSuKien: '', NgayBatDau: '', NgayKetThuc: '' };
+    showAddTimeModal.value = false;
+    await loadTimeAllocations();
+  } catch (error) {
+    console.error('Failed to add event:', error);
+  }
+};
+
+const openTimeEditForm = (item) => {
+  editEvent.value = { ...item }; // shallow copy to avoid direct mutation
+  showEditModal.value = true;
+};
+
+const saveEdit = async () => {
+  if (!editEvent.value.TenSuKien || !editEvent.value.NgayBatDau || !editEvent.value.NgayKetThuc) {
+    alert('Vui lòng nhập đầy đủ thông tin!');
+    return;
+  }
+
+  try {
+    await axios.put(`/thoi-gian/${editEvent.value.id}`, {
+      TenSuKien: editEvent.value.TenSuKien,
+      NgayBatDau: editEvent.value.NgayBatDau,
+      NgayKetThuc: editEvent.value.NgayKetThuc
+    });
+    showEditModal.value = false;
+    await loadTimeAllocations();
+  } catch (error) {
+    console.error('Failed to save event:', error);
+  }
+};
+
+const deleteEvent = async (id) => {
+  if (!confirm('Bạn có chắc muốn xóa sự kiện này?')) return;
+
+  try {
+    await axios.delete(`/thoi-gian/${id}`);
+    await loadTimeAllocations();
+  } catch (error) {
+    console.error('Failed to delete event:', error);
+  }
+};
 
 const currentView = ref('home')
 function setCurrentView(view) { currentView.value = view }
@@ -1407,5 +1623,6 @@ onMounted(() => {
   fetchTeachers()
   fetchTopics()
   fetchStudents()
+  loadTimeAllocations()
 })
 </script>

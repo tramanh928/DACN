@@ -50,11 +50,12 @@
           </button>
 
           <button 
-            @click="setCurrentView('evaluation50')" 
+            @click="() => performAction('Chấm điểm 50%', () => setCurrentView('evaluation50'))"
             :class="currentView === 'evaluation50' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
           >
             Đánh giá 50%
           </button>
+
 
           <button 
             @click="setCurrentView('reviewScore')" 
@@ -373,6 +374,40 @@ const formData = ref({
   MoTa: '',
   TrangThai: '',
 })
+
+const allowedActions = ref([]);
+
+const performAction = (actionName, callback) => {
+  if (!isActionAllowed(actionName)) {
+    alert(`Bạn không thể thực hiện hành động "${actionName}" vào thời điểm này!`);
+    return;
+  }
+  callback();
+};
+
+// Async function to check access for a specific event
+const isActionAllowed = async (TenSuKien) => {
+  try {
+    const response = await fetch(`/check-access/${encodeURIComponent(TenSuKien)}`);
+    if (!response.ok) throw new Error('Network response was not ok');
+
+    const data = await response.json();
+
+    // Returns true or false based on server response
+    return data.access === true;
+  } catch (error) {
+    console.error('Error checking access:', error);
+    return false;
+  }
+};
+
+// Example usage
+(async () => {
+  const allowed = await isActionAllowed("Chấm điểm 50%");
+  console.log('Allowed?', allowed);
+})();
+
+
 
 // Evaluation 50% map 
 const evaluationMap = reactive({})

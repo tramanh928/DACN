@@ -10,6 +10,7 @@ use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\DeTaiController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\ThoiGianController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -131,5 +132,12 @@ Route::put('/assign-reviewer/{MaDT}', [DeTaiController::class, 'assignReviewer']
 Route::post('/update-score', [StudentController::class, 'updateScore']);
 Route::post('/update-note', [StudentController::class, 'updateNote']);
 
-//Rpoute xuất file mẫu nhiệm vụ
+//Route xuất file mẫu nhiệm vụ
 Route::get('/nhiem-vu-template/{MaDT}', [ExportController::class, 'downloadTemplate']);
+
+//Route quản lý thời gian
+Route::get('/thoi-gian', [ThoiGianController::class, 'index'])->name('thoi-gian.index');
+Route::post('/thoi-gian', [ThoiGianController::class, 'store'])->name('thoi-gian.store');
+Route::get('/check-access/{TenSuKien}', [ThoiGianController::class, 'checkAccess']);
+Route::put('/thoi-gian/{id}', [ThoiGianController::class, 'update'])->name('thoi-gian.update');
+Route::delete('/thoi-gian/{id}', [ThoiGianController::class, 'destroy'])->name('thoi-gian.destroy');
