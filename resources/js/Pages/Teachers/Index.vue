@@ -60,7 +60,13 @@
             @click="setCurrentView('reviewScore')" 
             :class="currentView === 'reviewScore' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
           >
-            Điểm phản biện - hướng dẫn
+            Điểm phản biện
+          </button>
+          <button 
+            @click="setCurrentView('guideScore')" 
+            :class="currentView === 'guideScore' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
+          >
+            Điểm hướng dẫn
           </button>
         </nav>
       </aside>
@@ -148,7 +154,7 @@
               </thead>
               <tbody>
                 <tr v-if="displayedTopics.length === 0">
-                  <td colspan="6" class="p-4 text-center text-gray-500">
+                  <td colspan="7" class="p-4 text-center text-gray-500">
                     Chưa có phân công đề tài
                   </td>
                 </tr>
@@ -172,6 +178,59 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- Simple Form Modal (placeholder dùng cho Thêm/Sửa) -->
+        <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div class="bg-white rounded shadow-lg w-[90%] max-w-2xl p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold">{{ formMode === 'add' ? 'Phân công đề tài' : 'Sửa' }}</h3>
+            </div>
+
+            <!-- Form content placeholder -->
+            <div class="space-y-4 text-sm text-gray-700">
+              <!-- TenDT -->
+              <div>
+                <label class="block font-medium mb-1">Tên đề tài</label>
+                <input
+                  v-model="formData.TenDT"
+                  type="text"
+                  class="w-full border rounded px-3 py-2"
+                  placeholder="Nhập tên đề tài"
+                />
+              </div>
+
+              <!-- MoTa -->
+              <div>
+                <label class="block font-medium mb-1">Mô tả</label>
+                <textarea
+                  v-model="formData.MoTa"
+                  class="w-full border rounded px-3 py-2"
+                  rows="4"
+                  placeholder="Nhập mô tả đề tài"
+                ></textarea>
+              </div>
+
+              <!-- TrangThai -->
+              <div>
+                <label class="block font-medium mb-1">Trạng thái</label>
+                <select
+                  v-model="formData.TrangThai"
+                  class="w-full border rounded px-3 py-2"
+                >
+                  <option value="">-- Chọn trạng thái --</option>
+                  <option value="Được tiếp tục">Được tiếp tục</option>
+                  <option value="Bị đình chỉ">Bị đình chỉ</option>
+                </select>
+              </div>
+
+              <!-- Save Button -->
+              <div class="flex justify-end mt-4 gap-x-3">
+                <button @click="saveForm" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600"> Lưu </button>
+                <button @click="closeForm" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Đóng</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -244,10 +303,10 @@
           </div>
         </div>
 
-        <!-- Review Score view placeholder -->
+        <!-- Review Score view -->
         <div v-if="currentView === 'reviewScore'">
           <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-indigo-600">ĐIỂM PHẢN BIỆN - HƯỚNG DẪN</h2>
+            <h2 class="text-2xl font-bold text-indigo-600">ĐIỂM PHẢN BIỆN</h2>
             <div>
               <input v-model="reviewScoreSearch" type="text" placeholder="Tìm mã hoặc tên đề tài..." class="border rounded px-3 py-2 text-sm w-64" />
             </div>
@@ -267,10 +326,10 @@
                 <tr v-for="(t, idx) in reviewScoreList" :key="t.MaDT || t.id || idx" class="hover:bg-indigo-50">
                   <td class="p-3 text-center">{{ idx + 1 }}</td>
                   <td class="p-3 text-center">{{ t.MaDT || t.id || '-' }}</td>
-                  <td class="p-3 text-center">{{ t.TenDeTai || '-' }}</td>
+                  <td class="p-3 text-center">{{ t.TenDeTai || t.TenDT || t.title || '-' }}</td>
                   <td class="p-3 text-center">
-                    <div class="flex justify-center gap-2">
-                      <button type="button" @click="openReviewScoreModal(t)" class="bg-yellow-400 text-black px-3 py-1 rounded hover:bg-yellow-500 transition">
+                    <div class="flex gap-2 justify-center">
+                      <button @click="openScoreMiniForm(t, 'review')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">
                         Chấm điểm
                       </button>
                     </div>
@@ -283,60 +342,128 @@
             </table>
           </div>
         </div>
+        <!-- Mini Form chung: Review / Guide  -->
+        <div v-if="showScoreMiniForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg p-6 w-[98%] max-w-2xl shadow-lg">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-lg font-bold text-indigo-600">
+                Chấm điểm {{ currentScoreMode === 'review' ? 'phản biện' : 'hướng dẫn' }}
+              </h3>
+              <button @click="closeScoreMiniForm" class="text-gray-500">✕</button>
+            </div>
+
+            <!-- Thông tin (readonly) - highlight vàng -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-600">Họ tên sinh viên</label>
+                <input v-model="scoreMiniForm.studentName" readonly class="w-full border rounded px-2 py-1 bg-yellow-100" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600">MSSV</label>
+                <input v-model="scoreMiniForm.mssv" readonly class="w-full border rounded px-2 py-1 bg-yellow-100" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-600">Lớp</label>
+                <input v-model="scoreMiniForm.Lop" readonly class="w-full border rounded px-2 py-1 bg-yellow-100" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600">Tên đề tài</label>
+                <input v-model="scoreMiniForm.TenDeTai" readonly class="w-full border rounded px-2 py-1 bg-yellow-100" />
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-xs font-medium text-gray-600">Giảng viên phản biện</label>
+                <input v-model="scoreMiniForm.reviewerName" readonly class="w-full border rounded px-2 py-1 bg-yellow-100" />
+              </div>
+            </div>
+
+            <!-- Điểm (có thể chỉnh) -->
+            <div class="mb-3">
+              <label class="block text-xs font-medium text-gray-600">Điểm (0 - 100)</label>
+              <input v-model.number="scoreMiniForm.Diem" type="number" min="0" max="100" class="w-32 border rounded px-2 py-1" />
+            </div>
+
+            <!-- Nhận xét chung radio -->
+            <div class="mb-3">
+              <label class="block text-xs font-medium text-gray-600 mb-1">Nhận xét chung</label>
+              <div class="flex items-center gap-4">
+                <label class="flex items-center gap-2">
+                  <input type="radio" value="Đạt" v-model="scoreMiniForm.overall" />
+                  <span>Đạt</span>
+                </label>
+                <label class="flex items-center gap-2">
+                  <input type="radio" value="Không đạt" v-model="scoreMiniForm.overall" />
+                  <span>Không đạt</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Textareas: Nội dung, Ưu điểm, Thiếu sót -->
+            <div class="grid grid-cols-1 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-600">Nội dung</label>
+                <textarea v-model="scoreMiniForm.content" rows="3" class="w-full border rounded px-2 py-1"></textarea>
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-600">Những ưu điểm chính</label>
+                <textarea v-model="scoreMiniForm.strengths" rows="3" class="w-full border rounded px-2 py-1"></textarea>
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-600">Những thiếu sót chính</label>
+                <textarea v-model="scoreMiniForm.weaknesses" rows="3" class="w-full border rounded px-2 py-1"></textarea>
+              </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-4">
+              <button @click="saveScoreMiniForm" class="bg-indigo-600 text-white px-4 py-2 rounded">Lưu</button>
+              <button @click="closeScoreMiniForm" class="bg-gray-200 px-4 py-2 rounded">Đóng</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Guide Score view -->
+        <div v-if="currentView === 'guideScore'">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-indigo-600">ĐIỂM HƯỚNG DẪN</h2>
+            <div>
+              <input v-model="guideScoreSearch" type="text" placeholder="Tìm mã hoặc tên đề tài..." class="border rounded px-3 py-2 text-sm w-64" />
+            </div>
+          </div>
+
+          <div class="bg-white rounded shadow overflow-x-auto">
+            <table class="min-w-full text-sm divide-y divide-gray-200">
+              <thead class="bg-indigo-100 text-indigo-700">
+                <tr>
+                  <th class="p-3 text-center">STT</th>
+                  <th class="p-3 text-center">Mã đề tài</th>
+                  <th class="p-3 text-center">Tên đề tài</th>
+                  <th class="p-3 text-center">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(t, idx) in guideScoreList" :key="t.MaDT || t.id || idx" class="hover:bg-indigo-50">
+                  <td class="p-3 text-center">{{ idx + 1 }}</td>
+                  <td class="p-3 text-center">{{ t.MaDT || t.id || '-' }}</td>
+                  <td class="p-3 text-center">{{ t.TenDeTai || t.TenDT || t.title || '-' }}</td>
+                  <td class="p-3 text-center">
+                    <div class="flex gap-2 justify-center">
+                      <button @click="openScoreMiniForm(t, 'guide')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">
+                        Chấm điểm
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr v-if="(guideScoreList || []).length === 0">
+                  <td colspan="4" class="p-4 text-center text-gray-500">Không có đề tài</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </main>
-    </div>
-
-    <!-- Simple Form Modal (placeholder dùng cho Thêm/Sửa) -->
-    <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div class="bg-white rounded shadow-lg w-[90%] max-w-2xl p-6">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">{{ formMode === 'add' ? 'Phân công đề tài' : 'Sửa' }}</h3>
-        </div>
-
-        <!-- Form content placeholder -->
-       <div class="space-y-4 text-sm text-gray-700">
-          <!-- TenDT -->
-          <div>
-            <label class="block font-medium mb-1">Tên đề tài</label>
-            <input
-              v-model="formData.TenDT"
-              type="text"
-              class="w-full border rounded px-3 py-2"
-              placeholder="Nhập tên đề tài"
-            />
-          </div>
-
-          <!-- MoTa -->
-          <div>
-            <label class="block font-medium mb-1">Mô tả</label>
-            <textarea
-              v-model="formData.MoTa"
-              class="w-full border rounded px-3 py-2"
-              rows="4"
-              placeholder="Nhập mô tả đề tài"
-            ></textarea>
-          </div>
-
-          <!-- TrangThai -->
-          <div>
-            <label class="block font-medium mb-1">Trạng thái</label>
-            <select
-              v-model="formData.TrangThai"
-              class="w-full border rounded px-3 py-2"
-            >
-              <option value="">-- Chọn trạng thái --</option>
-              <option value="Được tiếp tục">Được tiếp tục</option>
-              <option value="Bị đình chỉ">Bị đình chỉ</option>
-            </select>
-          </div>
-
-          <!-- Save Button -->
-          <div class="flex justify-end mt-4 gap-x-3">
-            <button @click="saveForm" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600"> Lưu </button>
-            <button @click="closeForm" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Đóng</button>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -409,8 +536,6 @@ async function downloadTemplate(MaDT) {
   window.URL.revokeObjectURL(url);
 }
 
-
-
 // Khởi tạo entry cho mỗi sinh viên khi danh sách students thay đổi
 watch(students, (list) => {
   (list || []).forEach(s => {
@@ -468,8 +593,6 @@ async function saveForm() {
     alert(err.response?.data?.error || "Lỗi khi lưu form");
   }
 }
-
-
 
 // Export functions
 function exportStudents() {
@@ -568,8 +691,6 @@ const fetchStudents = async () => {
   } catch (err) {}
 };
 
-
-
 const fetchTopics = async () => {
   try {
     const teacher = await axios.post('/teacher-by-id/' + props.user.id);
@@ -603,6 +724,25 @@ function openReviewScoreModal(topic) {
   reviewScoreForm.value.Diem = topic.review_score ?? topic.Diem ?? ''
   reviewScoreForm.value.GhiChu = topic.review_note ?? topic.GhiChu ?? ''
   showReviewScoreModal.value = true
+}
+
+// Note: you can implement saveReviewScore/saveGuideScore endpoints similar to updateScore if needed
+
+// Guide score (view filters)
+const guideScoreSearch = ref('')
+const guideScoreList = computed(() => {
+  const q = (guideScoreSearch.value || '').toString().toLowerCase().trim()
+  return (topics.value || []).filter(t => {
+    if (!q) return true
+    return ((t.MaDT || t.id || '').toString().toLowerCase().includes(q) ||
+            (t.TenDT || '').toString().toLowerCase().includes(q))
+  })
+})
+
+function openGuideScoreModal(topic) {
+  // This function placeholder; implement modal logic if you add modal UI
+  // e.g. fill form state and showGuideScoreModal.value = true
+  console.log('Open guide score modal for', topic)
 }
 
 onMounted(() => {
