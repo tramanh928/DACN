@@ -17,6 +17,24 @@ class DeTaiController extends Controller
                 'TenDeTai' => $d->TenDeTai,
                 'MaGV'     => $d->MaGV,
                 'GiangVien'=> $d->MaGV ? $d->giangVien->Ho_va_Ten : '',
+                'MaGVPB'   => $d->MaGVPB,
+                'GiangVienPhanBien' => $d->MaGVPB ? $d->giangVienPhanBien->Ho_va_Ten : '',
+                'SoLuong'  => $d->SoLuong,
+                'TrangThai'=> $d->TrangThai,
+            ];
+        });
+    }
+
+    public function getTopicsByTeacher($MaGV)
+    {
+        return DeTai::where('MaGVPB', $MaGV)->with('giangVien')->get()->map(function($d) {
+            return [
+                'MaDT'     => $d->MaDT,
+                'TenDeTai' => $d->TenDeTai,
+                'MaGV'     => $d->MaGV,
+                'GiangVien'=> $d->MaGV ? $d->giangVien->Ho_va_Ten : '',
+                'MaGVPB'   => $d->MaGVPB,
+                'GiangVienPhanBien' => $d->MaGVPB ? $d->giangVienPhanBien->Ho_va_Ten : '',
                 'SoLuong'  => $d->SoLuong,
                 'TrangThai'=> $d->TrangThai,
             ];
@@ -173,6 +191,23 @@ class DeTaiController extends Controller
         return response()->json([
             'message' => 'Cập nhật tên đề tài cho nhóm thành công',
             'data'    => $oldTopic
+        ]);
+    }
+
+    public function assignReviewer(Request $request, $MaDT)
+    {
+        $detai = DeTai::where('MaDT', $MaDT)->firstOrFail();
+
+        $validated = $request->validate([
+            'MaGVPB' => 'required|string|exists:GiangVien,MaGV',
+        ]);
+
+        $detai->MaGVPB = $validated['MaGVPB'];
+        $detai->save();
+
+        return response()->json([
+            'message' => 'Phân công giảng viên phản biện thành công',
+            'data'    => $detai->load('giangVienPhanBien')
         ]);
     }
 

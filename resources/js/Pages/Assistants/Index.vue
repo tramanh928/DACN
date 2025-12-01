@@ -678,6 +678,31 @@
               </button>
             </div>
           </div>
+          <div class="overflow-x-auto bg-white rounded shadow">
+            <table class="min-w-full text-sm divide-y divide-gray-200">
+              <thead class="bg-indigo-100 text-indigo-700">
+                <tr>
+                  <th class="p-3 text-center">STT</th>
+                  <th class="p-3 text-center">MSSV</th>
+                  <th class="p-3 text-center">Họ và tên</th>
+                  <th class="p-3 text-center">Giảng viên hướng dẫn</th>
+                  <th class="p-3 text-center">Điểm</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(s, idx) in students" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
+                  <td class="p-3 text-center">{{ idx + 1 }}</td>
+                  <td class="p-3 text-center">{{ s.mssv || '-' }}</td>
+                  <td class="p-3 text-center">{{ s.name || '-' }}</td>
+                  <td class="p-3 text-center">{{ s.lecturer || '-' }}</td>
+                  <td class="p-3 text-center">{{ s.score || '-' }}</td>
+                </tr>
+                <tr v-if="topics.length === 0">
+                  <td colspan="8" class="p-4 text-center text-gray-500">Không có đề tài để phân công phản biện</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <!-- Phân công phản biện -->
@@ -714,7 +739,7 @@
                   <td class="p-3 text-center">{{ idx + 1 }}</td>
                   <td class="p-3 text-center">{{ t.MaDT || '-' }}</td>
                   <td class="p-3 text-center">{{ t.TenDeTai || t.title || '-' }}</td>
-                  <td class="p-3 text-center">{{ t.reviewer || '-' }}</td>
+                  <td class="p-3 text-center">{{ t.GiangVienPhanBien || '-' }}</td>
                   <td class="p-3 text-center">{{ t.reviewNote || '-' }}</td>
                   <td class="p-3 text-center">
                     <div class="flex gap-2 justify-center">
@@ -1298,7 +1323,7 @@ function reviewTopicsAssignedTo(reviewer) {
   if (!reviewer) return []
   const id = (reviewer.MaGV ?? reviewer.id ?? reviewer.name).toString()
   return (topics.value || []).filter(t => {
-    const rev = (t.reviewer ?? t.reviewer_id ?? t.reviewerName ?? '').toString()
+    const rev = (t.MaGVPB ?? t.reviewer_id ?? t.reviewerName ?? '').toString()
     return rev === id || rev === (reviewer.name ?? '')
   }) || []
 }
@@ -1320,7 +1345,7 @@ function countReviewAssigned(gv) {
   if (!gv) return 0
   const id = gv.MaGV ?? gv.id ?? gv.name
   return (topics.value || []).filter(t => {
-    const reviewer = (t.reviewer ?? t.reviewer_id ?? '').toString()
+    const reviewer = (t.MaGVPB ?? t.reviewer_id ?? '').toString()
     return reviewer === id || reviewer === (gv.name ?? '')
   }).length || 0
 }
@@ -1368,7 +1393,7 @@ async function confirmReviewAssignment(gv) {
   const confirmed = window.confirm(`Phân công đề tài "${selectedTopic.value.TenDeTai || selectedTopic.value.MaDT}" cho phản biện viên ${gv.name || gv.HoTen || reviewerId}?`)
   if (!confirmed) return
   try {
-    await axios.put(`/assign-reviewer/${selectedTopic.value.MaDT}`, { reviewer: reviewerId })
+    await axios.put(`/assign-reviewer/${selectedTopic.value.MaDT}`, { MaGVPB: reviewerId })
     fetchTopics()
     closeReviewerModal()
   } catch (err) {

@@ -118,13 +118,14 @@ Route::post('/teacher-by-id/{user_id}', [TeacherController::class, 'getTeacherBy
 Route::post('/students-by-teacher/{MaGV}', [StudentController::class, 'getStudentsByTeacher']);
 
 //Route lấy đề tài theo giảng viên
-Route::post('/topics-by-teacher/{MaGV}', [DeTaiController::class, 'getTopicsByTeacher']);
+Route::get('/topics-by-teacher/{MaGV}', [DeTaiController::class, 'getTopicsByTeacher']);
 
 //Route tạo nhóm, gộp nhóm
 Route::post('/update-student-group', [StudentController::class, 'updateStudentGroup']);
 
 //Route phân công
 Route::post('/save-topic', [DeTaiController::class, 'saveTopic']);
+Route::put('/assign-reviewer/{MaDT}', [DeTaiController::class, 'assignReviewer']);
 
 //Route cập nhật điểm và ghi chú
 Route::post('/update-score', [StudentController::class, 'updateScore']);
@@ -132,4 +133,3 @@ Route::post('/update-note', [StudentController::class, 'updateNote']);
 
 //Rpoute xuất file mẫu nhiệm vụ
 Route::get('/nhiem-vu-template/{MaDT}', [ExportController::class, 'downloadTemplate']);
-Route::post('/confirm-template', [ExportController::class, 'confirmTemplate']);

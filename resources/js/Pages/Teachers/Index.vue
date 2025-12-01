@@ -267,7 +267,7 @@
                 <tr v-for="(t, idx) in reviewScoreList" :key="t.MaDT || t.id || idx" class="hover:bg-indigo-50">
                   <td class="p-3 text-center">{{ idx + 1 }}</td>
                   <td class="p-3 text-center">{{ t.MaDT || t.id || '-' }}</td>
-                  <td class="p-3 text-center">{{ t.TenDT || '-' }}</td>
+                  <td class="p-3 text-center">{{ t.TenDeTai || '-' }}</td>
                   <td class="p-3 text-center">
                     <div class="flex justify-center gap-2">
                       <button type="button" @click="openReviewScoreModal(t)" class="bg-yellow-400 text-black px-3 py-1 rounded hover:bg-yellow-500 transition">
@@ -383,11 +383,32 @@ async function downloadTemplate(MaDT) {
   });
 
   const url = window.URL.createObjectURL(new Blob([res.data]));
+
+  // Extract filename from content-disposition header
+  let filename = 'download.docx'; // fallback
+  const disposition = res.headers['content-disposition'];
+  if (disposition && disposition.indexOf('filename=') !== -1) {
+    const match = disposition.match(/filename\*=UTF-8''(.+)$/);
+    if (match && match[1]) {
+      filename = decodeURIComponent(match[1]);
+    } else {
+      // fallback for older browsers
+      const match2 = disposition.match(/filename="(.+)"/);
+      if (match2 && match2[1]) {
+        filename = match2[1];
+      }
+    }
+  }
+
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'Form_NhiemvuLVTN - 2SV.docx';
+  a.download = filename;
+  document.body.appendChild(a);
   a.click();
-};
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+}
+
 
 
 // Khởi tạo entry cho mỗi sinh viên khi danh sách students thay đổi
@@ -486,7 +507,7 @@ function updateNote(student) {
 function updateGroup(student) {
   axios.post('/update-student-group', {
     mssv: student.mssv,
-    group: student.group
+    group_number: student.group
   })
   .then(res => {
     alert('Cập nhật nhóm thành công!');
@@ -522,23 +543,37 @@ const displayedTopics = computed(() => {
   })
 })
 
-
-
-// fetch students/topics if backend available (kept optional)
 const fetchStudents = async () => {
   try {
     const teacher = await axios.post('/teacher-by-id/' + props.user.id);
     const res = await axios.post('/students-by-teacher/' + teacher.data.MaGV);
-    console.log('Fetched students:', res.data);
-    console.log('Teacher data:', teacher.data);
-    students.value = res.data.sort((a, b) => Number(a.group) - Number(b.group))
-    totalStudents.value = students.value.length
+
+    students.value = res.data.map(s => {
+      let rawGroup = s.group ?? s.Nhom ?? null;
+
+      let displayGroup = rawGroup;
+
+      if (typeof rawGroup === 'string' && rawGroup.includes('-')) {
+        displayGroup = rawGroup.split('-')[1];
+      }
+
+      return {
+        ...s,
+        group: displayGroup    
+      };
+    }).sort((a, b) => Number(a.group) - Number(b.group));
+
+    totalStudents.value = students.value.length;
+
   } catch (err) {}
-}
+};
+
+
+
 const fetchTopics = async () => {
   try {
     const teacher = await axios.post('/teacher-by-id/' + props.user.id);
-    const res = await axios.post('/topics-by-teacher/' + teacher.data.MaGV);
+    const res = await axios.get('/topics-by-teacher/' + teacher.data.MaGV);
     topics.value = res.data || []
     totalTopics.value = topics.value.length
   } catch (err) {}
