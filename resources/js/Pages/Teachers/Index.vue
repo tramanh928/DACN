@@ -405,7 +405,7 @@ const isActionAllowed = async (TenSuKien) => {
 (async () => {
   const allowed = await isActionAllowed("Chấm điểm 50%");
   console.log('Allowed?', allowed);
-})();
+})(); 
 
 
 
