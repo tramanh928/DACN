@@ -23,8 +23,8 @@
       </div>
     </header>
 
-    <!-- Body: đảm bảo chiều cao đầy đủ để nền trắng của sidebar không bị cắt -->
-    <div class="flex h-[calc(100vh-4rem)]"> <!-- trừ chiều cao header (py-4 ≈ 4rem) -->
+    <!-- Body -->
+    <div class="flex h-[calc(100vh-4rem)]">
       <!-- Sidebar  -->
       <aside class="w-64 bg-white border-r p-6 min-h-full">
         <nav class="flex flex-col space-y-4 text-indigo-700 font-medium">
@@ -62,6 +62,7 @@
           >
             Điểm phản biện
           </button>
+
           <button 
             @click="setCurrentView('guideScore')" 
             :class="currentView === 'guideScore' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
@@ -71,7 +72,7 @@
         </nav>
       </aside>
 
-      <!-- Main content - added overflow-auto to handle content overflow -->
+      <!-- Main content -->
       <main class="flex-1 p-8 overflow-auto">
         <!-- Dashboard View -->
         <div v-if="currentView === 'dashboard'" class="min-h-[50vh] flex items-center justify-center">
@@ -111,13 +112,15 @@
               </thead>
               <tbody>
                 <tr v-for="(s, idx) in students" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
-                  <td class="p-3 text-center" >{{ idx + 1 }}</td>
+                  <td class="p-3 text-center">{{ idx + 1 }}</td>
                   <td class="p-3 text-center">{{ s.mssv }}</td>
                   <td class="p-3 text-center">{{ s.name }}</td>
                   <td class="p-3 text-center">{{ s.Lop || '-' }}</td>
                   <td class="p-3 text-center">{{ s.phone || '-' }}</td>
                   <td class="p-3 text-center">{{ s.email || '-' }}</td>
-                  <td class="p-3 text-center"><input v-model="s.group" @keyup.enter="updateGroup(s)" class="border p-1 w-16 text-center"/></td>
+                  <td class="p-3 text-center">
+                    <input v-model="s.group" @keyup.enter="updateGroup(s)" class="border p-1 w-16 text-center" />
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -167,10 +170,10 @@
                   <td class="p-3 text-center">{{ t.status || '-' }}</td>
                   <td class="p-3 text-center">
                     <div class="flex gap-2 justify-center">
-                      <button @click="openAssignForm(t)" type="button" class="bg-blue-500 text-white px-3 py-1 rounded text-sm opacity-90" >
+                      <button @click="openAssignForm(t)" type="button" class="bg-blue-500 text-white px-3 py-1 rounded text-sm opacity-90">
                         Phân công
                       </button>
-                      <button @click="downloadTemplate(t.code)" type="button" class="bg-indigo-500 text-white px-3 py-1 rounded text-sm opacity-90" >
+                      <button @click="downloadTemplate(t.code)" type="button" class="bg-indigo-500 text-white px-3 py-1 rounded text-sm opacity-90">
                         Xuất nhiệm vụ
                       </button>
                     </div>
@@ -181,16 +184,14 @@
           </div>
         </div>
 
-        <!-- Simple Form Modal (placeholder dùng cho Thêm/Sửa) -->
+        <!-- Simple Form Modal -->
         <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div class="bg-white rounded shadow-lg w-[90%] max-w-2xl p-6">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-lg font-semibold">{{ formMode === 'add' ? 'Phân công đề tài' : 'Sửa' }}</h3>
             </div>
 
-            <!-- Form content placeholder -->
             <div class="space-y-4 text-sm text-gray-700">
-              <!-- TenDT -->
               <div>
                 <label class="block font-medium mb-1">Tên đề tài</label>
                 <input
@@ -201,7 +202,6 @@
                 />
               </div>
 
-              <!-- MoTa -->
               <div>
                 <label class="block font-medium mb-1">Mô tả</label>
                 <textarea
@@ -212,7 +212,6 @@
                 ></textarea>
               </div>
 
-              <!-- TrangThai -->
               <div>
                 <label class="block font-medium mb-1">Trạng thái</label>
                 <select
@@ -225,9 +224,8 @@
                 </select>
               </div>
 
-              <!-- Save Button -->
               <div class="flex justify-end mt-4 gap-x-3">
-                <button @click="saveForm" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600"> Lưu </button>
+                <button @click="saveForm" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Lưu</button>
                 <button @click="closeForm" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Đóng</button>
               </div>
             </div>
@@ -294,10 +292,6 @@
                     />
                   </td>
                 </tr>
-
-                <tr v-if="filteredEvaluationList.length === 0">
-                  <td colspan="8" class="p-4 text-center text-gray-500">Không có sinh viên để đánh giá</td>
-                </tr>
               </tbody>
             </table>
           </div>
@@ -307,8 +301,13 @@
         <div v-if="currentView === 'reviewScore'">
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-indigo-600">ĐIỂM PHẢN BIỆN</h2>
-            <div>
-              <input v-model="reviewScoreSearch" type="text" placeholder="Tìm mã hoặc tên đề tài..." class="border rounded px-3 py-2 text-sm w-64" />
+          <div>
+              <input
+                v-model="reviewScoreSearch"
+                type="text"
+                placeholder="Tìm mã hoặc tên đề tài..."
+                class="border rounded px-3 py-2 text-sm w-64"
+              />
             </div>
           </div>
 
@@ -319,107 +318,253 @@
                   <th class="p-3 text-center">STT</th>
                   <th class="p-3 text-center">Mã đề tài</th>
                   <th class="p-3 text-center">Tên đề tài</th>
+                  <th class="p-3 text-center">MSSV</th>
+                  <th class="p-3 text-center">Họ và tên sinh viên</th>
                   <th class="p-3 text-center">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(t, idx) in reviewScoreList" :key="t.MaDT || t.id || idx" class="hover:bg-indigo-50">
-                  <td class="p-3 text-center">{{ idx + 1 }}</td>
-                  <td class="p-3 text-center">{{ t.MaDT || t.id || '-' }}</td>
-                  <td class="p-3 text-center">{{ t.TenDeTai || t.TenDT || t.title || '-' }}</td>
+                <tr
+                  v-for="(row, idx) in reviewScoreRows"
+                  :key="(row.topic.MaDT || row.topic.id || 't') + '-' + idx"
+                  :class="isTopicHovered(row.topic) ? 'bg-indigo-50' : ''"
+                  @mouseenter="setHoveredTopic(row.topic)"
+                  @mouseleave="clearHoveredTopic"
+                >
+                  <td
+                    v-if="row.isFirst"
+                    class="p-3 text-center"
+                    :rowspan="row.rowSpan"
+                  >
+                    {{ row.stt }}
+                  </td>
+
+                  <td
+                    v-if="row.isFirst"
+                    class="p-3 text-center"
+                    :rowspan="row.rowSpan"
+                  >
+                    {{ row.topic.MaDT || row.topic.id || '-' }}
+                  </td>
+
+                  <td
+                    v-if="row.isFirst"
+                    class="p-3 text-center"
+                    :rowspan="row.rowSpan"
+                  >
+                    {{ row.topic.TenDeTai || row.topic.TenDT || row.topic.title || '-' }}
+                  </td>
+
                   <td class="p-3 text-center">
+                    {{ row.MSSV || '-' }}
+                  </td>
+                  <td class="p-3 text-center">
+                    {{ row.name || '-' }}
+                  </td>
+
+                  <td
+                    v-if="row.isFirst"
+                    class="p-3 text-center"
+                    :rowspan="row.rowSpan"
+                  >
                     <div class="flex gap-2 justify-center">
-                      <button @click="openScoreMiniForm(t, 'review')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">
+                      <button
+                        @click="openReviewScoreMiniForm(row.topic, row.MSSV, row.name)"
+                        class="bg-blue-500 text-white px-3 py-1 rounded text-sm"
+                      >
                         Chấm điểm
                       </button>
                     </div>
                   </td>
                 </tr>
-                <tr v-if="(reviewScoreList || []).length === 0">
-                  <td colspan="4" class="p-4 text-center text-gray-500">Không có đề tài</td>
+
+                <tr v-if="reviewScoreRows.length === 0">
+                  <td colspan="6" class="p-4 text-center text-gray-500">Không có đề tài</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
-        <!-- Mini Form chung: Review / Guide  -->
-        <div v-if="showScoreMiniForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div class="bg-white rounded-lg p-6 w-[98%] max-w-2xl shadow-lg">
+
+        <!-- Mini Form ĐIỂM PHẢN BIỆN -->
+        <div v-if="showReviewScoreMiniForm" class="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-start justify-center overflow-auto">
+          <div class="bg-white rounded-lg mt-8 mb-8 p-6 w-[92%] max-w-[980px] shadow-lg">
             <div class="flex justify-between items-start mb-4">
-              <h3 class="text-lg font-bold text-indigo-600">
-                Chấm điểm {{ currentScoreMode === 'review' ? 'phản biện' : 'hướng dẫn' }}
+              <h3 class="text-xl font-bold text-indigo-600 text-center w-full">
+                Phiếu chấm điểm phản biện
               </h3>
-              <button @click="closeScoreMiniForm" class="text-gray-500">✕</button>
+              <button @click="closeReviewScoreMiniForm" class="text-gray-500 absolute right-8 top-6">✕</button>
             </div>
 
-            <!-- Thông tin (readonly) - highlight vàng -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-              <div>
-                <label class="block text-xs font-medium text-gray-600">Họ tên sinh viên</label>
-                <input v-model="scoreMiniForm.studentName" readonly class="w-full border rounded px-2 py-1 bg-yellow-100" />
+            <!-- header info -->
+            <div class="text-center mb-4">
+              <p class="text-sm mb-1">Thành viên trong nhóm:</p>
+              <div v-if="reviewScoreMiniForm.groupStudents && reviewScoreMiniForm.groupStudents.length" class="font-medium text-sm">
+                <p v-for="(mem, i) in reviewScoreMiniForm.groupStudents" :key="i">
+                  {{ mem.name }} - MSSV: {{ mem.mssv }}
+                </p>
               </div>
-              <div>
-                <label class="block text-xs font-medium text-gray-600">MSSV</label>
-                <input v-model="scoreMiniForm.mssv" readonly class="w-full border rounded px-2 py-1 bg-yellow-100" />
-              </div>
-
-              <div>
-                <label class="block text-xs font-medium text-gray-600">Lớp</label>
-                <input v-model="scoreMiniForm.Lop" readonly class="w-full border rounded px-2 py-1 bg-yellow-100" />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-gray-600">Tên đề tài</label>
-                <input v-model="scoreMiniForm.TenDeTai" readonly class="w-full border rounded px-2 py-1 bg-yellow-100" />
-              </div>
-
-              <div class="md:col-span-2">
-                <label class="block text-xs font-medium text-gray-600">Giảng viên phản biện</label>
-                <input v-model="scoreMiniForm.reviewerName" readonly class="w-full border rounded px-2 py-1 bg-yellow-100" />
-              </div>
+              <p v-else class="font-medium text-sm">
+                {{ reviewScoreMiniForm.groupMembers || (reviewScoreMiniForm.studentName ? (reviewScoreMiniForm.studentName + ' - MSSV: ' + reviewScoreMiniForm.mssv) : '') }}
+              </p>
+              <p class="mt-1">
+                Đề tài:
+                <span class="font-semibold">{{ reviewScoreMiniForm.TenDeTai }}</span>
+              </p>
             </div>
 
-            <!-- Điểm (có thể chỉnh) -->
-            <div class="mb-3">
-              <label class="block text-xs font-medium text-gray-600">Điểm (0 - 100)</label>
-              <input v-model.number="scoreMiniForm.Diem" type="number" min="0" max="100" class="w-32 border rounded px-2 py-1" />
-            </div>
+            <div class="max-h-[60vh] overflow-y-auto pr-2">
+              <!-- Nhận xét tổng quát -->
+              <div class="mb-6">
+                <div class="flex items-center gap-4 mb-2">
+                  <label class="block text-center font-medium text-indigo-600 mb-2">
+                    Nhận xét chung:
+                  </label>
+                  <label class="flex items-center gap-2">
+                    <input type="radio" value="Đạt" v-model="reviewScoreMiniForm.overall" /> Đạt
+                  </label>
+                  <label class="flex items-center gap-2">
+                    <input type="radio" value="Không đạt" v-model="reviewScoreMiniForm.overall" /> Không đạt
+                  </label>
+                </div>
+                <textarea
+                  v-model="reviewScoreMiniForm.overallNote"
+                  rows="3"
+                  class="w-full border rounded p-3 resize-none"
+                ></textarea>
+              </div>
 
-            <!-- Nhận xét chung radio -->
-            <div class="mb-3">
-              <label class="block text-xs font-medium text-gray-600 mb-1">Nhận xét chung</label>
-              <div class="flex items-center gap-4">
-                <label class="flex items-center gap-2">
-                  <input type="radio" value="Đạt" v-model="scoreMiniForm.overall" />
-                  <span>Đạt</span>
+              <!-- Ưu điểm chính -->
+              <div class="mb-6">
+                <label class="block text-center font-medium text-indigo-600 mb-2">
+                  Ưu điểm chính
                 </label>
-                <label class="flex items-center gap-2">
-                  <input type="radio" value="Không đạt" v-model="scoreMiniForm.overall" />
-                  <span>Không đạt</span>
+                <textarea
+                  v-model="reviewScoreMiniForm.strengths"
+                  rows="3"
+                  class="w-full border rounded p-3 resize-none"
+                ></textarea>
+              </div>
+
+              <!-- Thiếu sót chính -->
+              <div class="mb-6">
+                <label class="block text-center font-medium text-indigo-600 mb-2">
+                  Thiếu sót chính
                 </label>
+                <textarea
+                  v-model="reviewScoreMiniForm.weaknesses"
+                  rows="3"
+                  class="w-full border rounded p-3 resize-none"
+                ></textarea>
+              </div>
+
+              <!-- Table criteria -->
+              <div class="mb-6">
+                <table class="w-full border-collapse">
+                  <thead>
+                    <tr class="bg-gray-100">
+                      <th class="p-3 border text-center">STT</th>
+                      <th class="p-3 border text-left">Nội dung</th>
+                      <th class="p-3 border text-center">Điểm tối đa</th>
+                      <th class="p-3 border text-center">Điểm</th>
+                      <th class="p-3 border text-left">Ghi chú</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(c, i) in reviewScoreMiniForm.criteria" :key="i">
+                      <td class="p-3 border text-center align-top">{{ i + 1 }}</td>
+                      <td class="p-3 border align-top">{{ c.title }}</td>
+                      <td class="p-3 border text-center align-top">{{ c.max }}</td>
+                      <td class="p-3 border text-center align-top">
+                        <input
+                          v-model.number="c.score"
+                          type="number"
+                          :min="0"
+                          :max="c.max"
+                          class="w-20 border rounded p-1 text-center"
+                        />
+                      </td>
+                      <td class="p-3 border align-top">
+                        <textarea
+                          v-model="c.note"
+                          rows="2"
+                          class="w-full border rounded p-2 resize-none"
+                        ></textarea>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td class="p-3 border font-semibold" colspan="2">
+                        Tổng điểm {{ reviewScoreMiniForm.studentName }}
+                      </td>
+                      <td class="p-3 border text-center font-semibold">
+                        {{ totalReviewMax }}
+                      </td>
+                      <td class="p-3 border text-center font-semibold">
+                        {{ totalReviewScore }}
+                      </td>
+                      <td class="p-3 border text-center">
+                        {{ percentReviewScore }}%
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Câu hỏi cho sinh viên -->
+              <div class="mb-6">
+                <label class="block text-center font-medium text-indigo-600 mb-2">
+                  Câu hỏi cho sinh viên (tối đa 2 câu)
+                </label>
+                <textarea
+                  v-model="reviewScoreMiniForm.questions"
+                  rows="2"
+                  class="w-full border rounded p-3 resize-none"
+                ></textarea>
+              </div>
+
+              <!-- Đề nghị bảo vệ -->
+              <div class="mb-6">
+                <label class="block text-center font-medium text-indigo-600 mb-2">
+                  Đề nghị bảo vệ
+                </label>
+                <div class="flex items-center justify-center gap-6">
+                  <label>
+                    <input
+                      type="radio"
+                      v-model="reviewScoreMiniForm.recommend"
+                      value="Được bảo vệ"
+                    />
+                    Được bảo vệ
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      v-model="reviewScoreMiniForm.recommend"
+                      value="Không được bảo vệ"
+                    />
+                    Không được bảo vệ
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      v-model="reviewScoreMiniForm.recommend"
+                      value="Bổ sung/hiệu chỉnh để được bảo vệ"
+                    />
+                    Bổ sung/hiệu chỉnh để được bảo vệ
+                  </label>
+                </div>
               </div>
             </div>
 
-            <!-- Textareas: Nội dung, Ưu điểm, Thiếu sót -->
-            <div class="grid grid-cols-1 gap-3">
-              <div>
-                <label class="block text-xs font-medium text-gray-600">Nội dung</label>
-                <textarea v-model="scoreMiniForm.content" rows="3" class="w-full border rounded px-2 py-1"></textarea>
-              </div>
-
-              <div>
-                <label class="block text-xs font-medium text-gray-600">Những ưu điểm chính</label>
-                <textarea v-model="scoreMiniForm.strengths" rows="3" class="w-full border rounded px-2 py-1"></textarea>
-              </div>
-
-              <div>
-                <label class="block text-xs font-medium text-gray-600">Những thiếu sót chính</label>
-                <textarea v-model="scoreMiniForm.weaknesses" rows="3" class="w-full border rounded px-2 py-1"></textarea>
-              </div>
-            </div>
-
-            <div class="flex justify-end gap-3 mt-4">
-              <button @click="saveScoreMiniForm" class="bg-indigo-600 text-white px-4 py-2 rounded">Lưu</button>
-              <button @click="closeScoreMiniForm" class="bg-gray-200 px-4 py-2 rounded">Đóng</button>
+            <!-- Footer buttons -->
+            <div class="flex items-center justify-end gap-4 mt-4">
+              <button @click="closeReviewScoreMiniForm" class="px-4 py-2 rounded border">
+                Đóng
+              </button>
+              <button @click="saveReviewScoreMiniForm" class="px-5 py-2 rounded bg-blue-500 text-white">
+                Xác nhận 
+              </button>
             </div>
           </div>
         </div>
@@ -429,7 +574,12 @@
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-indigo-600">ĐIỂM HƯỚNG DẪN</h2>
             <div>
-              <input v-model="guideScoreSearch" type="text" placeholder="Tìm mã hoặc tên đề tài..." class="border rounded px-3 py-2 text-sm w-64" />
+              <input
+                v-model="guideScoreSearch"
+                type="text"
+                placeholder="Tìm mã hoặc tên đề tài..."
+                class="border rounded px-3 py-2 text-sm w-64"
+              />
             </div>
           </div>
 
@@ -444,13 +594,20 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(t, idx) in guideScoreList" :key="t.MaDT || t.id || idx" class="hover:bg-indigo-50">
+                <tr
+                  v-for="(t, idx) in guideScoreList"
+                  :key="t.MaDT || t.id || idx"
+                  class="hover:bg-indigo-50"
+                >
                   <td class="p-3 text-center">{{ idx + 1 }}</td>
                   <td class="p-3 text-center">{{ t.MaDT || t.id || '-' }}</td>
                   <td class="p-3 text-center">{{ t.TenDeTai || t.TenDT || t.title || '-' }}</td>
                   <td class="p-3 text-center">
                     <div class="flex gap-2 justify-center">
-                      <button @click="openScoreMiniForm(t, 'guide')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">
+                      <button
+                        @click="openGuideScoreMiniForm(t)"
+                        class="bg-blue-500 text-white px-3 py-1 rounded text-sm"
+                      >
                         Chấm điểm
                       </button>
                     </div>
@@ -463,13 +620,200 @@
             </table>
           </div>
         </div>
+
+        <!-- Mini Form ĐIỂM HƯỚNG DẪN -->
+        <div v-if="showGuideScoreMiniForm" class="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-start justify-center overflow-auto">
+          <div class="bg-white rounded-lg mt-8 mb-8 p-6 w-[92%] max-w-[980px] shadow-lg">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold text-indigo-600 text-center w-full">
+                Phiếu chấm điểm hướng dẫn
+              </h3>
+              <button @click="closeGuideScoreMiniForm" class="text-gray-500 absolute right-8 top-6">✕</button>
+            </div>
+
+            <!-- header info -->
+            <div class="text-center mb-4">
+              <p class="text-sm mb-1">Thành viên trong nhóm:</p>
+              <div v-if="guideScoreMiniForm.groupStudents && guideScoreMiniForm.groupStudents.length" class="font-medium text-sm">
+                <p v-for="(mem, i) in guideScoreMiniForm.groupStudents" :key="i">
+                  {{ mem.name }} - MSSV: {{ mem.mssv }}
+                </p>
+              </div>
+              <p v-else class="font-medium text-sm">
+                {{ guideScoreMiniForm.groupMembers || (guideScoreMiniForm.studentName ? (guideScoreMiniForm.studentName + ' - MSSV: ' + guideScoreMiniForm.mssv) : '') }}
+              </p>
+
+              <p class="mt-2 font-medium">
+                Chấm cho: {{ guideScoreMiniForm.studentName }} - MSSV: {{ guideScoreMiniForm.mssv }}
+              </p>
+              <p class="mt-1">
+                Đề tài:
+                <span class="font-semibold">{{ guideScoreMiniForm.TenDeTai }}</span>
+              </p>
+            </div>
+
+            <div class="max-h-[60vh] overflow-y-auto pr-2">
+              <!-- Nhận xét tổng quát -->
+              <div class="mb-6">
+                <div class="flex items-center gap-4 mb-2">
+                  <label class="block text-center font-medium text-indigo-600 mb-2">
+                    Nhận xét chung:
+                  </label>
+                  <label class="flex items-center gap-2">
+                    <input type="radio" value="Đạt" v-model="guideScoreMiniForm.overall" /> Đạt
+                  </label>
+                  <label class="flex items-center gap-2">
+                    <input type="radio" value="Không đạt" v-model="guideScoreMiniForm.overall" /> Không đạt
+                  </label>
+                </div>
+                <textarea
+                  v-model="guideScoreMiniForm.overallNote"
+                  rows="3"
+                  class="w-full border rounded p-3 resize-none"
+                ></textarea>
+              </div>
+
+              <!-- Ưu điểm chính -->
+              <div class="mb-6">
+                <label class="block text-center font-medium text-indigo-600 mb-2">
+                  Ưu điểm chính
+                </label>
+                <textarea
+                  v-model="guideScoreMiniForm.strengths"
+                  rows="3"
+                  class="w-full border rounded p-3 resize-none"
+                ></textarea>
+              </div>
+
+              <!-- Thiếu sót chính -->
+              <div class="mb-6">
+                <label class="block text-center font-medium text-indigo-600 mb-2">
+                  Thiếu sót chính
+                </label>
+                <textarea
+                  v-model="guideScoreMiniForm.weaknesses"
+                  rows="3"
+                  class="w-full border rounded p-3 resize-none"
+                ></textarea>
+              </div>
+
+              <!-- Table criteria -->
+              <div class="mb-6">
+                <table class="w-full border-collapse">
+                  <thead>
+                    <tr class="bg-gray-100">
+                      <th class="p-3 border text-center">STT</th>
+                      <th class="p-3 border text-left">Nội dung</th>
+                      <th class="p-3 border text-center">Điểm tối đa</th>
+                      <th class="p-3 border text-center">Điểm</th>
+                      <th class="p-3 border text-left">Ghi chú</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(c, i) in guideScoreMiniForm.criteria" :key="i">
+                      <td class="p-3 border text-center align-top">{{ i + 1 }}</td>
+                      <td class="p-3 border align-top">{{ c.title }}</td>
+                      <td class="p-3 border text-center align-top">{{ c.max }}</td>
+                      <td class="p-3 border text-center align-top">
+                        <input
+                          v-model.number="c.score"
+                          type="number"
+                          :min="0"
+                          :max="c.max"
+                          class="w-20 border rounded p-1 text-center"
+                        />
+                      </td>
+                      <td class="p-3 border align-top">
+                        <textarea
+                          v-model="c.note"
+                          rows="2"
+                          class="w-full border rounded p-2 resize-none"
+                        ></textarea>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td class="p-3 border font-semibold" colspan="2">
+                        Tổng điểm {{ guideScoreMiniForm.studentName }}
+                      </td>
+                      <td class="p-3 border text-center font-semibold">
+                        {{ totalGuideMax }}
+                      </td>
+                      <td class="p-3 border text-center font-semibold">
+                        {{ totalGuideScore }}
+                      </td>
+                      <td class="p-3 border text-center">
+                        {{ percentGuideScore }}%
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Câu hỏi cho sinh viên -->
+              <div class="mb-6">
+                <label class="block text-center font-medium text-indigo-600 mb-2">
+                  Câu hỏi cho sinh viên (tối đa 2 câu)
+                </label>
+                <textarea
+                  v-model="guideScoreMiniForm.questions"
+                  rows="2"
+                  class="w-full border rounded p-3 resize-none"
+                ></textarea>
+              </div>
+
+              <!-- Đề nghị bảo vệ -->
+              <div class="mb-6">
+                <label class="block text-center font-medium text-indigo-600 mb-2">
+                  Đề nghị bảo vệ
+                </label>
+                <div class="flex items-center justify-center gap-6">
+                  <label>
+                    <input
+                      type="radio"
+                      v-model="guideScoreMiniForm.recommend"
+                      value="Được bảo vệ"
+                    />
+                    Được bảo vệ
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      v-model="guideScoreMiniForm.recommend"
+                      value="Không được bảo vệ"
+                    />
+                    Không được bảo vệ
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      v-model="guideScoreMiniForm.recommend"
+                      value="Bổ sung/hiệu chỉnh để được bảo vệ"
+                    />
+                    Bổ sung/hiệu chỉnh để được bảo vệ
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer buttons -->
+            <div class="flex items-center justify-end gap-4 mt-4">
+              <button @click="closeGuideScoreMiniForm" class="px-4 py-2 rounded border">
+                Đóng
+              </button>
+              <button @click="saveGuideScoreMiniForm" class="px-5 py-2 rounded bg-blue-500 text-white">
+                Xác nhận 
+              </button>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive, watch } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import { router } from '@inertiajs/vue3'
 import axios from 'axios'
 
@@ -481,272 +825,510 @@ function logout() { router.post(route('logout')) }
 const props = defineProps({
   user: { type: Object, default: () => ({ name: 'Giảng viên' }) },
 })
+const user = props.user
 
 // Sidebar view state
 const currentView = ref('dashboard')
 function setCurrentView(view) { currentView.value = view }
 
-// Stats default 0
-const totalStudents = ref(0)
-const totalTopics = ref(0)
-
-// Students & topics data
 const students = ref([])
+const allStudents = ref([])
 const topics = ref([])
-const formData = ref({
-  MSSV: '',
-  MaGV: '',
-  TenDT: '',
-  MoTa: '',
-  TrangThai: '',
-})
 
-// Evaluation 50% map 
-const evaluationMap = reactive({})
+// Hover theo đề tài cho bảng điểm phản biện
+const hoveredTopicKey = ref(null)
 
-async function downloadTemplate(MaDT) {
-  const res = await axios.get(`/nhiem-vu-template/${MaDT}`, {
-    responseType: 'blob'
-  });
-
-  const url = window.URL.createObjectURL(new Blob([res.data]));
-
-  // Extract filename from content-disposition header
-  let filename = 'download.docx'; // fallback
-  const disposition = res.headers['content-disposition'];
-  if (disposition && disposition.indexOf('filename=') !== -1) {
-    const match = disposition.match(/filename\*=UTF-8''(.+)$/);
-    if (match && match[1]) {
-      filename = decodeURIComponent(match[1]);
-    } else {
-      // fallback for older browsers
-      const match2 = disposition.match(/filename="(.+)"/);
-      if (match2 && match2[1]) {
-        filename = match2[1];
-      }
-    }
-  }
-
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  window.URL.revokeObjectURL(url);
+function topicKey(topic) {
+  if (!topic) return ''
+  return (topic.MaDT || topic.id || topic.maDT || '').toString()
 }
 
-// Khởi tạo entry cho mỗi sinh viên khi danh sách students thay đổi
-watch(students, (list) => {
-  (list || []).forEach(s => {
-    const id = (s.mssv ?? s.student_id ?? '')
-    if (id && !evaluationMap[id]) evaluationMap[id] = { score: '', note: '' }
-  })
-}, { immediate: true })
+function setHoveredTopic(topic) {
+  hoveredTopicKey.value = topicKey(topic)
+}
 
-// Search models
-const studentSearch = ref('')
-const topicSearch = ref('')
+function clearHoveredTopic() {
+  hoveredTopicKey.value = null
+}
 
-// Simple form modal state
-const showForm = ref(false)
-const formMode = ref('add') // 'add'|'edit'
-const editingItem = ref(null)
-const editingIndex = ref(null)
+function isTopicHovered(topic) {
+  return hoveredTopicKey.value !== null &&
+         hoveredTopicKey.value === topicKey(topic)
+}
 
-// --- Đánh giá 50%: state và helpers ---
-const evaluationSearch = ref('')
-
-const filteredEvaluationList = computed(() => {
-  const q = (evaluationSearch.value || '').toString().toLowerCase().trim()
-  return (students.value || []).filter(s => {
-    if (!q) return true
-    return ((s.mssv || '') + ' ' + (s.name || '')).toLowerCase().includes(q)
-  })
-})
-
-// khởi tạo evaluationMap khi students thay đổi
-watch(students, (list) => {
-  (list || []).forEach(s => {
-    const id = s.mssv ?? s.MSSV ?? ''
-    if (!evaluationMap[id]) evaluationMap[id] = { score: s.evaluation50?.score ?? '', note: s.evaluation50?.note ?? '' }
-  })
-}, { immediate: true })
-
-function closeForm() { showForm.value = false; editingItem.value = null; editingIndex.value = null }
-async function saveForm() {
+// fetchers
+async function fetchStudents() {
   try {
-    const res = await axios.post('/save-topic', {
-      MSSV: formData.value.MSSV,
-      TenDT: formData.value.TenDT,
-      MoTa: formData.value.MoTa,
-      TrangThai: formData.value.TrangThai,
-      MaGV: formData.value.MaGV
-    });
+    const teacher = await axios.post('/teacher-by-id/' + user.id)
 
-    alert("Lưu đề tài & cập nhật sinh viên thành công!");
-    showForm.value = false;
-    fetchStudents();
-    fetchTopics();
+    const [resTeacher, resAll] = await Promise.all([
+      axios.post('/students-by-teacher/' + teacher.data.MaGV),
+      axios.post('/students/getAll')
+    ])
 
-  } catch (err) {
-    alert(err.response?.data?.error || "Lỗi khi lưu form");
-  }
+    students.value = resTeacher.data || []
+    allStudents.value = resAll.data || []
+  } catch (e) { console.error(e) }
 }
 
-// Export functions
-function exportStudents() {
-  try { window.open(route('students.export'), '_blank') } catch { /* fallback */ }
-}
-function exportTopics() {
-  try { window.open(route('topics.export'), '_blank') } catch { /* fallback */ }
-}
-function updateScore(student) {
-  axios.post('/update-score', {
-    MSSV: student.mssv,
-    Diem: student.score
-  })
-  .then(res => {
-    alert('Cập nhật điểm thành công!');
-  })
-  .catch(err => {
-    alert(err.response.data.error || 'Cập nhật điểm thất bại!');
-  });
-  fetchStudents();
-}
-function updateNote(student) {
-  axios.post('/update-note', {
-    MSSV: student.mssv,
-    GhiChu: student.note
-  })
-  .then(res => {
-    alert('Cập nhật ghi chú thành công!');
-  })
-  .catch(err => {
-    alert(err.response.data.error || 'Cập nhật ghi chú thất bại!');
-  });
-  fetchStudents();
-}
-function updateGroup(student) {
-  axios.post('/update-student-group', {
-    mssv: student.mssv,
-    group_number: student.group
-  })
-  .then(res => {
-    alert('Cập nhật nhóm thành công!');
-  })
-  .catch(err => {
-    alert(err.response.data.error || 'Cập nhật nhóm thất bại!');
-  });
-  fetchStudents();
-}
-
-async function openAssignForm(student){
-  formMode.value = 'add'
-  const teacher = await axios.post('/teacher-by-id/' + props.user.id);
-  formData.value = {
-    MSSV: student ? student.mssv || '' : '',
-    MaGV: teacher.data.MaGV || '',
-    TenDT: student ? student.topic || '' : '',
-    MoTa: student ? student.description || '' : '',
-    TrangThai: student ? student.status || '' : '',
-  }
-  showForm.value = true
-}
-
-const displayedTopics = computed(() => {
-  const q = (topicSearch.value || '').toString().toLowerCase().trim()
-  const base = students.value
-  if (!q) return base
-  return base.filter(t => {
-    const msgv = (t.msgv ?? t.teacher_id ?? '').toString().toLowerCase()
-    const mssv = (t.mssv ?? t.student_id ?? '').toString().toLowerCase()
-    const title = (t.title ?? t.ten_de_tai ?? '').toString().toLowerCase()
-    return msgv.includes(q) || mssv.includes(q) || title.includes(q)
-  })
-})
-
-const fetchStudents = async () => {
+async function fetchTopics() {
   try {
-    const teacher = await axios.post('/teacher-by-id/' + props.user.id);
-    const res = await axios.post('/students-by-teacher/' + teacher.data.MaGV);
-
-    students.value = res.data.map(s => {
-      let rawGroup = s.group ?? s.Nhom ?? null;
-
-      let displayGroup = rawGroup;
-
-      if (typeof rawGroup === 'string' && rawGroup.includes('-')) {
-        displayGroup = rawGroup.split('-')[1];
-      }
-
-      return {
-        ...s,
-        group: displayGroup    
-      };
-    }).sort((a, b) => Number(a.group) - Number(b.group));
-
-    totalStudents.value = students.value.length;
-
-  } catch (err) {}
-};
-
-const fetchTopics = async () => {
-  try {
-    const teacher = await axios.post('/teacher-by-id/' + props.user.id);
-    const res = await axios.get('/topics-by-teacher/' + teacher.data.MaGV);
+    const teacher = await axios.post('/teacher-by-id/' + user.id)
+    const res = await axios.get('/topics-by-teacher/' + teacher.data.MaGV)
     topics.value = res.data || []
-    totalTopics.value = topics.value.length
-  } catch (err) {}
+  } catch (e) { console.error(e) }
 }
 
-// --- Điểm phản biện - hướng dẫn ---
-const reviewScoreSearch = ref('')
-const showReviewScoreModal = ref(false)
-const reviewScoreForm = ref({
-  MaDT: '',
-  TenDeTai: '',
-  Diem: ''
-})
+onMounted(() => { fetchStudents(); fetchTopics() })
 
+// Lấy danh sách sinh viên thuộc 1 đề tài
+function getStudentsOfTopic(topic) {
+  if (!topic) return []
+
+  // Nếu topic.students có sẵn
+  if (Array.isArray(topic.students) && topic.students.length > 0) {
+    return topic.students
+      .map(s => ({
+        mssv: s.MSSV || s.mssv || '',
+        name: s.HoTen || s.name || s.fullName || ''
+      }))
+      .filter(s => s.mssv || s.name)
+  }
+
+  const topicName = (topic.TenDeTai || topic.TenDT || topic.title || '')
+    .toString()
+    .toLowerCase()
+    .trim()
+
+  const topicId = (topic.MaDT || topic.id || topic.maDT || topic.ma_dt || '')
+    .toString()
+
+  return (allStudents.value || [])
+    .filter(s => {
+      const stuTopicName = (s.topic || s.TenDeTai || s.TenDT || s.title || '')
+        .toString()
+        .toLowerCase()
+        .trim()
+
+      const stuTopicId = (s.MaDT || s.maDT || s.ma_dt || '').toString()
+
+      const sameId = topicId && stuTopicId && topicId === stuTopicId
+      const sameName = topicName && stuTopicName && topicName === stuTopicName
+
+      return sameId || sameName
+    })
+    .map(s => ({
+      mssv: s.mssv || s.MSSV || '',
+      name: s.name || s.HoTen || s.Ho_va_Ten || ''
+    }))
+    .filter(s => s.mssv || s.name)
+}
+
+// ======================
+// Review & Guide lists
+// ======================
+const reviewScoreSearch = ref('')
 const reviewScoreList = computed(() => {
   const q = (reviewScoreSearch.value || '').toString().toLowerCase().trim()
   return (topics.value || []).filter(t => {
     if (!q) return true
-    return ((t.MaDT || t.id || '').toString().toLowerCase().includes(q) ||
-            (t.TenDT || '').toString().toLowerCase().includes(q))
+    return (
+      ((t.MaDT || t.id || '') + ' ' + (t.TenDeTai || t.TenDT || t.title || ''))
+        .toLowerCase()
+        .includes(q)
+    )
   })
 })
 
-function openReviewScoreModal(topic) {
-  reviewScoreForm.value.MaDT = topic.MaDT ?? topic.id ?? ''
-  reviewScoreForm.value.TenDeTai = topic.TenDT ?? ''
-  reviewScoreForm.value.Diem = topic.review_score ?? topic.Diem ?? ''
-  reviewScoreForm.value.GhiChu = topic.review_note ?? topic.GhiChu ?? ''
-  showReviewScoreModal.value = true
-}
-
-// Note: you can implement saveReviewScore/saveGuideScore endpoints similar to updateScore if needed
-
-// Guide score (view filters)
 const guideScoreSearch = ref('')
 const guideScoreList = computed(() => {
   const q = (guideScoreSearch.value || '').toString().toLowerCase().trim()
   return (topics.value || []).filter(t => {
     if (!q) return true
-    return ((t.MaDT || t.id || '').toString().toLowerCase().includes(q) ||
-            (t.TenDT || '').toString().toLowerCase().includes(q))
+    return (
+      ((t.MaDT || t.id || '') + ' ' + (t.TenDeTai || t.TenDT || t.title || ''))
+        .toLowerCase()
+        .includes(q)
+    )
   })
 })
 
-function openGuideScoreModal(topic) {
-  // This function placeholder; implement modal logic if you add modal UI
-  // e.g. fill form state and showGuideScoreModal.value = true
-  console.log('Open guide score modal for', topic)
+const reviewScoreRows = computed(() => {
+  const result = []
+  let sttCounter = 0
+
+  const filteredTopics = reviewScoreList.value || []
+
+  filteredTopics.forEach(topic => {
+    let stuArr = getStudentsOfTopic(topic).map(s => ({
+      MSSV: s.mssv,
+      name: s.name
+    }))
+
+    if (stuArr.length === 0) {
+      stuArr.push({ MSSV: '', name: '' })
+    }
+
+    sttCounter += 1
+    const rowSpan = stuArr.length
+
+    stuArr.forEach((stu, index) => {
+      result.push({
+        topic,
+        isFirst: index === 0,      
+        rowSpan,                  
+        stt: index === 0 ? sttCounter : null,
+        MSSV: stu.MSSV,
+        name: stu.name
+      })
+    })
+  })
+
+  return result
+})
+
+const showReviewScoreMiniForm = ref(false)
+const reviewScoreMiniForm = reactive({
+  studentName: '',
+  mssv: '',
+  Lop: '',
+  TenDeTai: '',
+  groupMembers: '',
+  groupStudents: [],     // <<< danh sách SV trong nhóm
+  reviewerName: user?.name || '',
+  MaDT: '',
+  overall: 'Đạt',
+  overallNote: '',
+  strengths: '',
+  weaknesses: '',
+  criteria: [
+    { title: 'Phân tích vấn đề', max: 2.5, score: 0, note: '' },
+    { title: 'Thiết kế vấn đề', max: 2.5, score: 0, note: '' },
+    { title: 'Hiện thực vấn đề', max: 2.5, score: 0, note: '' },
+    { title: 'Kiểm tra sản phẩm', max: 2.5, score: 0, note: '' }
+  ],
+  questions: '',
+  recommend: 'Bổ sung/hiệu chỉnh để được bảo vệ'
+})
+
+function openReviewScoreMiniForm(topic, MSSVFromRow = '', nameFromRow = '') {
+  reviewScoreMiniForm.TenDeTai = topic.TenDeTai || topic.TenDT || topic.title || ''
+  reviewScoreMiniForm.MaDT = topic.MaDT || topic.id || ''
+  reviewScoreMiniForm.groupMembers = topic.groupMembers || topic.members || ''
+
+  let mssv = MSSVFromRow || topic.mssv || topic.MSSV || ''
+  if (!mssv && Array.isArray(topic.students) && topic.students.length > 0) {
+    mssv = topic.students[0]?.MSSV || topic.students[0]?.mssv || ''
+  }
+  reviewScoreMiniForm.mssv = mssv
+
+  let student = null
+  if (mssv) {
+    student = (allStudents.value || []).find(s => (s.mssv || s.MSSV) == mssv)
+  }
+
+  if (student) {
+    reviewScoreMiniForm.studentName = student.name || student.HoTen || nameFromRow || ''
+    reviewScoreMiniForm.Lop = student.Lop || ''
+  } else {
+    reviewScoreMiniForm.studentName = nameFromRow || topic.studentName || topic.HoTen || ''
+    reviewScoreMiniForm.Lop = topic.Lop || ''
+  }
+
+  // Lấy đầy đủ thành viên trong nhóm
+  const groupStu = getStudentsOfTopic(topic)
+  if (groupStu.length > 0) {
+    reviewScoreMiniForm.groupStudents = groupStu
+  } else {
+    reviewScoreMiniForm.groupStudents = [{
+      name: reviewScoreMiniForm.studentName,
+      mssv: reviewScoreMiniForm.mssv
+    }]
+  }
+
+  const data = topic.reviewData || null
+  if (data) {
+    reviewScoreMiniForm.overall = data.overall || 'Đạt'
+    reviewScoreMiniForm.overallNote = data.overallNote || ''
+    reviewScoreMiniForm.strengths = data.strengths || ''
+    reviewScoreMiniForm.weaknesses = data.weaknesses || ''
+    reviewScoreMiniForm.questions = data.questions || ''
+    reviewScoreMiniForm.recommend = data.recommend || 'Bổ sung/hiệu chỉnh để được bảo vệ'
+    reviewScoreMiniForm.criteria.forEach((c, idx) => {
+      const d = data.criteria?.[idx]
+      if (d) {
+        c.score = d.score ?? 0
+        c.note = d.note ?? ''
+      } else {
+        c.score = 0
+        c.note = ''
+      }
+    })
+  } else {
+    reviewScoreMiniForm.overall = 'Đạt'
+    reviewScoreMiniForm.overallNote = ''
+    reviewScoreMiniForm.strengths = ''
+    reviewScoreMiniForm.weaknesses = ''
+    reviewScoreMiniForm.questions = ''
+    reviewScoreMiniForm.recommend = 'Bổ sung/hiệu chỉnh để được bảo vệ'
+    reviewScoreMiniForm.criteria.forEach(c => { c.score = 0; c.note = '' })
+  }
+
+  showReviewScoreMiniForm.value = true
 }
 
-onMounted(() => {
-  fetchStudents()
-  fetchTopics()
+function closeReviewScoreMiniForm() { showReviewScoreMiniForm.value = false }
+
+const totalReviewMax = computed(() =>
+  reviewScoreMiniForm.criteria.reduce((s, c) => s + (Number(c.max) || 0), 0)
+)
+const totalReviewScore = computed(() =>
+  reviewScoreMiniForm.criteria.reduce((s, c) => s + (Number(c.score) || 0), 0)
+)
+const percentReviewScore = computed(() =>
+  Math.round((totalReviewScore.value / (totalReviewMax.value || 1)) * 100)
+)
+
+async function saveReviewScoreMiniForm() {
+  for (const c of reviewScoreMiniForm.criteria) {
+    if (c.score < 0) {
+      alert('Điểm không được âm')
+      return
+    }
+    if (c.score > c.max) {
+      alert(`Điểm mục "${c.title}" không được vượt quá ${c.max}`)
+      return
+    }
+  }
+
+  const payload = {
+    MaDT: reviewScoreMiniForm.MaDT,
+    MSSV: reviewScoreMiniForm.mssv,
+    overall: reviewScoreMiniForm.overall,
+    overallNote: reviewScoreMiniForm.overallNote,
+    strengths: reviewScoreMiniForm.strengths,
+    weaknesses: reviewScoreMiniForm.weaknesses,
+    criteria: reviewScoreMiniForm.criteria.map(c => ({
+      title: c.title,
+      max: c.max,
+      score: c.score,
+      note: c.note
+    })),
+    questions: reviewScoreMiniForm.questions,
+    recommend: reviewScoreMiniForm.recommend,
+    mode: 'review'
+  }
+
+  try {
+    const res = await axios.post('/save-review-score', payload, {
+      responseType: 'blob'
+    })
+
+    const contentType = res.headers['content-type'] || 'application/octet-stream'
+    const blob = new Blob([res.data], { type: contentType })
+    const url = window.URL.createObjectURL(blob)
+
+    let ext = 'docx'
+    if (contentType.includes('pdf')) ext = 'pdf'
+    const fileName = `phieu-phan-bien-${reviewScoreMiniForm.mssv || reviewScoreMiniForm.MaDT || 'detai'}.${ext}`
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+
+    showReviewScoreMiniForm.value = false
+    await fetchTopics()
+    await fetchStudents()
+  } catch (e) {
+    console.error(e)
+    alert('Lỗi khi lưu / xuất phiếu phản biện')
+  }
+}
+
+const showGuideScoreMiniForm = ref(false)
+const guideScoreMiniForm = reactive({
+  studentName: '',
+  mssv: '',
+  Lop: '',
+  TenDeTai: '',
+  groupMembers: '',
+  groupStudents: [],     // <<< danh sách SV trong nhóm
+  reviewerName: user?.name || '',
+  MaDT: '',
+  overall: 'Đạt',
+  overallNote: '',
+  strengths: '',
+  weaknesses: '',
+  criteria: [
+    { title: 'Phân tích vấn đề', max: 2.5, score: 0, note: '' },
+    { title: 'Thiết kế vấn đề', max: 2.5, score: 0, note: '' },
+    { title: 'Hiện thực vấn đề', max: 2.5, score: 0, note: '' },
+    { title: 'Kiểm tra sản phẩm', max: 2.5, score: 0, note: '' }
+  ],
+  questions: '',
+  recommend: 'Bổ sung/hiệu chỉnh để được bảo vệ'
 })
+
+function openGuideScoreMiniForm(topic) {
+  guideScoreMiniForm.TenDeTai = topic.TenDeTai || topic.TenDT || topic.title || ''
+  guideScoreMiniForm.MaDT = topic.MaDT || topic.id || ''
+  guideScoreMiniForm.groupMembers = topic.groupMembers || topic.members || ''
+
+  let mssv = topic.mssv || topic.MSSV || ''
+  if (!mssv && Array.isArray(topic.students) && topic.students.length > 0) {
+    mssv = topic.students[0]?.MSSV || topic.students[0]?.mssv || ''
+  }
+  guideScoreMiniForm.mssv = mssv
+
+  let student = null
+  if (mssv) {
+    student = (allStudents.value || []).find(s => (s.mssv || s.MSSV) == mssv)
+  }
+
+  if (student) {
+    guideScoreMiniForm.studentName = student.name || student.HoTen || ''
+    guideScoreMiniForm.Lop = student.Lop || ''
+  } else {
+    guideScoreMiniForm.studentName = topic.studentName || topic.HoTen || ''
+    guideScoreMiniForm.Lop = topic.Lop || ''
+  }
+
+  const groupStu = getStudentsOfTopic(topic)
+  if (groupStu.length > 0) {
+    guideScoreMiniForm.groupStudents = groupStu
+  } else {
+    guideScoreMiniForm.groupStudents = [{
+      name: guideScoreMiniForm.studentName,
+      mssv: guideScoreMiniForm.mssv
+    }]
+  }
+
+  const data = topic.guideData || null
+  if (data) {
+    guideScoreMiniForm.overall = data.overall || 'Đạt'
+    guideScoreMiniForm.overallNote = data.overallNote || ''
+    guideScoreMiniForm.strengths = data.strengths || ''
+    guideScoreMiniForm.weaknesses = data.weaknesses || ''
+    guideScoreMiniForm.questions = data.questions || ''
+    guideScoreMiniForm.recommend = data.recommend || 'Bổ sung/hiệu chỉnh để được bảo vệ'
+    guideScoreMiniForm.criteria.forEach((c, idx) => {
+      const d = data.criteria?.[idx]
+      if (d) {
+        c.score = d.score ?? 0
+        c.note = d.note ?? ''
+      } else {
+        c.score = 0
+        c.note = ''
+      }
+    })
+  } else {
+    guideScoreMiniForm.overall = 'Đạt'
+    guideScoreMiniForm.overallNote = ''
+    guideScoreMiniForm.strengths = ''
+    guideScoreMiniForm.weaknesses = ''
+    guideScoreMiniForm.questions = ''
+    guideScoreMiniForm.recommend = 'Bổ sung/hiệu chỉnh để được bảo vệ'
+    guideScoreMiniForm.criteria.forEach(c => { c.score = 0; c.note = '' })
+  }
+
+  showGuideScoreMiniForm.value = true
+}
+
+function closeGuideScoreMiniForm() { showGuideScoreMiniForm.value = false }
+
+const totalGuideMax = computed(() =>
+  guideScoreMiniForm.criteria.reduce((s, c) => s + (Number(c.max) || 0), 0)
+)
+const totalGuideScore = computed(() =>
+  guideScoreMiniForm.criteria.reduce((s, c) => s + (Number(c.score) || 0), 0)
+)
+const percentGuideScore = computed(() =>
+  Math.round((totalGuideScore.value / (totalGuideMax.value || 1)) * 100)
+)
+
+async function saveGuideScoreMiniForm() {
+  for (const c of guideScoreMiniForm.criteria) {
+    if (c.score < 0) {
+      alert('Điểm không được âm')
+      return
+    }
+    if (c.score > c.max) {
+      alert(`Điểm mục "${c.title}" không được vượt quá ${c.max}`)
+      return
+    }
+  }
+
+  const payload = {
+    MaDT: guideScoreMiniForm.MaDT,
+    MSSV: guideScoreMiniForm.mssv,
+    overall: guideScoreMiniForm.overall,
+    overallNote: guideScoreMiniForm.overallNote,
+    strengths: guideScoreMiniForm.strengths,
+    weaknesses: guideScoreMiniForm.weaknesses,
+    criteria: guideScoreMiniForm.criteria.map(c => ({
+      title: c.title,
+      max: c.max,
+      score: c.score,
+      note: c.note
+    })),
+    questions: guideScoreMiniForm.questions,
+    recommend: guideScoreMiniForm.recommend,
+    mode: 'guide'
+  }
+
+  try {
+    const res = await axios.post('/save-guide-score', payload, {
+      responseType: 'blob'
+    })
+
+    const contentType = res.headers['content-type'] || 'application/octet-stream'
+    const blob = new Blob([res.data], { type: contentType })
+    const url = window.URL.createObjectURL(blob)
+
+    let ext = 'docx'
+    if (contentType.includes('pdf')) ext = 'pdf'
+    const fileName = `phieu-huong-dan-${guideScoreMiniForm.mssv || guideScoreMiniForm.MaDT || 'detai'}.${ext}`
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+
+    showGuideScoreMiniForm.value = false
+    await fetchTopics()
+    await fetchStudents()
+  } catch (e) {
+    console.error(e)
+    alert('Lỗi khi lưu / xuất phiếu hướng dẫn')
+  }
+}
+
+const showForm = ref(false)
+const formMode = ref('add')
+const formData = reactive({
+  TenDT: '',
+  MoTa: '',
+  TrangThai: ''
+})
+const displayedTopics = computed(() => topics.value || [])
+
+function openAssignForm(t) { /* TODO: implement nếu cần */ }
+function downloadTemplate(code) { /* TODO: implement nếu cần */ }
+function saveForm() { /* TODO: implement nếu cần */ }
+function closeForm() { showForm.value = false }
+
+const evaluationSearch = ref('')
+const filteredEvaluationList = ref([])
+
+function updateScore(student) { /* implement nếu cần */ }
+function updateNote(student) { /* implement nếu cần */ }
+function updateGroup(student) { /* implement nếu cần */ }
+
 </script>
