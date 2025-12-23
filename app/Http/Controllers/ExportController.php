@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
 use App\Models\DeTai;
+use App\Models\DiemPhanBien;
 
 class ExportController extends Controller
 {
+
     public function downloadTemplate($MaDT)
     {
         $topic = DeTai::with(['SinhVien', 'GiangVien'])
@@ -18,20 +20,16 @@ class ExportController extends Controller
         $sv2 = $topic->SinhVien[1] ?? null;
         $giangvien = $topic->GiangVien;
 
-        // Build filename
         $originalFilename = $sv1->Ho_va_Ten ?? 'SV1';
         if ($sv2) {
             $originalFilename .= ' - ' . ($sv2->Ho_va_Ten ?? 'SV2');
         }
 
-        // Remove only forbidden filesystem characters
         $filename = preg_replace('/[\\\\\/:*?"<>|]/', '', $originalFilename) . '.docx';
 
-        // Use a clean temp file (avoid template name)
         $tempPath = tempnam(sys_get_temp_dir(), 'nhiemvu_') . '.docx';
         copy(storage_path('app/templates/Form_NhiemvuLVTN - 2SV.docx'), $tempPath);
 
-        // Load template and fill fields
         $template = new TemplateProcessor($tempPath);
         $template->setValue('teacher_name', $giangvien->Ho_va_Ten ?? '');
         $template->setValue('sv1_name', $sv1->Ho_va_Ten ?? '');
@@ -43,19 +41,129 @@ class ExportController extends Controller
         $template->setValue('ten_detai', $topic->TenDeTai ?? '');
 
         $lines = preg_split("/\r\n|\n|\r/", $topic->MoTa);
-        $template->setValue('task1', $lines[0] ?? '');
-        $template->setValue('task2', $lines[1] ?? '');
-        $template->setValue('task3', $lines[2] ?? '');
-        $template->setValue('task4', $lines[3] ?? '');
-        $template->setValue('task5', $lines[4] ?? '');
+        for ($i = 0; $i < 5; $i++) {
+            $template->setValue('task' . ($i + 1), $lines[$i] ?? '');
+        }
 
         $template->saveAs($tempPath);
-
         $this->updateDocxTitle($tempPath, $filename);
 
         return response()->download($tempPath, $filename)->deleteFileAfterSend(true);
     }
 
+    public function downloadPhanBien($MaDT)
+    {
+        $topic = DeTai::with(['SinhVien', 'giangVienPhanBien'])
+            ->where('MaDT', $MaDT)
+            ->firstOrFail();
+
+        $students = $topic->SinhVien;
+        $gv = $topic->giangVienPhanBien;
+
+        $templateFile = $students->count() === 1
+            ? 'Mau 02.02_PHIEU CHAM_PHAN BIEN_SINH VIEN-An_.docx'
+            : 'Mau 02.01_PHIEU CHAM_PHAN BIEN_NHOM SINH VIEN - Tham-Tran.docx';
+
+        $tempPath = tempnam(sys_get_temp_dir(), 'phanbien_') . '.docx';
+        copy(storage_path("app/templates/{$templateFile}"), $tempPath);
+
+        $template = new TemplateProcessor($tempPath);
+
+        $template->setValue('ten_detai', $topic->TenDeTai ?? '');
+        $template->setValue('gv_name', $gv->Ho_va_Ten ?? '');
+
+        $shared = null;
+        if ($students->count() > 0) {
+            $shared = DiemPhanBien::where('MSSV', $students[0]->MSSV)->first();
+        }
+
+        $template->setValue('dieu_chinh', $shared->dieu_chinh ?? '');
+        $template->setValue('uu', $shared->uu ?? '');
+        $template->setValue('nhuoc', $shared->nhuoc ?? '');
+        $template->setValue('cau_hoi', $shared->cau_hoi ?? '');
+
+        $template->setValue(
+            'check_dat',
+            $shared && $shared->Danh_gia === 'Đạt' ? '☑' : '☐'
+        );
+        $template->setValue(
+            'check_khong_dat',
+            $shared && $shared->Danh_gia === 'Không đạt' ? '☑' : '☐'
+        );
+
+        foreach ($students as $i => $sv) {
+            $idx = $i + 1;
+
+            $template->setValue("sv{$idx}_name", $sv->Ho_va_Ten ?? '');
+            $template->setValue("sv{$idx}_mssv", $sv->MSSV ?? '');
+            $template->setValue("sv{$idx}_lop", $sv->Lop ?? '');
+
+            $score = DiemPhanBien::where('MSSV', $sv->MSSV)->first();
+            if (!$score) {
+                $template->setValue("pttk_sv{$idx}", '');
+                $template->setValue("tkvd_sv{$idx}", '');
+                $template->setValue("htvd_sv{$idx}", '');
+                $template->setValue("ktsp_sv{$idx}", '');
+                $template->setValue("tong_sv{$idx}", '');
+                $template->setValue("diem10_sv{$idx}", '');
+                $template->setValue("bv_dat_sv{$idx}", '☐');
+                $template->setValue("bv_khong_sv{$idx}", '☐');
+                $template->setValue("bv_bs_sv{$idx}", '☐');
+                continue;
+            }
+
+            $template->setValue("pttk_sv{$idx}", $score->pttk ?? '');
+            $template->setValue("tkvd_sv{$idx}", $score->tkvd ?? '');
+            $template->setValue("htvd_sv{$idx}", $score->htvd ?? '');
+            $template->setValue("ktsp_sv{$idx}", $score->ktsp ?? '');
+
+            $template->setValue(
+                "tong_sv{$idx}",
+                $score->tong !== null ? $score->tong*10 : ''
+            );
+
+            $diem10 = round($score->tong, 1);
+
+            $template->setValue('diem10_sv1', $diem10);
+            $template->setValue(
+                'diem10_chu_sv1',
+                $this->diemSoThanhChu($diem10)
+            );
+
+            $template->setValue(
+                "bv_dat_sv{$idx}",
+                $score->bao_ve === 'Được bảo vệ' ? '☑' : '☐'
+            );
+            $template->setValue(
+                "bv_khong_sv{$idx}",
+                $score->bao_ve === 'Không được bảo vệ' ? '☑' : '☐'
+            );
+            $template->setValue(
+                "bv_bs_sv{$idx}",
+                $score->bao_ve === 'Bổ sung/hiệu chỉnh để được bảo vệ' ? '☑' : '☐'
+            );
+            $deNghi = '';
+
+            if ($score->bao_ve === 'Được bảo vệ') {
+                $deNghi = 'Được bảo vệ';
+            } elseif ($score->bao_ve === 'Không được bảo vệ') {
+                $deNghi = 'Không được bảo vệ';
+            } elseif ($score->bao_ve === 'Bổ sung/hiệu chỉnh để được bảo vệ') {
+                $deNghi = 'Bổ sung/hiệu chỉnh để được bảo vệ';
+            }
+
+            $template->setValue('de_nghi_bao_ve_sv1', $deNghi);
+        }
+
+        $filename = $students->pluck('Ho_va_Ten')->implode(' - ') . '.docx';
+        $filename = preg_replace('/[\\\\\/:*?"<>|]/', '', $filename);
+
+        $template->saveAs($tempPath);
+
+        return response()
+            ->download($tempPath, $filename)
+            ->deleteFileAfterSend(true);
+    }
 
     private function updateDocxTitle($filePath, $title)
     {
@@ -63,16 +171,44 @@ class ExportController extends Controller
         if ($zip->open($filePath) === true) {
             if (($index = $zip->locateName('docProps/core.xml')) !== false) {
                 $data = $zip->getFromIndex($index);
-                if (strpos($data, '<dc:title>') !== false) {
-                    $data = preg_replace(
-                        '/<dc:title>.*<\/dc:title>/',
-                        '<dc:title>' . htmlspecialchars($title, ENT_XML1) . '</dc:title>',
-                        $data
-                    );
-                    $zip->addFromString('docProps/core.xml', $data);
-                }
+                $data = preg_replace(
+                    '/<dc:title>.*<\/dc:title>/',
+                    '<dc:title>' . htmlspecialchars($title, ENT_XML1) . '</dc:title>',
+                    $data
+                );
+                $zip->addFromString('docProps/core.xml', $data);
             }
             $zip->close();
         }
+    }
+    private function diemSoThanhChu($diem)
+    {
+        $map = [
+            0 => 'Không',
+            0.5 => 'Không phẩy năm',
+            1 => 'Một',
+            1.5 => 'Một phẩy năm',
+            2 => 'Hai',
+            2.5 => 'Hai phẩy năm',
+            3 => 'Ba',
+            3.5 => 'Ba phẩy năm',
+            4 => 'Bốn',
+            4.5 => 'Bốn phẩy năm',
+            5 => 'Năm',
+            5.5 => 'Năm phẩy năm',
+            6 => 'Sáu',
+            6.5 => 'Sáu phẩy năm',
+            7 => 'Bảy',
+            7.5 => 'Bảy phẩy năm',
+            8 => 'Tám',
+            8.5 => 'Tám phẩy năm',
+            9 => 'Chín',
+            9.5 => 'Chín phẩy năm',
+            10 => 'Mười',
+        ];
+
+        $diem = round($diem, 1);
+
+        return ($map[$diem] ?? '') . ' điểm';
     }
 }

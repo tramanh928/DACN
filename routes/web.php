@@ -11,6 +11,8 @@ use App\Http\Controllers\DeTaiController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ThoiGianController;
+use App\Http\Controllers\DiemHuongDanController;
+use App\Http\Controllers\DiemPhanBienController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -92,9 +94,8 @@ Route::post('/topics/getAll', [DeTaiController::class, 'index']);
 
 //Route cho Import Excel
 
-Route::post('/import-temp', [ImportController::class, 'import'])->withoutMiddleware(['web']); // TEMP TEST
+Route::post('/import-temp', [ImportController::class, 'import'])->withoutMiddleware(['web']);
 
-Route::post('/process-temp', [ImportController::class, 'process'])->name('process.temp');
 
 //Route để thêm dữ liệu
 Route::post('/add-student', [StudentController::class, 'store']);
@@ -117,9 +118,11 @@ Route::put('/assign-students/{mssv}', [StudentController::class, 'edit']);
 //Route lấy dssv theo gv
 Route::post('/teacher-by-id/{user_id}', [TeacherController::class, 'getTeacherById']);
 Route::post('/students-by-teacher/{MaGV}', [StudentController::class, 'getStudentsByTeacher']);
+Route::post('/students-by-reviewer/{MaGV}', [StudentController::class, 'getStudentsByReviewer']);
 
 //Route lấy đề tài theo giảng viên
 Route::get('/topics-by-teacher/{MaGV}', [DeTaiController::class, 'getTopicsByTeacher']);
+Route::get('/topics-by-review-teacher/{MaGV}', [DeTaiController::class, 'getTopicsByReviewTeacher']);
 
 //Route tạo nhóm, gộp nhóm
 Route::post('/update-student-group', [StudentController::class, 'updateStudentGroup']);
@@ -132,8 +135,9 @@ Route::put('/assign-reviewer/{MaDT}', [DeTaiController::class, 'assignReviewer']
 Route::post('/update-score', [StudentController::class, 'updateScore']);
 Route::post('/update-note', [StudentController::class, 'updateNote']);
 
-//Route xuất file mẫu nhiệm vụ
+//Route xuất file mẫu nhiệm vụ, phản biện, hướng dẫn
 Route::get('/nhiem-vu-template/{MaDT}', [ExportController::class, 'downloadTemplate']);
+Route::get('/export/phan-bien/{MaDT}', [ExportController::class, 'downloadPhanBien']);
 
 //Route quản lý thời gian
 Route::get('/thoi-gian', [ThoiGianController::class, 'index'])->name('thoi-gian.index');
@@ -141,3 +145,21 @@ Route::post('/thoi-gian', [ThoiGianController::class, 'store'])->name('thoi-gian
 Route::get('/check-access/{TenSuKien}', [ThoiGianController::class, 'checkAccess']);
 Route::put('/thoi-gian/{id}', [ThoiGianController::class, 'update'])->name('thoi-gian.update');
 Route::delete('/thoi-gian/{id}', [ThoiGianController::class, 'destroy'])->name('thoi-gian.destroy');
+
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/diem-huong-dan', [DiemHuongDanController::class, 'index'])->name('diem-huong-dan.index');
+    Route::get('/diem-huong-dan/{id}', [DiemHuongDanController::class, 'show'])->name('diem-huong-dan.show');
+    Route::post('/diem-huong-dan', [DiemHuongDanController::class, 'store'])->name('diem-huong-dan.store');
+    Route::put('/diem-huong-dan/{id}', [DiemHuongDanController::class, 'update'])->name('diem-huong-dan.update');
+    Route::delete('/diem-huong-dan/{id}', [DiemHuongDanController::class, 'destroy'])->name('diem-huong-dan.destroy');
+
+    Route::get('/diem-phan-bien', [DiemPhanBienController::class, 'index'])->name('diem-phan-bien.index');
+    Route::get('/diem-phan-bien/{id}', [DiemPhanBienController::class, 'show'])->name('diem-phan-bien.show');
+    Route::post('/diem-phan-bien', [DiemPhanBienController::class, 'store'])->name('diem-phan-bien.store');
+    Route::put('/diem-phan-bien/{id}', [DiemPhanBienController::class, 'update'])->name('diem-phan-bien.update');
+    Route::delete('/diem-phan-bien/{id}', [DiemPhanBienController::class, 'destroy'])->name('diem-phan-bien.destroy');
+
+    Route::post('/save-review-score', [DiemPhanBienController::class, 'store'])
+        ->name('diem-phan-bien.save-review');
+});

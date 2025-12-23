@@ -27,6 +27,22 @@ class DeTaiController extends Controller
 
     public function getTopicsByTeacher($MaGV)
     {
+        return DeTai::where('MaGV', $MaGV)->with('giangVien')->get()->map(function($d) {
+            return [
+                'MaDT'     => $d->MaDT,
+                'TenDeTai' => $d->TenDeTai,
+                'MaGV'     => $d->MaGV,
+                'GiangVien'=> $d->MaGV ? $d->giangVien->Ho_va_Ten : '',
+                'MaGVPB'   => $d->MaGVPB,
+                'GiangVienPhanBien' => $d->MaGVPB ? $d->giangVienPhanBien->Ho_va_Ten : '',
+                'SoLuong'  => $d->SoLuong,
+                'TrangThai'=> $d->TrangThai,
+            ];
+        });
+    }
+
+    public function getTopicsByReviewTeacher($MaGV)
+    {
         return DeTai::where('MaGVPB', $MaGV)->with('giangVien')->get()->map(function($d) {
             return [
                 'MaDT'     => $d->MaDT,

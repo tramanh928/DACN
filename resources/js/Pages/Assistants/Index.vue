@@ -2101,7 +2101,7 @@ function closeReviewerTopicList() {
   showReviewTopicModal.value = false
 }
 
-// danh sách đề tài cần phân công (lọc theo ô tìm kiếm)
+
 const reviewTopics = computed(() => {
   const q = (reviewSearch.value || '').toString().toLowerCase().trim()
 
@@ -2130,73 +2130,72 @@ const reviewAssignmentRows = computed(() => {
   let sttCounter = 0
 
   const topicList = reviewTopics.value || []
+  const allStudents = students.value || []
 
-  topicList.forEach(topic => {
-    let stuArr = []
+  const norm = v => (v ?? '').toString().toLowerCase().trim()
 
-    // Nếu backend đã gắn trực tiếp mảng students vào topic
-    if (Array.isArray(topic.students) && topic.students.length > 0) {
-      stuArr = topic.students.map(s => ({
-        mssv: s.MSSV || s.mssv || '',
-        name: s.HoTen || s.name || s.fullName || ''
-      }))
+  // Build topicMap keyed strictly by MaDT, then Nhom, otherwise unique per topic
+  const topicMap = new Map()
+  topicList.forEach((topic, idx) => {
+    const maDT = (topic.MaDT || topic.maDT || topic.ma_dt || '').toString().trim()
+    const nhom = norm(topic.Nhom || topic.group)
+
+    let key
+    if (maDT !== '') {
+      key = `MADT::${maDT}`
+    } else if (nhom !== '') {
+      key = `NHOM::${nhom}`
     } else {
-      // Tự tìm sinh viên theo đề tài (match tên đề tài hoặc mã đề tài nếu có)
-      const topicName = (topic.TenDeTai || topic.title || '')
-        .toString()
-        .toLowerCase()
-        .trim()
-      const topicId = (topic.MaDT || topic.maDT || topic.ma_dt || '').toString()
-
-      stuArr = (students.value || [])
-        .filter(s => {
-          const stuTopicName = (s.topic || s.TenDeTai || '')
-            .toString()
-            .toLowerCase()
-            .trim()
-          const stuTopicId = (s.MaDT || s.maDT || s.ma_dt || '').toString()
-
-          const sameId = topicId && stuTopicId && topicId === stuTopicId
-          const sameName = topicName && stuTopicName && topicName === stuTopicName
-
-          return sameId || sameName
-        })
-        .map(s => ({
-          mssv: s.mssv || s.MSSV || '',
-          name: s.name || s.Ho_va_Ten || s.HoTen || ''
-        }))
+      // unique fallback so topics with same title are NOT merged
+      key = `UNIQ::${idx}` // use index to keep each topic separate
     }
 
-    // Nếu không tìm được SV nào vẫn tạo 1 dòng trống để hiển thị đề tài
-    if (stuArr.length === 0) {
-      stuArr.push({ mssv: '', name: '' })
+    // keep first topic object for this key
+    if (!topicMap.has(key)) {
+      topicMap.set(key, { key, topic })
     }
+  })
+
+  // For each unique topic key, find students and push rows
+  for (const { key, topic } of topicMap.values()) {
+    const topicMaDT = (topic.MaDT || topic.maDT || topic.ma_dt || '').toString().trim()
+    const topicNhom = norm(topic.Nhom || topic.group)
+
+    // find students that belong to this topic key
+    const matchedStudents = allStudents.filter(s => {
+      const sMaDT = (s.MaDT || s.maDT || s.ma_dt || '').toString().trim()
+      const sNhom = norm(s.Nhom || s.group)
+
+      // priority: MaDT match, then Nhom match
+      if (topicMaDT && sMaDT && topicMaDT === sMaDT) return true
+      if (topicNhom && sNhom && topicNhom === sNhom) return true
+
+      return false
+    }).map(s => ({
+      mssv: s.mssv || s.MSSV || '',
+      name: s.name || s.Ho_va_Ten || s.HoTen || ''
+    }))
+
+    const stuArr = matchedStudents.length ? matchedStudents : [{ mssv: '', name: '' }]
 
     sttCounter += 1
     const rowSpan = stuArr.length
 
-    stuArr.forEach(stu => {
+    let first = true
+    for (const stu of stuArr) {
       result.push({
         topic,
-        isFirst: result.filter(r => r.topic === topic).length === 0,
+        key,
+        isFirst: first,
         rowSpan,
-        stt: sttCounter, // cùng STT cho cả block đề tài
+        stt: sttCounter,
         mssv: stu.mssv,
         name: stu.name
       })
-    })
-  })
-
-  // chỉnh lại isFirst cho mỗi nhóm đề tài
-  let lastTopic = null
-  result.forEach(row => {
-    if (row.topic !== lastTopic) {
-      row.isFirst = true
-      lastTopic = row.topic
-    } else {
-      row.isFirst = false
+      first = false
     }
-  })
+  }
+  console.log(allStudents)
 
   return result
 })

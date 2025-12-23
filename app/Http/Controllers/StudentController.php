@@ -19,6 +19,7 @@ class StudentController extends Controller
                 'Lop'                => $s->Lop,
                 'group'              => $s->Nhom,
                 'topic'              => $s->MaDT ? $s->deTai->TenDeTai : '',
+                'MaDT'               => $s->MaDT,
                 'email'              => $s->email,
                 'phone'              => $s->sdt,
                 'lecturer'           => $s->giangVienHuongDan ? $s->giangVienHuongDan->Ho_va_Ten : '',
@@ -55,6 +56,24 @@ class StudentController extends Controller
             ];
         });
     }
+    public function getStudentsByReviewer(Request $request, $MaGV)
+    {
+        return SinhVien::whereHas('deTai', function ($q) use ($MaGV) {
+            $q->where('MaGVPB', $MaGV);
+        })
+        ->with('deTai')
+        ->get()
+        ->map(function ($s) {
+            return [
+                'mssv'  => $s->MSSV,
+                'name'  => $s->Ho_va_Ten,
+                'group' => $s->Nhom,
+                'MaDT'  => $s->MaDT,
+                'TenDT' => $s->deTai?->TenDeTai,
+            ];
+        });
+    }
+
 
     // Tạo mới sinh viên
     public function store(Request $request)

@@ -9,27 +9,32 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Imports\HeadingRowFormatter;
 
-HeadingRowFormatter::default('none'); // keep Vietnamese header names exactly
+HeadingRowFormatter::default('none');
 
 class TempImport implements ToModel, WithHeadingRow, WithChunkReading, WithBatchInserts
 {
-    /**
-     * Define which row is the header (row 1)
-     */
     public function headingRow(): int
     {
         return 1;
     }
 
-    /**
-     * Map each row to a model
-     */
     public function model(array $row)
     {
-        // Skip empty rows
         if (empty($row['MSSV']) && empty($row['HỌ TÊN SINH VIÊN'])) {
             return null;
         }
+
+        $trangThai = null;
+
+        if (!empty($row['Cảnh cáo'])) {
+            $trangThai = 'Cảnh Cáo';
+        } elseif (!empty($row['Đình chỉ'])) {
+            $trangThai = 'Đình Chỉ';
+        } elseif (!empty($row['Ý kiến khác'])) {
+            $trangThai = $row['Ý kiến khác'];
+        }
+        else
+            $trangThai = "Được tiếp tục";
 
         return new TempImportModel([
             'MSSV'        => $row['MSSV'] ?? null,
@@ -40,12 +45,18 @@ class TempImport implements ToModel, WithHeadingRow, WithChunkReading, WithBatch
             'HuongDeTai'  => $row['Hướng đề tài'] ?? null,
             'Nhom'        => $row['Nhóm'] ?? null,
             'GVHD'        => $row['GVHD'] ?? null,
+
+            'HocVi'       => $row['HH-HV'] ?? null,
+            'TenDeTai'    => $row['Tên đề tài'] ?? null,
+            'NoiCongTac'  => $row['Nơi công tác'] ?? null,
+
+            'Diem'        => $row['Điểm'] ?? null,
+            'TrangThai'   => $trangThai,
+            'GhiChu'      => $row['Ghi chú'] ?? null,
+            'MoTa'        => $row['Mô tả'] ?? null
         ]);
     }
 
-    /**
-     * Tune for performance
-     */
     public function chunkSize(): int
     {
         return 100;
