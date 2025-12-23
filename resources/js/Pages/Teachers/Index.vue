@@ -642,10 +642,6 @@
               <p v-else class="font-medium text-sm">
                 {{ guideScoreMiniForm.groupMembers || (guideScoreMiniForm.studentName ? (guideScoreMiniForm.studentName + ' - MSSV: ' + guideScoreMiniForm.mssv) : '') }}
               </p>
-
-              <p class="mt-2 font-medium">
-                Chấm cho: {{ guideScoreMiniForm.studentName }} - MSSV: {{ guideScoreMiniForm.mssv }}
-              </p>
               <p class="mt-1">
                 Đề tài:
                 <span class="font-semibold">{{ guideScoreMiniForm.TenDeTai }}</span>

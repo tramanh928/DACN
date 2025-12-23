@@ -1372,9 +1372,128 @@
           </div>
         </div>
 
-        <!-- Các view khác (grading / committeeAssignment) để trống -->
+        <!-- Các view khác (grading) để trống -->
         <div v-if="currentView === 'grading'"></div>
-        <div v-if="currentView === 'committeeAssignment'"></div>
+
+        <!-- PHÂN CÔNG HỘI ĐỒNG -->
+        <div v-if="currentView === 'committeeAssignment'">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-indigo-600">PHÂN CÔNG HỘI ĐỒNG</h2>
+            <div class="flex items-center gap-4">
+              <input
+                v-model="committeeAssignSearch"
+                type="text"
+                placeholder="Tìm kiếm theo MSSV / tên / đề tài..."
+                class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              />
+              <button
+                @click="exportCommitteeExcel"
+                class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition"
+              >
+                Xuất file Excel
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full bg-white rounded shadow text-sm divide-y divide-gray-200 text-center">
+              <thead class="bg-indigo-100 text-indigo-700">
+                <tr>
+                  <th class="p-3 text-center">MSSV</th>
+                  <th class="p-3 text-center">Họ và tên SV</th>
+                  <th class="p-3 text-center">Đề tài</th>
+                  <th class="p-3 text-center">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template v-if="filteredCommitteeAssignRows.length">
+                  <template v-for="(group, gi) in filteredCommitteeAssignRows" :key="(group.topic || '') + '-' + gi">
+                    <tr
+                      v-for="(stu, si) in group.students"
+                      :key="(stu.mssv || stu.name) + '-' + si"
+                      @mouseenter="hoveredGroup = gi"
+                      @mouseleave="hoveredGroup = null"
+                      :class="hoveredGroup === gi ? 'bg-indigo-50' : ''"
+                    >
+                      <td class="p-3">{{ stu.mssv || '-' }}</td>
+                      <td class="p-3">{{ stu.name || '-' }}</td>
+
+                      <!-- Topic cell only on first student row -->
+                      <td v-if="si === 0" class="p-3 text-left" :rowspan="group.rowSpan">
+                        {{ group.topic || '-' }}
+                      </td>
+
+                      <!-- Actions cell only on first student row (rowspan) -->
+                      <td v-if="si === 0" class="p-3" :rowspan="group.rowSpan">
+                        <div class="flex gap-2 justify-center items-center h-full">
+                          <button
+                            @click="openCommitteeAssign(group)"
+                            class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition"
+                          >
+                            Phân công
+                          </button>
+                          <button
+                            @click="removeGroupAssignment(group)"
+                            class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition"
+                          >
+                            Xóa
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </template>
+                </template>
+
+                <tr v-else>
+                  <td class="p-3 italic text-sm text-gray-500" colspan="4">Không có dữ liệu để phân công</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Modal: danh sách hội đồng để chọn -->
+          <div
+            v-if="showCommitteeAssignModal"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+          >
+            <div class="bg-white rounded-lg w-[95%] max-w-3xl p-4 max-h-[90vh] overflow-auto">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">
+                  Chọn hội đồng cho: {{ selectedAssignment?.topic || '-' }}
+                  <span class="text-sm text-gray-600">— {{ (selectedAssignment?.students || []).length }} sinh viên</span>
+                </h3>
+                <button @click="closeCommitteeAssignment" class="bg-sky-500 text-white px-3 py-1 rounded text-sm hover:bg-sky-600 transition">Đóng</button>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm divide-y divide-gray-200">
+                  <thead class="bg-indigo-100 text-indigo-700">
+                    <tr>
+                      <th class="p-3 text-left">STT</th>
+                      <th class="p-3 text-left">Thời gian</th>
+                      <th class="p-3 text-left">Số GV</th>
+                      <th class="p-3 text-left">Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(c, idx) in committees" :key="c.id || idx" class="hover:bg-indigo-50">
+                      <td class="p-3">{{ idx + 1 }}</td>
+                      <td class="p-3">{{ c.start ? formatDateTime(c.start) : '-' }} — {{ c.end ? formatDateTime(c.end) : '-' }}</td>
+                      <td class="p-3">{{ (c.members || []).length }}</td>
+                      <td class="p-3 flex items-center gap-2">
+                        <button @click="openCommitteeDetail(c)" class="px-2 py-1 bg-gray-200 rounded text-sm">Chi tiết</button>
+                        <button @click="assignCommitteeTo(c)" class="px-2 py-1 bg-green-500 text-white rounded text-sm">Chọn</button>
+                      </td>
+                    </tr>
+                    <tr v-if="committees.length === 0">
+                      <td colspan="4" class="p-3 italic text-sm text-gray-500">Không có hội đồng</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- PHÂN BỔ THỜI GIAN -->
         <div v-if="currentView === 'timeAllocation'">
@@ -1580,6 +1699,7 @@ const pageProps = defineProps({
   students: { type: Array, default: () => [] }
 })
 const user = pageProps.user
+const emit = defineEmits(['assign-committee', 'remove-assignment'])
 
 axios.defaults.withCredentials = true
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
@@ -2075,6 +2195,85 @@ async function confirmAllAssignments(lecturer) {
     fetchStudents()
     fetchTeachers()
     closeAssignPanel()
+  }
+}
+
+/** ========================== */
+/**  PHÂN CÔNG HỘI ĐỒNG       */
+/** ========================== */
+const committeeAssignSearch = ref('')
+const showCommitteeAssignModal = ref(false)
+const selectedAssignment = ref(null)
+const hoveredGroup = ref(null)
+
+const filteredCommitteeAssignRows = computed(() => {
+  const q = (committeeAssignSearch.value || '').toString().toLowerCase().trim()
+
+  // Normalize assignments into rows
+  const rows = (assignments.value || []).map(a => ({
+    mssv: a.mssv || a.MSSV || '',
+    name: a.name || a.Ho_va_Ten || a.HoTen || '',
+    topic: (a.topic || a.TenDeTai || a.title || '').toString()
+  }))
+
+  // Group by topic; if no topic use unique key per student to avoid grouping
+  const groupsMap = new Map()
+  rows.forEach(r => {
+    const key = r.topic && r.topic.trim() ? r.topic.trim() : `__no_topic__:${r.mssv}`
+    if (!groupsMap.has(key)) groupsMap.set(key, { topic: r.topic, students: [] })
+    groupsMap.get(key).students.push({ mssv: r.mssv, name: r.name })
+  })
+
+  let groups = Array.from(groupsMap.values()).map(g => ({
+    topic: g.topic,
+    students: g.students,
+    rowSpan: g.students.length || 1
+  }))
+
+  if (q) {
+    groups = groups.filter(g => {
+      const text = `${g.topic || ''} ${g.students.map(s => s.mssv + ' ' + s.name).join(' ')}`.toLowerCase()
+      return text.includes(q)
+    })
+  }
+
+  return groups
+})
+
+function openCommitteeAssign(item) {
+  selectedAssignment.value = item
+  showCommitteeAssignModal.value = true
+}
+
+function closeCommitteeAssignment() {
+  selectedAssignment.value = null
+  showCommitteeAssignModal.value = false
+}
+
+function assignCommitteeTo(c) {
+  if (!selectedAssignment.value || !c) return
+  const studentNames = (selectedAssignment.value.students || []).map(s => s.name).filter(Boolean).join(', ')
+  const confirmed = window.confirm(`Phân công hội đồng cho đề tài "${selectedAssignment.value.topic || ''}" của ${studentNames || selectedAssignment.value.mssv || ''}?`)
+  if (!confirmed) return
+
+  // Emit event to parent / caller so backend or parent can handle actual assignment.
+  emit('assign-committee', { assignment: selectedAssignment.value, committee: c })
+  closeCommitteeAssignment()
+}
+
+function removeGroupAssignment(group) {
+  if (!group) return
+  const confirmed = window.confirm(`Xóa phân công cho đề tài "${group.topic || ''}"?`)
+  if (!confirmed) return
+
+  // emit to parent for backend handling
+  emit('remove-assignment', { topic: group.topic, students: group.students })
+
+  // optimistic UI update: remove assignments matching topic
+  for (let i = assignments.value.length - 1; i >= 0; i--) {
+    const a = assignments.value[i]
+    const aTopic = (a.topic || a.TenDeTai || a.title || '').toString()
+    if (aTopic === (group.topic || '')) assignments.value.splice(i, 1)
   }
 }
 
