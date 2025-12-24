@@ -1405,6 +1405,7 @@
                   <th class="p-3 text-center">Họ và tên SV</th>
                   <th class="p-3 text-center">Mã đề tài</th>
                   <th class="p-3 text-center">Đề tài</th>
+                  <th class="p-3 text-center">Hội đồng</th>
                   <th class="p-3 text-center">Thao tác</th>
                 </tr>
               </thead>
@@ -1428,7 +1429,11 @@
                       <td v-if="si === 0" class="p-3 text-center" :rowspan="group.rowSpan">
                         {{ group.topic || '-' }}
                       </td>
-
+                      <td v-if="si === 0" class="p-3 text-center" :rowspan="group.rowSpan">
+                        <span v-if="group.MaHD && committeeIndexMap.has(group.MaHD)">
+                         {{ getCommitteeLabel(group.MaHD) }}
+                        </span>
+                      </td>
                       <!-- Actions cell only on first student row (rowspan) -->
                       <td v-if="si === 0" class="p-3" :rowspan="group.rowSpan">
                         <div class="flex gap-2 justify-center items-center h-full">
@@ -2086,6 +2091,7 @@ function normalizeStudents(studentsArr) {
     mssv: s.mssv ?? s.MSSV ?? '',
     name: s.name ?? s.Ho_va_Ten ?? s.HoTen ?? '',
     MaDT: s.MaDT,
+    MaHD: s.committee,
     group: s.group ?? s.Nhom ?? '',
     topic: s.topic ?? s.TenDeTai ?? '',
     lecturer: s.lecturer ?? s.Giang_vien_hd ?? '',
@@ -2219,6 +2225,7 @@ const filteredCommitteeAssignRows = computed(() => {
   const rows = (assignments.value || []).map(a => ({
     mssv: a.mssv || a.MSSV || '',
     MaDT: a.MaDT,
+    MaHD: a.MaHD,
     name: a.name || a.Ho_va_Ten || '',
     topic: (a.topic || a.TenDeTai || '').toString(),
     committee: a.HoiDong || a.committee || null
@@ -2235,6 +2242,7 @@ const filteredCommitteeAssignRows = computed(() => {
     if (!groupsMap.has(key)) {
       groupsMap.set(key, {
         MaDT: r.MaDT,
+        MaHD: r.MaHD,
         topic: r.topic,
         students: [],
         committee: r.committee || null
@@ -2254,6 +2262,7 @@ const filteredCommitteeAssignRows = computed(() => {
 
   let groups = Array.from(groupsMap.values()).map(g => ({
     MaDT: g.MaDT,
+    MaHD: g.MaHD,
     topic: g.topic,
     students: g.students,
     committee: g.committee, 
@@ -2309,6 +2318,9 @@ async function assignCommitteeTo(c) {
 
     alert('Phân công hội đồng thành công')
     closeCommitteeAssignment()
+    fetchStudents()
+    fetchTopics()
+    fetchCommittees()
 
   } catch (err) {
     console.error(err)
@@ -2584,6 +2596,18 @@ const fetchCommittees = async () => {
   }
 }
 
+const committeeIndexMap = computed(() => {
+  const map = new Map()
+  committees.value.forEach((c, idx) => {
+    map.set(c.id, idx)
+  })
+  return map
+})
+
+function getCommitteeLabel(MaHD) {
+  const idx = committeeIndexMap.value.get(MaHD)
+  return idx !== undefined ? `Hội đồng ${idx + 1}` : 'Chưa phân công'
+}
 
 
 function toDatetimeLocal(str) {
