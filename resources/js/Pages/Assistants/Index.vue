@@ -2224,9 +2224,9 @@ const filteredCommitteeAssignRows = computed(() => {
 
   const rows = (assignments.value || []).map(a => ({
     mssv: a.mssv || a.MSSV || '',
-    MaDT: a.MaDT,
-    MaHD: a.MaHD,
     name: a.name || a.Ho_va_Ten || '',
+    MaDT: a.MaDT || a.Ma_de_tai || '',
+    MaHD: a.MaHD || a.HoiDong?.MaHD || null,
     topic: (a.topic || a.TenDeTai || '').toString(),
     committee: a.HoiDong || a.committee || null
   }))
@@ -2235,9 +2235,9 @@ const filteredCommitteeAssignRows = computed(() => {
 
   rows.forEach(r => {
     const key =
-      r.topic && r.topic.trim()
-        ? r.topic.trim()
-        : `__no_topic__:${r.mssv}`
+      r.MaDT && r.MaDT.toString().trim()
+        ? `MaDT:${r.MaDT}`
+        : `__no_madt__:${r.mssv}`
 
     if (!groupsMap.has(key)) {
       groupsMap.set(key, {
@@ -2250,10 +2250,15 @@ const filteredCommitteeAssignRows = computed(() => {
     }
 
     const group = groupsMap.get(key)
+
     group.students.push({
       mssv: r.mssv,
       name: r.name
     })
+
+    if (!group.MaHD && r.MaHD) {
+      group.MaHD = r.MaHD
+    }
 
     if (!group.committee && r.committee) {
       group.committee = r.committee
@@ -2265,16 +2270,16 @@ const filteredCommitteeAssignRows = computed(() => {
     MaHD: g.MaHD,
     topic: g.topic,
     students: g.students,
-    committee: g.committee, 
+    committee: g.committee,
     rowSpan: g.students.length || 1
   }))
 
   if (q) {
     groups = groups.filter(g => {
       const text = `
+        ${g.MaDT}
         ${g.topic || ''}
         ${g.students.map(s => `${s.mssv} ${s.name}`).join(' ')}
-        ${g.committee?.id || ''}
       `.toLowerCase()
 
       return text.includes(q)
@@ -2283,7 +2288,6 @@ const filteredCommitteeAssignRows = computed(() => {
 
   return groups
 })
-
 
 function openCommitteeAssign(item) {
   selectedAssignment.value = item
