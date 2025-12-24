@@ -16,7 +16,12 @@ class DiemPhanBienController extends Controller
     {
         return response()->json(DiemPhanBien::findOrFail($id));
     }
-
+    public function showByMSSV($mssv)
+    {
+        return response()->json(
+            DiemPhanBien::where('MSSV', $mssv)->firstOrFail()
+        );
+    }
 
     public function store(Request $request)
     {

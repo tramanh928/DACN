@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
 use App\Models\DeTai;
 use App\Models\DiemPhanBien;
+use App\Models\DiemHuongDan;
 
 class ExportController extends Controller
 {
@@ -124,9 +125,9 @@ class ExportController extends Controller
 
             $diem10 = round($score->tong, 1);
 
-            $template->setValue('diem10_sv1', $diem10);
+            $template->setValue("diem10_sv{$idx}", $diem10);
             $template->setValue(
-                'diem10_chu_sv1',
+                "diem10_chu_sv{$idx}",
                 $this->diemSoThanhChu($diem10)
             );
 
@@ -155,7 +156,7 @@ class ExportController extends Controller
             $template->setValue('de_nghi_bao_ve_sv1', $deNghi);
         }
 
-        $filename = $students->pluck('Ho_va_Ten')->implode(' - ') . '.docx';
+        $filename = 'Điểm phản biện - ' . $students->pluck('Ho_va_Ten')->implode(' - ') . '.docx';
         $filename = preg_replace('/[\\\\\/:*?"<>|]/', '', $filename);
 
         $template->saveAs($tempPath);
@@ -164,6 +165,108 @@ class ExportController extends Controller
             ->download($tempPath, $filename)
             ->deleteFileAfterSend(true);
     }
+
+    public function downloadHuongDan($MaDT)
+    {
+        $topic = DeTai::with(['SinhVien', 'giangVien'])
+            ->where('MaDT', $MaDT)
+            ->firstOrFail();
+
+        $students = $topic->SinhVien;
+        $gv = $topic->giangVien;
+
+        $templateFile = $students->count() === 1
+            ? 'Mau 01.02_PHIEU CHAM_HUONG DAN_SINH VIEN - Duy_.docx'
+            : 'Mau 01.01_PHIEU CHAM_HUONG DAN_NHOM SINH VIEN -Hau Hieu.docx';
+
+        $tempPath = tempnam(sys_get_temp_dir(), 'huongdan_') . '.docx';
+        copy(storage_path("app/templates/{$templateFile}"), $tempPath);
+
+        $template = new TemplateProcessor($tempPath);
+
+        $template->setValue('ten_detai', $topic->TenDeTai ?? '');
+        $template->setValue('gv_name', $gv->Ho_va_Ten ?? '');
+
+        $shared = null;
+        if ($students->count() > 0) {
+            $shared = DiemHuongDan::where('MSSV', $students[0]->MSSV)->first();
+        }
+
+        $template->setValue('dieu_chinh', $shared->dieu_chinh ?? '');
+        $template->setValue('uu', $shared->uu ?? '');
+        $template->setValue('nhuoc', $shared->nhuoc ?? '');
+        $template->setValue('cau_hoi', $shared->cau_hoi ?? '');
+
+        $template->setValue(
+            'check_dat',
+            $shared && $shared->Danh_gia === 'Đạt' ? '☑' : '☐'
+        );
+        $template->setValue(
+            'check_khong_dat',
+            $shared && $shared->Danh_gia === 'Không đạt' ? '☑' : '☐'
+        );
+
+        foreach ($students as $i => $sv) {
+            $idx = $i + 1;
+
+            $template->setValue("sv{$idx}_name", $sv->Ho_va_Ten ?? '');
+            $template->setValue("sv{$idx}_mssv", $sv->MSSV ?? '');
+            $template->setValue("sv{$idx}_lop", $sv->Lop ?? '');
+
+            $score = DiemHuongDan::where('MSSV', $sv->MSSV)->first();
+            if (!$score) {
+                $template->setValue("pttk_sv{$idx}", '');
+                $template->setValue("tkvd_sv{$idx}", '');
+                $template->setValue("htvd_sv{$idx}", '');
+                $template->setValue("ktsp_sv{$idx}", '');
+                $template->setValue("tong_sv{$idx}", '');
+                $template->setValue("diem10_sv{$idx}", '');
+                $template->setValue("bv_dat_sv{$idx}", '☐');
+                $template->setValue("bv_khong_sv{$idx}", '☐');
+                $template->setValue("bv_bs_sv{$idx}", '☐');
+                continue;
+            }
+
+            $template->setValue("pttk_sv{$idx}", $score->pttk ?? '');
+            $template->setValue("tkvd_sv{$idx}", $score->tkvd ?? '');
+            $template->setValue("htvd_sv{$idx}", $score->htvd ?? '');
+            $template->setValue("ktsp_sv{$idx}", $score->ktsp ?? '');
+
+            $template->setValue("tong_sv{$idx}", $score->tong ?? '');
+            $diem10 = round($score->tong, 1);
+            $template->setValue("diem10_sv{$idx}", $diem10);
+
+            $template->setValue(
+                "bv_dat_sv{$idx}",
+                $score->bao_ve === 'Được bảo vệ' ? '☑' : '☐'
+            );
+            $template->setValue(
+                "bv_khong_sv{$idx}",
+                $score->bao_ve === 'Không được bảo vệ' ? '☑' : '☐'
+            );
+            $template->setValue(
+                "bv_bs_sv{$idx}",
+                $score->bao_ve === 'Bổ sung/hiệu chỉnh để được bảo vệ' ? '☑' : '☐'
+            );
+
+            $deNghi = '';
+            if ($score->bao_ve === 'Được bảo vệ') $deNghi = 'Được bảo vệ';
+            elseif ($score->bao_ve === 'Không được bảo vệ') $deNghi = 'Không được bảo vệ';
+            elseif ($score->bao_ve === 'Bổ sung/hiệu chỉnh để được bảo vệ') $deNghi = 'Bổ sung/hiệu chỉnh để được bảo vệ';
+
+            $template->setValue("de_nghi_bao_ve_sv{$idx}", $deNghi);
+        }
+
+        $filename = 'Điểm hướng dẫn - ' . $students->pluck('Ho_va_Ten')->implode(' - ') . '.docx';
+        $filename = preg_replace('/[\\\\\/:*?"<>|]/', '', $filename);
+
+        $template->saveAs($tempPath);
+
+        return response()
+            ->download($tempPath, $filename)
+            ->deleteFileAfterSend(true);
+    }
+
 
     private function updateDocxTitle($filePath, $title)
     {

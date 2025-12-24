@@ -111,7 +111,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(s, idx) in students" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
+                <tr v-for="(s, idx) in students1" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
                   <td class="p-3 text-center">{{ idx + 1 }}</td>
                   <td class="p-3 text-center">{{ s.mssv }}</td>
                   <td class="p-3 text-center">{{ s.name }}</td>
@@ -310,7 +310,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(s, idx) in students" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
+                <tr v-for="(s, idx) in students1" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
                   <td class="p-3 text-center">{{ idx + 1 }}</td>
                   <td class="p-3 text-center">{{ s.mssv }}</td>
                   <td class="p-3 text-center">{{ s.name }}</td>
@@ -548,6 +548,7 @@
               <th class="p-2 border">Nội dung</th>
               <th class="p-2 border text-center">Điểm tối đa</th>
               <th class="p-2 border text-center">Điểm</th>
+              <th class="p-2 border text-center">Điểm theo phần trăm</th>
               <th class="p-2 border">Ghi chú</th>
             </tr>
           </thead>
@@ -567,6 +568,7 @@
                   @input="onScoreInput($event, c)"
                 />
               </td>
+              <td class="border p-2 text-center">{{ c.score*10 }}%</td>
               <td class="border p-2">
                 <textarea
                   v-model="c.note"
@@ -719,135 +721,185 @@
         </div>
 
         <!-- Mini Form ĐIỂM HƯỚNG DẪN -->
-        <div v-if="showGuideScoreMiniForm" class="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-start justify-center overflow-auto">
+        <div
+          v-if="showGuideScoreMiniForm"
+          class="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-start justify-center overflow-auto"
+        >
           <div class="bg-white rounded-lg mt-8 mb-8 p-6 w-[92%] max-w-[980px] shadow-lg">
+            <!-- Header -->
             <div class="flex justify-between items-start mb-4">
               <h3 class="text-xl font-bold text-indigo-600 text-center w-full">
                 Phiếu chấm điểm hướng dẫn
               </h3>
-              <button @click="closeGuideScoreMiniForm" class="text-gray-500 absolute right-8 top-6">✕</button>
+              <button @click="closeGuideScoreMiniForm" class="text-gray-500 absolute right-8 top-6">
+                ✕
+              </button>
             </div>
 
-            <!-- header info -->
-            <div class="text-center mb-4">
+            <!-- Group info -->
+            <div class="text-center mb-6">
               <p class="text-sm mb-1">Thành viên trong nhóm:</p>
-              <div v-if="guideScoreMiniForm.students && guideScoreMiniForm.students.length" class="font-medium text-sm">
-                <p v-for="(mem, i) in guideScoreMiniForm.students" :key="i">
+              <div class="font-medium text-sm">
+                <p v-for="mem in guideScoreMiniForm.students" :key="mem.mssv">
                   {{ mem.name }} - MSSV: {{ mem.mssv }}
                 </p>
               </div>
-              <p v-else class="font-medium text-sm">
-                {{ guideScoreMiniForm.groupMembers || (guideScoreMiniForm.studentName ? (guideScoreMiniForm.studentName + ' - MSSV: ' + guideScoreMiniForm.mssv) : '') }}
-              </p>
-              <p class="mt-1">
+              <p class="mt-2">
                 Đề tài:
                 <span class="font-semibold">{{ guideScoreMiniForm.TenDeTai }}</span>
               </p>
             </div>
-            <div class="border rounded-lg p-4 mb-6">
-                <div class="flex items-center gap-4 mb-2">
-                  <label class="block text-center font-medium text-indigo-600 mb-2">
-                    Nhận xét chung:
-                  </label>
-                  <label class="flex items-center gap-2">
-                    <input type="radio" value="Đạt" v-model="guideScoreMiniForm.overall" /> Đạt
-                  </label>
-                  <label class="flex items-center gap-2">
-                    <input type="radio" value="Không đạt" v-model="guideScoreMiniForm.overall" /> Không đạt
-                  </label>
-                </div>
-              <div class="mb-6">
+
+            <!-- ================= NHẬN XÉT CHUNG (1 LẦN) ================= -->
+            <div class="border rounded-lg p-5 mb-8 bg-indigo-50">
+              <p class="text-center font-semibold mb-4 text-indigo-700">
+                Nhận xét chung cho nhóm
+              </p>
+
+              <!-- Đạt / Không đạt -->
+              <div class="flex justify-center gap-8 mb-4">
+                <label>
+                  <input type="radio" value="Đạt" v-model="guideScoreMiniForm.shared.overall" />
+                  Đạt
+                </label>
+                <label>
+                  <input type="radio" value="Không đạt" v-model="guideScoreMiniForm.shared.overall" />
+                  Không đạt
+                </label>
+              </div>
+
+              <!-- Điều chỉnh -->
+              <div class="mb-4">
                 <label class="block text-center font-medium text-indigo-600 mb-2">
                   Yêu cầu điều chỉnh, thay đổi, bổ sung
                 </label>
                 <textarea
-                  v-model="guideScoreMiniForm.adjust"
+                  v-model="guideScoreMiniForm.shared.overallNote"
                   rows="3"
                   class="w-full border rounded p-3 resize-none"
                 ></textarea>
               </div>
-              <!-- Ưu điểm chính -->
-              <div class="mb-6">
+
+              <!-- Ưu điểm -->
+              <div class="mb-4">
                 <label class="block text-center font-medium text-indigo-600 mb-2">
                   Ưu điểm chính
                 </label>
                 <textarea
-                  v-model="guideScoreMiniForm.strengths"
+                  v-model="guideScoreMiniForm.shared.strengths"
                   rows="3"
                   class="w-full border rounded p-3 resize-none"
                 ></textarea>
               </div>
-              <!-- Thiếu sót chính -->
-              <div class="mb-6">
+
+              <!-- Nhược điểm -->
+              <div class="mb-4">
                 <label class="block text-center font-medium text-indigo-600 mb-2">
                   Thiếu sót chính
                 </label>
                 <textarea
-                  v-model="guideScoreMiniForm.weaknesses"
+                  v-model="guideScoreMiniForm.shared.weaknesses"
                   rows="3"
                   class="w-full border rounded p-3 resize-none"
                 ></textarea>
               </div>
+
               <!-- Câu hỏi -->
-              <div class="mb-6">
+              <div>
                 <label class="block text-center font-medium text-indigo-600 mb-2">
                   Câu hỏi cho sinh viên
                 </label>
                 <textarea
-                  v-model="guideScoreMiniForm.questions"
-                  rows="3"
+                  v-model="guideScoreMiniForm.shared.questions"
+                  rows="2"
                   class="w-full border rounded p-3 resize-none"
                 ></textarea>
               </div>
             </div>
+
+            <!-- ================= CHẤM RIÊNG TỪNG SINH VIÊN ================= -->
             <div
-                  v-for="(mem, i) in guideScoreMiniForm.students"
-                  :key="mem.mssv"
-                  class="border rounded-lg p-4 mb-6"
-                >
-                  <p class="text-center font-semibold mb-4">
-                    Chấm cho: {{ mem.name }} - MSSV: {{ mem.mssv }}
-                  </p>
-                  <!-- Criteria -->
-                  <table class="w-full border mb-4">
-                    <tr v-for="(c, idx) in mem.criteria" :key="idx">
-                      <td class="border p-2">{{ idx + 1 }}</td>
-                      <td class="border p-2">{{ c.title }}</td>
-                      <td class="border p-2 text-center">{{ c.max }}</td>
-                      <td class="border p-2 text-center">
-                        <input type="number" v-model.number="c.score"
-                          :max="c.max" min="0"
-                          class="w-16 border rounded text-center"/>
-                      </td>
-                      <td class="border p-2">
-                        <textarea v-model="c.note"
-                          class="w-full border rounded"></textarea>
-                      </td>
-                    </tr>
-                    <tr>
-                        <td class="p-3 border font-semibold" colspan="2">
-                          Tổng điểm:
-                        </td>
-                        <td class="p-3 border text-center font-semibold">
-                          {{ totalGuideMaxOfStudent(mem) }}
-                        </td>
-                        <td class="p-3 border text-center font-semibold">
-                          {{ totalGuideScoreOfStudent(mem) }}
-                        </td>
-                        <td class="p-3 border text-center">
-                          {{ percentGuideScoreOfStudent(mem) }}%
-                        </td>
-                      </tr>
-                  </table>
+              v-for="mem in guideScoreMiniForm.students"
+              :key="mem.mssv"
+              class="border rounded-lg p-4 mb-6"
+            >
+              <p class="text-center font-semibold mb-4">
+                Chấm cho: {{ mem.name }} - MSSV: {{ mem.mssv }}
+              </p>
+
+              <!-- Criteria -->
+              <table class="w-full border mb-4">
+                <thead>
+                  <tr class="bg-gray-100">
+                    <th class="p-2 border">STT</th>
+                    <th class="p-2 border">Nội dung</th>
+                    <th class="p-2 border text-center">Điểm tối đa</th>
+                    <th class="p-2 border text-center">Điểm</th>
+                    <th class="p-2 border text-center">Điểm theo phần trăm</th>
+                    <th class="p-2 border">Ghi chú</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr v-for="(c, idx) in mem.criteria" :key="idx">
+                    <td class="border p-2 text-center">{{ idx + 1 }}</td>
+                    <td class="border p-2">{{ c.title }}</td>
+                    <td class="border p-2 text-center">{{ c.max }}</td>
+                    <td class="border p-2 text-center">
+                      <input
+                        type="number"
+                        v-model.number="c.score"
+                        min="0"
+                        :max="c.max"
+                        class="w-16 border rounded text-center"
+                      />
+                    </td>
+                    <td class="border p-2 text-center">{{ c.score*10 }}%</td>
+                    <td class="border p-2">
+                      <textarea
+                        v-model="c.note"
+                        rows="2"
+                        class="w-full border rounded resize-none"
+                      ></textarea>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 border font-semibold" colspan="2">Tổng điểm:</td>
+                    <td class="p-3 border text-center font-semibold">{{ totalGuideMaxOfStudent(mem) }}</td>
+                    <td class="p-3 border text-center font-semibold">{{ totalGuideScoreOfStudent(mem) }}</td>
+                    <td class="p-3 border text-center">{{ percentGuideScoreOfStudent(mem) }}%</td>
+                    <td class="border"></td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <!-- Đề nghị -->
+              <div class="mb-4">
+                <label class="block text-center font-medium text-indigo-600 mb-2">
+                  Đề nghị bảo vệ
+                </label>
+                <div class="flex justify-center gap-6">
+                  <label>
+                    <input type="radio" value="Được bảo vệ" v-model="mem.recommend" /> Được bảo vệ
+                  </label>
+                  <label>
+                    <input type="radio" value="Không được bảo vệ" v-model="mem.recommend" /> Không được bảo vệ
+                  </label>
+                  <label>
+                    <input type="radio" value="Bổ sung/hiệu chỉnh để được bảo vệ" v-model="mem.recommend" />
+                    Bổ sung/hiệu chỉnh
+                  </label>
+                </div>
+              </div>
             </div>
 
-            <!-- Footer buttons -->
-            <div class="flex items-center justify-end gap-4 mt-4">
+            <!-- Footer -->
+            <div class="flex justify-end gap-4">
               <button @click="closeGuideScoreMiniForm" class="px-4 py-2 rounded border">
                 Đóng
               </button>
               <button @click="saveGuideScoreMiniForm" class="px-5 py-2 rounded bg-blue-500 text-white">
-                Xác nhận 
+                Xác nhận
               </button>
             </div>
           </div>
@@ -877,6 +929,7 @@ const currentView = ref('dashboard')
 function setCurrentView(view) { currentView.value = view }
 
 const students = ref([])
+const students1 = ref([])
 const studentsReviewer = ref([])
 const topics = ref([])
 const topicsReview = ref([])
@@ -944,7 +997,7 @@ const fetchStudents = async () => {
         mergedMap.set(s.mssv, s)
       }
     })
-
+    students1.value = guideStudents.sort((a, b) => Number(a.group ?? 0) - Number(b.group ?? 0)) || []
     students.value = Array.from(mergedMap.values())
       .sort((a, b) => Number(a.group ?? 0) - Number(b.group ?? 0))
 
@@ -1176,12 +1229,14 @@ const reviewScoreMiniForm = reactive({
   students: []
 })
 
-function openReviewScoreMiniForm(topic) {
+async function openReviewScoreMiniForm(topic) {
   reviewScoreMiniForm.TenDeTai =
     topic.TenDeTai || topic.TenDT || topic.title || ''
 
   reviewScoreMiniForm.MaDT =
     topic.MaDT || topic.id || ''
+
+  const groupStu = getStudentsOfTopic(topic)
 
   reviewScoreMiniForm.shared = {
     overall: 'Đạt',
@@ -1191,38 +1246,91 @@ function openReviewScoreMiniForm(topic) {
     questions: ''
   }
 
-  const groupStu = getStudentsOfTopic(topic)
+  reviewScoreMiniForm.students = await Promise.all(
+    (groupStu.length ? groupStu : [{
+      name: topic.studentName || '',
+      mssv: topic.mssv || ''
+    }]).map(async (stu) => {
 
-  reviewScoreMiniForm.students = (
-    groupStu.length
-      ? groupStu
-      : [{
-          name: topic.studentName || '',
-          mssv: topic.mssv || ''
-        }]
-  ).map(stu => ({
-    name: stu.name,
-    mssv: stu.mssv,
+      let dbScore = null
+      try {
+        const res = await axios.get(`/diem-phan-bien/mssv/${stu.mssv}`)
+        dbScore = res.data
+      } catch (_) {
+        dbScore = null 
+      }
 
-    overall: reviewScoreMiniForm.shared.overall,
-    overallNote: reviewScoreMiniForm.shared.overallNote,
-    strengths: reviewScoreMiniForm.shared.strengths,
-    weaknesses: reviewScoreMiniForm.shared.weaknesses,
-    questions: reviewScoreMiniForm.shared.questions,
+      if (dbScore) {
+        reviewScoreMiniForm.shared.overall = dbScore.Danh_gia || 'Đạt'
+        reviewScoreMiniForm.shared.overallNote = dbScore.dieu_chinh || ''
+        reviewScoreMiniForm.shared.strengths = dbScore.uu || ''
+        reviewScoreMiniForm.shared.weaknesses = dbScore.nhuoc || ''
+        reviewScoreMiniForm.shared.questions = dbScore.cau_hoi || ''
+      }
 
-    recommend: 'Bổ sung/hiệu chỉnh để được bảo vệ',
+      return {
+        name: stu.name,
+        mssv: stu.mssv,
 
-    criteria: [
-      { title: 'Phân tích vấn đề', max: 2.5, score: 0, note: '' },
-      { title: 'Thiết kế vấn đề', max: 2.5, score: 0, note: '' },
-      { title: 'Hiện thực vấn đề', max: 2.5, score: 0, note: '' },
-      { title: 'Kiểm tra sản phẩm', max: 2.5, score: 0, note: '' }
-    ]
-  }))
+        recommend: dbScore?.bao_ve || 'Bổ sung/hiệu chỉnh để được bảo vệ',
+
+        criteria: [
+          {
+            title: 'Phân tích vấn đề',
+            max: 2.5,
+            score: dbScore?.pttk ?? 0,
+            note: extractNote(dbScore?.ghi_chu, 1)
+          },
+          {
+            title: 'Thiết kế vấn đề',
+            max: 2.5,
+            score: dbScore?.tkvd ?? 0,
+            note: extractNote(dbScore?.ghi_chu, 2)
+          },
+          {
+            title: 'Hiện thực vấn đề',
+            max: 2.5,
+            score: dbScore?.htvd ?? 0,
+            note: extractNote(dbScore?.ghi_chu, 3)
+          },
+          {
+            title: 'Kiểm tra sản phẩm',
+            max: 2.5,
+            score: dbScore?.ktsp ?? 0,
+            note: extractNote(dbScore?.ghi_chu, 4)
+          }
+        ]
+      }
+    })
+  )
 
   showReviewScoreMiniForm.value = true
 }
 
+function extractNote(ghiChu, index) {
+  if (!ghiChu) return ''
+
+  const lines = ghiChu.split('\n').map(l => l.trim()).filter(l => l !== '')
+
+  const titles = [
+    'Phân tích vấn đề',
+    'Thiết kế vấn đề',
+    'Hiện thực vấn đề',
+    'Kiểm tra sản phẩm'
+  ]
+
+  const targetTitle = titles[index - 1]
+
+  for (const line of lines) {
+    const match = line.match(/^\d+\.\s*(.*?):\s*(.*)$/)
+    if (match) {
+      const [, title, note] = match
+      if (title === targetTitle) return note.trim()
+    }
+  }
+
+  return ''
+}
 
 function closeReviewScoreMiniForm() { showReviewScoreMiniForm.value = false }
 
@@ -1310,37 +1418,91 @@ const guideScoreMiniForm = reactive({
   MaDT: '',
   reviewerName: user?.name || '',
 
+  shared: {
+    overall: 'Đạt',
+    overallNote: '',
+    strengths: '',
+    weaknesses: '',
+    questions: ''
+  },
+
   students: []
 })
 
-function openGuideScoreMiniForm(topic) {
-  guideScoreMiniForm.TenDeTai = topic.TenDeTai || topic.TenDT || topic.title || ''
-  guideScoreMiniForm.MaDT = topic.MaDT || topic.id || ''
+async function openGuideScoreMiniForm(topic) {
+  guideScoreMiniForm.TenDeTai =
+    topic.TenDeTai || topic.TenDT || topic.title || ''
+
+  guideScoreMiniForm.MaDT =
+    topic.MaDT || topic.id || ''
 
   const groupStu = getStudentsOfTopic(topic)
 
-  guideScoreMiniForm.students = (groupStu.length ? groupStu : [{
-    name: topic.studentName || '',
-    mssv: topic.mssv || ''
-  }]).map(stu => ({
-    name: stu.name,
-    mssv: stu.mssv,
-
+  guideScoreMiniForm.shared = {
     overall: 'Đạt',
     overallNote: '',
-    adjust:'',
     strengths: '',
     weaknesses: '',
-    questions: '',
-    recommend: 'Bổ sung/hiệu chỉnh để được bảo vệ',
+    questions: ''
+  }
 
-    criteria: [
-      { title: 'Phân tích vấn đề', max: 2.5, score: 0, note: '' },
-      { title: 'Thiết kế vấn đề', max: 2.5, score: 0, note: '' },
-      { title: 'Hiện thực vấn đề', max: 2.5, score: 0, note: '' },
-      { title: 'Kiểm tra sản phẩm', max: 2.5, score: 0, note: '' }
-    ]
-  }))
+  guideScoreMiniForm.students = await Promise.all(
+    (groupStu.length ? groupStu : [{
+      name: topic.studentName || '',
+      mssv: topic.mssv || ''
+    }]).map(async (stu) => {
+
+      let dbScore = null
+      try {
+        const res = await axios.get(`/diem-huong-dan/mssv/${stu.mssv}`)
+        dbScore = res.data
+      } catch (_) {
+        dbScore = null
+      }
+
+      if (dbScore) {
+        guideScoreMiniForm.shared.overall = dbScore.Danh_gia || 'Đạt'
+        guideScoreMiniForm.shared.overallNote = dbScore.dieu_chinh || ''
+        guideScoreMiniForm.shared.strengths = dbScore.uu || ''
+        guideScoreMiniForm.shared.weaknesses = dbScore.nhuoc || ''
+        guideScoreMiniForm.shared.questions = dbScore.cau_hoi || ''
+      }
+
+      return {
+        name: stu.name,
+        mssv: stu.mssv,
+
+        recommend: dbScore?.bao_ve || 'Bổ sung/hiệu chỉnh để được bảo vệ',
+
+        criteria: [
+          {
+            title: 'Phân tích vấn đề',
+            max: 2.5,
+            score: dbScore?.pttk ?? 0,
+            note: extractNote(dbScore?.ghi_chu, 1)
+          },
+          {
+            title: 'Thiết kế vấn đề',
+            max: 2.5,
+            score: dbScore?.tkvd ?? 0,
+            note: extractNote(dbScore?.ghi_chu, 2)
+          },
+          {
+            title: 'Hiện thực vấn đề',
+            max: 2.5,
+            score: dbScore?.htvd ?? 0,
+            note: extractNote(dbScore?.ghi_chu, 3)
+          },
+          {
+            title: 'Kiểm tra sản phẩm',
+            max: 2.5,
+            score: dbScore?.ktsp ?? 0,
+            note: extractNote(dbScore?.ghi_chu, 4)
+          }
+        ]
+      }
+    })
+  )
 
   showGuideScoreMiniForm.value = true
 }
@@ -1369,62 +1531,59 @@ function percentGuideScoreOfStudent(stu) {
 
 
 async function saveGuideScoreMiniForm() {
-  for (const c of guideScoreMiniForm.criteria) {
-    if (c.score < 0) {
-      alert('Điểm không được âm')
-      return
-    }
-    if (c.score > c.max) {
-      alert(`Điểm mục "${c.title}" không được vượt quá ${c.max}`)
-      return
-    }
-  }
-
-  const payload = {
-    MaDT: guideScoreMiniForm.MaDT,
-    MSSV: guideScoreMiniForm.mssv,
-    overall: guideScoreMiniForm.overall,
-    overallNote: guideScoreMiniForm.overallNote,
-    strengths: guideScoreMiniForm.strengths,
-    weaknesses: guideScoreMiniForm.weaknesses,
-    criteria: guideScoreMiniForm.criteria.map(c => ({
-      title: c.title,
-      max: c.max,
-      score: c.score,
-      note: c.note
-    })),
-    questions: guideScoreMiniForm.questions,
-    recommend: guideScoreMiniForm.recommend,
-    mode: 'guide'
-  }
-
   try {
-    const res = await axios.post('/save-guide-score', payload, {
-      responseType: 'blob'
-    })
+    for (const mem of guideScoreMiniForm.students) {
+      for (const c of mem.criteria) {
+        if (c.score < 0) {
+          alert('Điểm không được âm')
+          return
+        }
+        if (c.score > c.max) {
+          alert(`Điểm mục "${c.title}" không được vượt quá ${c.max}`)
+          return
+        }
+      }
 
-    const contentType = res.headers['content-type'] || 'application/octet-stream'
-    const blob = new Blob([res.data], { type: contentType })
-    const url = window.URL.createObjectURL(blob)
+      const ghiChu = mem.criteria
+        .filter(c => c.note && c.note.trim() !== '')
+        .map((c, i) => `${i + 1}. ${c.title}: ${c.note}`)
+        .join('\n')
 
-    let ext = 'docx'
-    if (contentType.includes('pdf')) ext = 'pdf'
-    const fileName = `phieu-huong-dan-${guideScoreMiniForm.mssv || guideScoreMiniForm.MaDT || 'detai'}.${ext}`
+      const payload = {
+        MaDT: guideScoreMiniForm.MaDT,
+        MSSV: mem.mssv,
 
-    const link = document.createElement('a')
-    link.href = url
-    link.download = fileName
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    window.URL.revokeObjectURL(url)
+        danh_gia: guideScoreMiniForm.shared.overall,
+        dieu_chinh: guideScoreMiniForm.shared.overallNote,
+        uu: guideScoreMiniForm.shared.strengths,
+        nhuoc: guideScoreMiniForm.shared.weaknesses,
+        cau_hoi: guideScoreMiniForm.shared.questions,
+
+        pttk: mem.criteria[0]?.score ?? null,
+        tkvd: mem.criteria[1]?.score ?? null,
+        htvd: mem.criteria[2]?.score ?? null,
+        ktsp: mem.criteria[3]?.score ?? null,
+
+        tong: totalGuideScoreOfStudent(mem),
+        bao_ve: mem.recommend,
+        ghi_chu: ghiChu,
+        mode: 'guide'
+      }
+
+      await axios.post('/save-guide-score', payload)
+    }
 
     showGuideScoreMiniForm.value = false
     await fetchTopics()
     await fetchStudents()
+
+    alert('Lưu phiếu hướng dẫn thành công')
+
+    window.open(`/export/huong-dan/${guideScoreMiniForm.MaDT}`, '_blank')
+
   } catch (e) {
     console.error(e)
-    alert('Lỗi khi lưu / xuất phiếu hướng dẫn')
+    alert('Lỗi khi lưu phiếu hướng dẫn')
   }
 }
 

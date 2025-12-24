@@ -13,6 +13,7 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ThoiGianController;
 use App\Http\Controllers\DiemHuongDanController;
 use App\Http\Controllers\DiemPhanBienController;
+use App\Http\Controllers\HoiDongController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -138,6 +139,7 @@ Route::post('/update-note', [StudentController::class, 'updateNote']);
 //Route xuất file mẫu nhiệm vụ, phản biện, hướng dẫn
 Route::get('/nhiem-vu-template/{MaDT}', [ExportController::class, 'downloadTemplate']);
 Route::get('/export/phan-bien/{MaDT}', [ExportController::class, 'downloadPhanBien']);
+Route::get('/export/huong-dan/{MaDT}', [ExportController::class, 'downloadHuongDan']);
 
 //Route quản lý thời gian
 Route::get('/thoi-gian', [ThoiGianController::class, 'index'])->name('thoi-gian.index');
@@ -147,19 +149,17 @@ Route::put('/thoi-gian/{id}', [ThoiGianController::class, 'update'])->name('thoi
 Route::delete('/thoi-gian/{id}', [ThoiGianController::class, 'destroy'])->name('thoi-gian.destroy');
 
 Route::middleware(['auth'])->group(function () {
-
-    Route::get('/diem-huong-dan', [DiemHuongDanController::class, 'index'])->name('diem-huong-dan.index');
-    Route::get('/diem-huong-dan/{id}', [DiemHuongDanController::class, 'show'])->name('diem-huong-dan.show');
-    Route::post('/diem-huong-dan', [DiemHuongDanController::class, 'store'])->name('diem-huong-dan.store');
-    Route::put('/diem-huong-dan/{id}', [DiemHuongDanController::class, 'update'])->name('diem-huong-dan.update');
-    Route::delete('/diem-huong-dan/{id}', [DiemHuongDanController::class, 'destroy'])->name('diem-huong-dan.destroy');
-
-    Route::get('/diem-phan-bien', [DiemPhanBienController::class, 'index'])->name('diem-phan-bien.index');
-    Route::get('/diem-phan-bien/{id}', [DiemPhanBienController::class, 'show'])->name('diem-phan-bien.show');
-    Route::post('/diem-phan-bien', [DiemPhanBienController::class, 'store'])->name('diem-phan-bien.store');
-    Route::put('/diem-phan-bien/{id}', [DiemPhanBienController::class, 'update'])->name('diem-phan-bien.update');
-    Route::delete('/diem-phan-bien/{id}', [DiemPhanBienController::class, 'destroy'])->name('diem-phan-bien.destroy');
-
     Route::post('/save-review-score', [DiemPhanBienController::class, 'store'])
         ->name('diem-phan-bien.save-review');
+    Route::get('/diem-phan-bien/mssv/{mssv}', [DiemPhanBienController::class, 'showByMSSV']);
+    Route::post('/save-guide-score', [DiemHuongDanController::class, 'store'])
+        ->name('diem-huong-dan.save-guide');
+    Route::get('/diem-huong-dan/mssv/{mssv}', [DiemHuongDanController::class, 'showByMSSV']);
 });
+
+//Route quản lý hội đồng
+Route::get('/committees', [HoiDongController::class, 'index']);
+Route::post('/committees', [HoiDongController::class, 'store']);
+Route::put('/committees/{id}', [HoiDongController::class, 'update']);
+Route::delete('/committees/{id}', [HoiDongController::class, 'destroy']);
+Route::post('/committees/assign', [HoiDongController::class, 'assignToTopic']);

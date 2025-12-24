@@ -45,6 +45,7 @@ class TempImport implements ToModel, WithHeadingRow, WithChunkReading, WithBatch
             'HuongDeTai'  => $row['Hướng đề tài'] ?? null,
             'Nhom'        => $row['Nhóm'] ?? null,
             'GVHD'        => $row['GVHD'] ?? null,
+            'GVPB'        => $row['GVPB'] ?? null,
 
             'HocVi'       => $row['HH-HV'] ?? null,
             'TenDeTai'    => $row['Tên đề tài'] ?? null,

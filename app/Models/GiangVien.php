@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class GiangVien extends Model
 {
 
-    protected $table = 'GiangVien';
+    protected $table = 'giangvien';
 
     protected $primaryKey = 'MaGV';
     public $incrementing = false;
@@ -42,4 +42,14 @@ class GiangVien extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+    public function hoiDongs()
+{
+    return $this->belongsToMany(
+        HoiDong::class,
+        'chi_tiet_hoi_dong',
+        'MaGV',
+        'MaHD'
+    )->withPivot('ChucVu')->withTimestamps();
+}
+
 }

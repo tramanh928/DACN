@@ -75,187 +75,181 @@ class ImportController extends Controller
     }
 
     public function import(Request $request)
-    {
-        try {
-            if (!$request->hasFile('file')) {
-                return response()->json(['error' => 'Không có file được tải lên'], 400);
+{
+    try {
+        if (!$request->hasFile('file')) {
+            return response()->json(['error' => 'Không có file được tải lên'], 400);
+        }
+
+        set_time_limit(0);
+        DB::connection()->disableQueryLog();
+
+        // Clear temp + import Excel
+        TempImportModel::truncate();
+        Excel::import(new TempImport, $request->file('file'));
+
+        DB::transaction(function () {
+
+            // Clear old data
+            DB::table('sinhvien')->delete();
+            DB::table('giangvien')->delete();
+            DB::table('detai')->delete();
+
+            /**
+             * ======================================================
+             * 1. BUILD UNIQUE GIANG VIEN (GVHD + GVPB)
+             * ======================================================
+             */
+            $uniqueGvNames = TempImportModel::query()
+                ->select('GVHD as name')
+                ->whereNotNull('GVHD')->where('GVHD', '!=', '')
+                ->union(
+                    TempImportModel::query()
+                        ->select('GVPB as name')
+                        ->whereNotNull('GVPB')->where('GVPB', '!=', '')
+                )
+                ->pluck('name')
+                ->map(fn($v) => trim($v))
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            $giangvienInserts = [];
+            $usedMaGVs = [];
+
+            foreach ($uniqueGvNames as $name) {
+                $email = $this->generateEmailFromName($name);
+                $user = User::where('email', $email)->first();
+                $maGV = $this->generateMaGVForName($name, $usedMaGVs);
+
+                $tempRow = TempImportModel::where('GVHD', $name)
+                    ->orWhere('GVPB', $name)
+                    ->first();
+
+                $giangvienInserts[] = [
+                    'MaGV' => $maGV,
+                    'Ho_va_Ten' => $name,
+                    'HocVi' => $tempRow->HocVi ?? null,
+                    'NoiCongTac' => $tempRow->NoiCongTac ?? null,
+                    'sdt' => null,
+                    'So_luong_sinh_vien' => 0,
+                    'email' => $email,
+                    'user_id' => $user?->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
             }
 
-            set_time_limit(0);
-            DB::connection()->disableQueryLog();
+            // Insert giangvien
+            foreach (array_chunk($giangvienInserts, 500) as $chunk) {
+                DB::table('giangvien')->insert($chunk);
+            }
 
-            // import into temp table
-            TempImportModel::truncate();
-            Excel::import(new TempImport, $request->file('file'));
+            /**
+             * ======================================================
+             * 2. MAP TEN GV -> MaGV
+             * ======================================================
+             */
+            $gvMap = DB::table('giangvien')
+                ->pluck('MaGV', 'Ho_va_Ten')
+                ->toArray();
 
-            DB::transaction(function () {
-                // clear old data
-                DB::table('sinhvien')->delete();
-                DB::table('giangvien')->delete();
-                DB::table('detai')->delete();
+            /**
+             * ======================================================
+             * 3. IMPORT DETAI + SINHVIEN (CHUNK)
+             * ======================================================
+             */
+            $topicGroupMap = [];
+            $usedMaDTs = [];
 
-                // build unique giangvien names from temp
-                $uniqueGvNames = TempImportModel::query()
-                    ->whereNotNull('GVHD')->where('GVHD', '!=', '')
-                    ->select('GVHD')
-                    ->distinct()
-                    ->pluck('GVHD')
-                    ->map(fn($v) => trim($v))
-                    ->filter()
-                    ->values()
-                    ->all();
+            TempImportModel::chunk(500, function ($rows) use ($gvMap, &$topicGroupMap, &$usedMaDTs) {
 
-                // prepare giangvien inserts with deterministic MaGV and in-memory uniqueness
-                $giangvienInserts = [];
-                $usedMaGVs = []; // associative map to avoid duplicates within this run
+                $detaiBatch = [];
+                $sinhvienBatch = [];
 
-                foreach ($uniqueGvNames as $name) {
-                    $email = $this->generateEmailFromName($name);
+                foreach ($rows as $row) {
 
-                    $user = User::where('email', $email)->first();
-                    $maGV = $this->generateMaGVForName($name, $usedMaGVs);
+                    // === GVHD + GVPB ===
+                    $maGVHD = $gvMap[trim((string)$row->GVHD)] ?? null;
+                    $maGVPB = $gvMap[trim((string)$row->GVPB)] ?? null;
 
-                    $giangvienInserts[] = [
-                        'MaGV' => $maGV,
-                        'Ho_va_Ten' => $name,
-                        'HocVi' => null,
-                        'NoiCongTac' => null,
-                        'sdt' => null,
-                        'So_luong_sinh_vien' => 0,
-                        'email' => $email,
-                        'user_id' => $user->id,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
-                }
-
-                // batch insert giangvien (defensive: remove duplicates inside the batch)
-                if (!empty($giangvienInserts)) {
-                    $seen = [];
-                    $filtered = [];
-                    foreach ($giangvienInserts as $g) {
-                        if (isset($seen[$g['MaGV']])) {
-                            continue;
-                        }
-                        $seen[$g['MaGV']] = true;
-                        $filtered[] = $g;
+                    // === GROUP KEY ===
+                    $nhom = trim((string)$row->Nhom);
+                    if ($nhom !== '') {
+                        $key = 'NHOM::' . strtolower(Str::ascii($nhom));
+                    } else {
+                        $key = 'TOPIC::' . strtolower(Str::ascii(trim((string)$row->TenDeTai)));
                     }
-                    foreach (array_chunk($filtered, 500) as $chunk) {
-                        DB::table('giangvien')->insert($chunk);
-                    }
-                }
 
-                // build map name -> MaGV
-                $gvMap = DB::table('giangvien')->select('MaGV', 'Ho_va_Ten')->get()
-                    ->pluck('MaGV', 'Ho_va_Ten')->toArray();
+                    // === DETAI ===
+                    if (!isset($topicGroupMap[$key])) {
 
-                // global map to ensure one DeTai per group (Nhom)
-                // KEY RULE: group by Nhom only. If Nhom is empty, fallback to TenDeTai-based key.
-                $topicGroupMap = []; // key => MaDT
-                $usedMaDTs = []; // track MaDTs generated in-memory
+                        $baseMaDT = $this->generateMaDTForKey($key);
+                        $finalMaDT = $baseMaDT;
+                        $i = 1;
 
-                // process temp in chunks
-                TempImportModel::chunk(500, function ($rows) use ($gvMap, &$topicGroupMap, &$usedMaDTs) {
-                    $detaiBatch = [];
-                    $sinhvienBatch = [];
-
-                    foreach ($rows as $row) {
-                        $gvName = trim((string)$row->GVHD);
-                        $maGV = $gvMap[$gvName] ?? null;
-
-                        // Primary grouping key: Nhom (group)
-                        $nhomRaw = trim((string)$row->Nhom);
-
-                        if ($nhomRaw !== '') {
-                            // normalize group key
-                            $key = 'NHOM::' . strtolower(Str::ascii($nhomRaw));
-                        } else {
-                            // fallback: if Nhom is empty, use TenDeTai to avoid merging unrelated blank groups
-                            $tenDeTai = trim((string)$row->TenDeTai);
-                            $key = 'TOPICFALLBACK::' . strtolower(Str::ascii($tenDeTai));
+                        while (isset($usedMaDTs[$finalMaDT]) || DeTai::where('MaDT', $finalMaDT)->exists()) {
+                            $finalMaDT = $baseMaDT . $i++;
                         }
 
-                        // Determine MaDT for this key
-                        if (isset($topicGroupMap[$key])) {
-                            $maDT = $topicGroupMap[$key];
-                        } else {
-                            // Generate deterministic candidate based on the key
-                            $candidate = $this->generateMaDTForKey($key);
+                        $topicGroupMap[$key] = $finalMaDT;
+                        $usedMaDTs[$finalMaDT] = true;
 
-                            // If candidate collides with in-memory used ids or DB, append suffix
-                            $suffix = 1;
-                            $final = $candidate;
-                            while (isset($usedMaDTs[$final]) || DeTai::where('MaDT', $final)->exists()) {
-                                $final = $candidate . $suffix;
-                                $suffix++;
-                            }
-                            $maDT = $final;
-
-                            // register
-                            $topicGroupMap[$key] = $maDT;
-                            $usedMaDTs[$maDT] = true;
-
-                            // add detai entry for this unique group key
-                            $detaiBatch[] = [
-                                'MaDT' => $maDT,
-                                'TenDeTai' => $row->TenDeTai,
-                                'MoTa' => $row->MoTa,
-                                'TrangThai' => $row->TrangThai,
-                                'MaGV' => $maGV,
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ];
-                        }
-
-                        $email = $row->Email;
-                        if (!$email || !str_contains($email, '@')) {
-                            $email = strtolower($row->MSSV) . '@student.stu.edu.vn';
-                        }
-
-                        $sinhvienBatch[] = [
-                            'MSSV' => $row->MSSV,
-                            'Ho_va_Ten' => $row->HoTenSV,
-                            'Lop' => $row->Lop,
-                            'sdt' => $row->SDT ?: null,
-                            'email' => $email,
-                            'HuongDeTai' => $row->HuongDeTai,
-                            'Nhom' => $row->Nhom,
-                            'Giang_vien_huong_dan' => $maGV,
-                            'MaDT' => $maDT,
-                            'Diem' => $row->Diem,
-                            'GhiChu' => $row->GhiChu,
-                            'user_id' => null,
+                        $detaiBatch[] = [
+                            'MaDT' => $finalMaDT,
+                            'TenDeTai' => $row->TenDeTai,
+                            'MoTa' => $row->MoTa,
+                            'TrangThai' => $row->TrangThai,
+                            'MaGV' => $maGVHD,   // GVHD
+                            'MaGVPB' => $maGVPB, // ✅ GVPB
                             'created_at' => now(),
                             'updated_at' => now(),
                         ];
                     }
 
-                    // ensure no duplicate MaDT inside detaiBatch (defensive)
-                    if (!empty($detaiBatch)) {
-                        $seen = [];
-                        $filtered = [];
-                        foreach ($detaiBatch as $d) {
-                            if (isset($seen[$d['MaDT']])) {
-                                continue;
-                            }
-                            $seen[$d['MaDT']] = true;
-                            $filtered[] = $d;
-                        }
-                        if (!empty($filtered)) {
-                            DB::table('detai')->insert($filtered);
-                        }
+                    $maDT = $topicGroupMap[$key];
+
+                    // === SINH VIEN ===
+                    $email = $row->Email;
+                    if (!$email || !str_contains($email, '@')) {
+                        $email = strtolower($row->MSSV) . '@student.stu.edu.vn';
                     }
 
-                    if (!empty($sinhvienBatch)) {
-                        DB::table('sinhvien')->insert($sinhvienBatch);
-                    }
-                });
+                    $sinhvienBatch[] = [
+                        'MSSV' => $row->MSSV,
+                        'Ho_va_Ten' => $row->HoTenSV,
+                        'Lop' => $row->Lop,
+                        'sdt' => $row->SDT ?: null,
+                        'email' => $email,
+                        'HuongDeTai' => $row->HuongDeTai,
+                        'Nhom' => $row->Nhom,
+                        'Giang_vien_huong_dan' => $maGVHD,
+                        'MaDT' => $maDT,
+                        'Diem' => $row->Diem,
+                        'GhiChu' => $row->GhiChu,
+                        'user_id' => null,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+
+                if (!empty($detaiBatch)) {
+                    DB::table('detai')->insert($detaiBatch);
+                }
+
+                if (!empty($sinhvienBatch)) {
+                    DB::table('sinhvien')->insert($sinhvienBatch);
+                }
             });
+        });
 
-            return response()->json(['message' => 'Import & sync dữ liệu thành công']);
-        } catch (\Throwable $e) {
-            Log::error('Import failed', ['error' => $e->getMessage()]);
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        return response()->json(['message' => 'Import & sync dữ liệu thành công']);
+
+    } catch (\Throwable $e) {
+        Log::error('Import failed', ['error' => $e->getMessage()]);
+        return response()->json(['error' => $e->getMessage()], 500);
     }
+}
+
 }

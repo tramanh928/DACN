@@ -25,6 +25,7 @@ class DeTai extends Model
         'SoLuong',
         'MoTa',
         'TrangThai',
+        'MaHD',
     ];
 
     public $timestamps = true;
@@ -47,6 +48,11 @@ class DeTai extends Model
     public function SinhVien()
     {
         return $this->hasMany(SinhVien::class, 'MaDT', 'MaDT');
+    }
+
+    public function hoiDong()
+    {
+        return $this->belongsTo(HoiDong::class, 'MaHD', 'MaHD');
     }
     
 }

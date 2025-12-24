@@ -1156,6 +1156,7 @@
               <thead class="bg-indigo-100 text-indigo-700">
                 <tr>
                   <th class="p-3 text-center w-16">STT</th>
+                  <th class="p-3 text-center min-w-[180px]">Tên hội đồng</th>
                   <th class="p-3 text-center min-w-[180px]">Ngày giờ bắt đầu</th>
                   <th class="p-3 text-center min-w-[180px]">Ngày giờ kết thúc</th>
                   <th class="p-3 text-center min-w-[180px]">Thao tác</th>
@@ -1173,6 +1174,7 @@
                   class="hover:bg-indigo-50"
                 >
                   <td class="p-3 text-center">{{ idx + 1 }}</td>
+                  <td class="p-3 text-center">Hội đồng {{ idx + 1 }}</td>
                   <td class="p-3 text-center">
                     {{ c.start ? formatDateTime(c.start) : '-' }}
                   </td>
@@ -1401,6 +1403,7 @@
                 <tr>
                   <th class="p-3 text-center">MSSV</th>
                   <th class="p-3 text-center">Họ và tên SV</th>
+                  <th class="p-3 text-center">Mã đề tài</th>
                   <th class="p-3 text-center">Đề tài</th>
                   <th class="p-3 text-center">Thao tác</th>
                 </tr>
@@ -1415,11 +1418,14 @@
                       @mouseleave="hoveredGroup = null"
                       :class="hoveredGroup === gi ? 'bg-indigo-50' : ''"
                     >
-                      <td class="p-3">{{ stu.mssv || '-' }}</td>
-                      <td class="p-3">{{ stu.name || '-' }}</td>
+                      <td class="p-3 text-center">{{ stu.mssv || '-' }}</td>
+                      <td class="p-3 text-center">{{ stu.name || '-' }}</td>
 
                       <!-- Topic cell only on first student row -->
-                      <td v-if="si === 0" class="p-3 text-left" :rowspan="group.rowSpan">
+                       <td v-if="si === 0" class="p-3 text-center" :rowspan="group.rowSpan">
+                        {{ group.MaDT || '-' }}
+                      </td>
+                      <td v-if="si === 0" class="p-3 text-center" :rowspan="group.rowSpan">
                         {{ group.topic || '-' }}
                       </td>
 
@@ -2063,9 +2069,6 @@ const fetchTeachers = async () => {
   }
 }
 
-/** ========================== */
-/**  FETCH STUDENTS            */
-/** ========================== */
 const fetchStudents = async () => {
   try {
     const response = await axios.post('/students/getAll')
@@ -2082,6 +2085,7 @@ function normalizeStudents(studentsArr) {
   return (studentsArr || []).map(s => ({
     mssv: s.mssv ?? s.MSSV ?? '',
     name: s.name ?? s.Ho_va_Ten ?? s.HoTen ?? '',
+    MaDT: s.MaDT,
     group: s.group ?? s.Nhom ?? '',
     topic: s.topic ?? s.TenDeTai ?? '',
     lecturer: s.lecturer ?? s.Giang_vien_hd ?? '',
@@ -2207,38 +2211,70 @@ const selectedAssignment = ref(null)
 const hoveredGroup = ref(null)
 
 const filteredCommitteeAssignRows = computed(() => {
-  const q = (committeeAssignSearch.value || '').toString().toLowerCase().trim()
+  const q = (committeeAssignSearch.value || '')
+    .toString()
+    .toLowerCase()
+    .trim()
 
-  // Normalize assignments into rows
   const rows = (assignments.value || []).map(a => ({
     mssv: a.mssv || a.MSSV || '',
-    name: a.name || a.Ho_va_Ten || a.HoTen || '',
-    topic: (a.topic || a.TenDeTai || a.title || '').toString()
+    MaDT: a.MaDT,
+    name: a.name || a.Ho_va_Ten || '',
+    topic: (a.topic || a.TenDeTai || '').toString(),
+    committee: a.HoiDong || a.committee || null
   }))
 
-  // Group by topic; if no topic use unique key per student to avoid grouping
   const groupsMap = new Map()
+
   rows.forEach(r => {
-    const key = r.topic && r.topic.trim() ? r.topic.trim() : `__no_topic__:${r.mssv}`
-    if (!groupsMap.has(key)) groupsMap.set(key, { topic: r.topic, students: [] })
-    groupsMap.get(key).students.push({ mssv: r.mssv, name: r.name })
+    const key =
+      r.topic && r.topic.trim()
+        ? r.topic.trim()
+        : `__no_topic__:${r.mssv}`
+
+    if (!groupsMap.has(key)) {
+      groupsMap.set(key, {
+        MaDT: r.MaDT,
+        topic: r.topic,
+        students: [],
+        committee: r.committee || null
+      })
+    }
+
+    const group = groupsMap.get(key)
+    group.students.push({
+      mssv: r.mssv,
+      name: r.name
+    })
+
+    if (!group.committee && r.committee) {
+      group.committee = r.committee
+    }
   })
 
   let groups = Array.from(groupsMap.values()).map(g => ({
+    MaDT: g.MaDT,
     topic: g.topic,
     students: g.students,
+    committee: g.committee, 
     rowSpan: g.students.length || 1
   }))
 
   if (q) {
     groups = groups.filter(g => {
-      const text = `${g.topic || ''} ${g.students.map(s => s.mssv + ' ' + s.name).join(' ')}`.toLowerCase()
+      const text = `
+        ${g.topic || ''}
+        ${g.students.map(s => `${s.mssv} ${s.name}`).join(' ')}
+        ${g.committee?.id || ''}
+      `.toLowerCase()
+
       return text.includes(q)
     })
   }
 
   return groups
 })
+
 
 function openCommitteeAssign(item) {
   selectedAssignment.value = item
@@ -2250,26 +2286,44 @@ function closeCommitteeAssignment() {
   showCommitteeAssignModal.value = false
 }
 
-function assignCommitteeTo(c) {
+async function assignCommitteeTo(c) {
   if (!selectedAssignment.value || !c) return
-  const studentNames = (selectedAssignment.value.students || []).map(s => s.name).filter(Boolean).join(', ')
-  const confirmed = window.confirm(`Phân công hội đồng cho đề tài "${selectedAssignment.value.topic || ''}" của ${studentNames || selectedAssignment.value.mssv || ''}?`)
-  if (!confirmed) return
 
-  // Emit event to parent / caller so backend or parent can handle actual assignment.
-  emit('assign-committee', { assignment: selectedAssignment.value, committee: c })
-  closeCommitteeAssignment()
+  const studentNames = (selectedAssignment.value.students || [])
+    .map(s => s.name)
+    .filter(Boolean)
+    .join(', ')
+
+  const confirmed = window.confirm(
+    `Phân công hội đồng "${c.id}" cho đề tài "${selectedAssignment.value.topic}" của ${studentNames}?`
+  )
+  if (!confirmed) return
+  console.log(selectedAssignment.value, c)
+  try {
+    await axios.post('/committees/assign', {
+      MaDT: selectedAssignment.value.MaDT, 
+      MaHD: c.id
+    })
+
+    selectedAssignment.value.committee = c
+
+    alert('Phân công hội đồng thành công')
+    closeCommitteeAssignment()
+
+  } catch (err) {
+    console.error(err)
+    alert('Phân công thất bại')
+  }
 }
+
 
 function removeGroupAssignment(group) {
   if (!group) return
   const confirmed = window.confirm(`Xóa phân công cho đề tài "${group.topic || ''}"?`)
   if (!confirmed) return
 
-  // emit to parent for backend handling
   emit('remove-assignment', { topic: group.topic, students: group.students })
 
-  // optimistic UI update: remove assignments matching topic
   for (let i = assignments.value.length - 1; i >= 0; i--) {
     const a = assignments.value[i]
     const aTopic = (a.topic || a.TenDeTai || a.title || '').toString()
@@ -2277,9 +2331,6 @@ function removeGroupAssignment(group) {
   }
 }
 
-/** ========================== */
-/**  PHÂN CÔNG PHẢN BIỆN       */
-/** ========================== */
 const reviewSearch = ref('')
 const showReviewerModal = ref(false)
 const selectedTopic = ref(null)
@@ -2287,7 +2338,6 @@ const selectedTopic = ref(null)
 const showReviewTopicModal = ref(false)
 const selectedReviewer = ref(null)
 
-// dùng cho hover nhóm đề tài
 const hoverStt = ref(null)
 
 function openReviewerTopicList(reviewer) {
@@ -2319,11 +2369,6 @@ const reviewTopics = computed(() => {
     })
 })
 
-/**
- * reviewAssignmentRows:
- *  - Mỗi đề tài có thể có 1 hoặc nhiều sinh viên
- *  - Nếu có nhiều SV thì MaDT/TenDeTai/GV phản biện/Ghi chú/Thao tác sẽ rowspan = số SV
- */
 const reviewAssignmentRows = computed(() => {
   const result = []
   let sttCounter = 0
@@ -2333,7 +2378,6 @@ const reviewAssignmentRows = computed(() => {
 
   const norm = v => (v ?? '').toString().toLowerCase().trim()
 
-  // Build topicMap keyed strictly by MaDT, then Nhom, otherwise unique per topic
   const topicMap = new Map()
   topicList.forEach((topic, idx) => {
     const maDT = (topic.MaDT || topic.maDT || topic.ma_dt || '').toString().trim()
@@ -2345,27 +2389,22 @@ const reviewAssignmentRows = computed(() => {
     } else if (nhom !== '') {
       key = `NHOM::${nhom}`
     } else {
-      // unique fallback so topics with same title are NOT merged
-      key = `UNIQ::${idx}` // use index to keep each topic separate
+      key = `UNIQ::${idx}` 
     }
 
-    // keep first topic object for this key
     if (!topicMap.has(key)) {
       topicMap.set(key, { key, topic })
     }
   })
 
-  // For each unique topic key, find students and push rows
   for (const { key, topic } of topicMap.values()) {
     const topicMaDT = (topic.MaDT || topic.maDT || topic.ma_dt || '').toString().trim()
     const topicNhom = norm(topic.Nhom || topic.group)
 
-    // find students that belong to this topic key
     const matchedStudents = allStudents.filter(s => {
       const sMaDT = (s.MaDT || s.maDT || s.ma_dt || '').toString().trim()
       const sNhom = norm(s.Nhom || s.group)
 
-      // priority: MaDT match, then Nhom match
       if (topicMaDT && sMaDT && topicMaDT === sMaDT) return true
       if (topicNhom && sNhom && topicNhom === sNhom) return true
 
@@ -2514,16 +2553,24 @@ const committeeForm = ref({
 })
 
 // Chuẩn hóa dữ liệu hội đồng từ backend
-function normalizeCommittees(arr) {
-  return (arr || []).map(c => ({
-    id: c.id,
-    start: c.start_time || c.NgayGioBatDau || c.start || c.NgayBatDau || '',
-    end: c.end_time || c.NgayGioKetThuc || c.end || c.NgayKetThuc || '',
-    members: (c.members || c.thanhVien || c.giangVienHoiDong || []).map(m => ({
-      teacherId: m.teacher_id || m.MaGV || m.id || '',
-      teacherName: m.teacher_name || m.name || m.HoTen || m.Ho_va_Ten || '',
-      position: m.position || m.ChucVu || ''
-    }))
+function normalizeCommittees(data) {
+  // Laravel có thể trả Collection, object, null...
+  if (!Array.isArray(data)) {
+    console.error('Committees data is not array:', data)
+    return []
+  }
+
+  return data.map(c => ({
+    id: c.id ?? null,
+    start: c.start ?? null,
+    end: c.end ?? null,
+    members: Array.isArray(c.members)
+      ? c.members.map(m => ({
+          teacherId: m.teacherId ?? '',
+          teacherName: m.teacherName ?? '',
+          position: m.position ?? ''
+        }))
+      : []
   }))
 }
 
@@ -2536,6 +2583,8 @@ const fetchCommittees = async () => {
     committees.value = []
   }
 }
+
+
 
 function toDatetimeLocal(str) {
   if (!str) return ''
@@ -2636,6 +2685,7 @@ function closeCommitteeForm() {
 
 function openCommitteeDetail(c) {
   selectedCommittee.value = c
+  console.log(selectedCommittee.value)
   showCommitteeDetailModal.value = true
 }
 
