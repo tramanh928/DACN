@@ -78,13 +78,6 @@
           </button>
 
           <button
-            @click="setCurrentView('grading')"
-            :class="currentView === 'grading' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
-          >
-            Chấm điểm
-          </button>
-
-          <button
             @click="setCurrentView('committee')"
             :class="currentView === 'committee' ? 'bg-indigo-100 text-indigo-900 rounded px-3 py-2' : 'text-left hover:text-indigo-900'"
           >

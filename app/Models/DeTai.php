@@ -22,17 +22,12 @@ class DeTai extends Model
         'TenDeTai',
         'MaGV',
         'MaGVPB',
-        'SoLuong',
         'MoTa',
         'TrangThai',
         'MaHD',
     ];
 
     public $timestamps = true;
-
-    protected $casts = [
-        'SoLuong' => 'integer',
-    ];
 
 
     public function giangVien(): BelongsTo

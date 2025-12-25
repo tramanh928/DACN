@@ -11,7 +11,6 @@ class CreateDeTaiTable extends Migration
         Schema::create('DeTai', function (Blueprint $table) {
             $table->string('MaDT', 50)->primary();
             $table->string('TenDeTai', 255);
-            $table->integer('SoLuong')->default(0);
             $table->enum('TrangThai', ['Mở','Đóng','Chờ'])->default('Chờ');
             $table->string('MaGV', 20)->nullable();
             $table->timestamps();

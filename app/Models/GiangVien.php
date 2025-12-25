@@ -33,6 +33,15 @@ class GiangVien extends Model
         'Ngay_Sinh' => 'date',
     ];
 
+    public function sinhViens()
+{
+    return $this->hasMany(
+        SinhVien::class,
+        'Giang_vien_huong_dan',
+        'MaGV'
+    );
+}
+
     public function getFullNameAttribute(): ?string
     {
         return $this->Ho_va_Ten ? trim($this->Ho_va_Ten) : null;

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\DeTai;
 use Illuminate\Http\Request;
 use App\Models\SinhVien;
+use Illuminate\Support\Facades\DB;
+
 
 class DeTaiController extends Controller
 {
@@ -19,8 +21,8 @@ class DeTaiController extends Controller
                 'GiangVien'=> $d->MaGV ? $d->giangVien->Ho_va_Ten : '',
                 'MaGVPB'   => $d->MaGVPB,
                 'GiangVienPhanBien' => $d->MaGVPB ? $d->giangVienPhanBien->Ho_va_Ten : '',
-                'SoLuong'  => $d->SoLuong,
                 'TrangThai'=> $d->TrangThai,
+                'MoTa'     => $d->MoTa,
             ];
         });
     }
@@ -35,8 +37,8 @@ class DeTaiController extends Controller
                 'GiangVien'=> $d->MaGV ? $d->giangVien->Ho_va_Ten : '',
                 'MaGVPB'   => $d->MaGVPB,
                 'GiangVienPhanBien' => $d->MaGVPB ? $d->giangVienPhanBien->Ho_va_Ten : '',
-                'SoLuong'  => $d->SoLuong,
                 'TrangThai'=> $d->TrangThai,
+                'MoTa'     => $d->MoTa,
             ];
         });
     }
@@ -51,8 +53,8 @@ class DeTaiController extends Controller
                 'GiangVien'=> $d->MaGV ? $d->giangVien->Ho_va_Ten : '',
                 'MaGVPB'   => $d->MaGVPB,
                 'GiangVienPhanBien' => $d->MaGVPB ? $d->giangVienPhanBien->Ho_va_Ten : '',
-                'SoLuong'  => $d->SoLuong,
                 'TrangThai'=> $d->TrangThai,
+                'MoTa'     => $d->MoTa,
             ];
         });
     }
@@ -84,60 +86,81 @@ class DeTaiController extends Controller
         return $maDT;
     }
 
- public function saveTopic(Request $request)
-    {
-        $request->validate([
-            'MSSV'      => 'required|string|exists:SinhVien,MSSV',
-            'TenDT'     => 'required|string',
-            'MoTa'      => 'nullable|string',
-            'TrangThai' => 'required|string',
-            'MaGV'      => 'required|string'
-        ]);
+public function saveTopic(Request $request)
+{
+    // =============================
+    // VALIDATION
+    // =============================
+    $request->validate([
+        'MSSV'      => 'required|string|exists:SinhVien,MSSV',
+        'TenDT'     => 'required|string',
+        'MoTa'      => 'nullable|string',
+        'TrangThai' => 'required|string',
+        'MaGV'      => 'required|string|exists:GiangVien,MaGV',
+    ]);
 
-        $student = SinhVien::where('MSSV', $request->MSSV)->first();
-        $groupMembers = SinhVien::where('Nhom', $student->Nhom)->get();
-        $hasOldTopic = $student->MaDT !== null;
+    // =============================
+    // LẤY SINH VIÊN
+    // =============================
+    $student = SinhVien::where('MSSV', $request->MSSV)->first();
+    if (!$student) {
+        return response()->json(['message' => 'Sinh viên không tồn tại'], 404);
+    }
 
-        // Check existing topic by name
-        $existingTopic = DeTai::where('TenDeTai', $request->TenDT)->first();
+    // LẤY CÁC THÀNH VIÊN CÙNG NHÓM
+    $groupMembers = SinhVien::where('Nhom', $student->Nhom)->get();
 
-        // Check constraints
-        $mustCreateNew = false;
+    $hasOldTopic = !empty($student->MaDT);
 
-        if ($existingTopic) {
+    // =============================
+    // TÌM ĐỀ TÀI TRÙNG TÊN
+    // =============================
+    $existingTopic = DeTai::where('TenDeTai', $request->TenDT)->first();
 
-            // 1) If topic already has 2 students → must create new
-            $countSV = SinhVien::where('MaDT', $existingTopic->MaDT)->count();
-            if ($countSV >= 2) {
-                $mustCreateNew = true;
-            }
+    $mustCreateNew = false;
 
-            // 2) If topic has different MaGV → must create new
-            if ($existingTopic->MaGV !== $request->MaGV) {
-                $mustCreateNew = true;
-            }
+    if ($existingTopic) {
+        // 1. Đề tài đã đủ 2 SV
+        $countSV = SinhVien::where('MaDT', $existingTopic->MaDT)->count();
+        if ($countSV >= 2) {
+            $mustCreateNew = true;
         }
 
-        // -----------------------------------
-        // CASE 1: Student has NO topic yet
-        // -----------------------------------
+        // 2. Khác giảng viên hướng dẫn
+        if ($existingTopic->MaGV !== $request->MaGV) {
+            $mustCreateNew = true;
+        }
+    }
+
+    // =============================
+    // TRANSACTION
+    // =============================
+    return DB::transaction(function () use (
+        $student,
+        $groupMembers,
+        $hasOldTopic,
+        $existingTopic,
+        $mustCreateNew,
+        $request
+    ) {
+
+        // =================================================
+        // CASE 1: NHÓM CHƯA CÓ ĐỀ TÀI
+        // =================================================
         if (!$hasOldTopic) {
 
+            // Tạo đề tài mới
             if (!$existingTopic || $mustCreateNew) {
-
-                // Create new topic
                 $newTopic = DeTai::create([
                     'MaDT'      => $this->generateMaDT(),
                     'TenDeTai'  => $request->TenDT,
                     'MoTa'      => $request->MoTa,
                     'TrangThai' => $request->TrangThai,
-                    'MaGV'      => $request->MaGV
+                    'MaGV'      => $request->MaGV,
                 ]);
 
-                // Assign to group
                 foreach ($groupMembers as $sv) {
-                    $sv->MaDT = $newTopic->MaDT;
-                    $sv->save();
+                    $sv->update(['MaDT' => $newTopic->MaDT]);
                 }
 
                 return response()->json([
@@ -146,10 +169,9 @@ class DeTaiController extends Controller
                 ]);
             }
 
-            // Else: use existing topic
+            // Dùng lại đề tài cũ
             foreach ($groupMembers as $sv) {
-                $sv->MaDT = $existingTopic->MaDT;
-                $sv->save();
+                $sv->update(['MaDT' => $existingTopic->MaDT]);
             }
 
             return response()->json([
@@ -158,38 +180,40 @@ class DeTaiController extends Controller
             ]);
         }
 
-        // -----------------------------------
-        // CASE 2: Student ALREADY has topic
-        // -----------------------------------
+        // =================================================
+        // CASE 2: NHÓM ĐÃ CÓ ĐỀ TÀI
+        // =================================================
         $oldTopic = DeTai::where('MaDT', $student->MaDT)->first();
+        if (!$oldTopic) {
+            return response()->json(['message' => 'Không tìm thấy đề tài cũ'], 404);
+        }
 
+        // Có đề tài trùng tên
         if ($existingTopic) {
 
+            // Phải tạo đề tài mới
             if ($mustCreateNew) {
-                // Create new instead of using full topic
                 $newTopic = DeTai::create([
                     'MaDT'      => $this->generateMaDT(),
                     'TenDeTai'  => $request->TenDT,
                     'MoTa'      => $request->MoTa,
                     'TrangThai' => $request->TrangThai,
-                    'MaGV'      => $request->MaGV
+                    'MaGV'      => $request->MaGV,
                 ]);
 
                 foreach ($groupMembers as $sv) {
-                    $sv->MaDT = $newTopic->MaDT;
-                    $sv->save();
+                    $sv->update(['MaDT' => $newTopic->MaDT]);
                 }
 
                 return response()->json([
-                    'message' => 'Đề tài cũ đầy hoặc khác GV — Tạo đề tài mới',
+                    'message' => 'Đề tài cũ đầy hoặc khác GV — tạo đề tài mới',
                     'data'    => $newTopic
                 ]);
             }
 
-            // Otherwise assign existing
+            // Chuyển sang đề tài đã tồn tại
             foreach ($groupMembers as $sv) {
-                $sv->MaDT = $existingTopic->MaDT;
-                $sv->save();
+                $sv->update(['MaDT' => $existingTopic->MaDT]);
             }
 
             return response()->json([
@@ -198,17 +222,22 @@ class DeTaiController extends Controller
             ]);
         }
 
-        // If topic name not exist → rename old
-        $oldTopic->TenDeTai = $request->TenDT;
-        $oldTopic->MoTa     = $request->MoTa;
-        $oldTopic->MaGV     = $request->MaGV;
-        $oldTopic->save();
+        // =================================================
+        // CASE 3: ĐỔI TÊN / CẬP NHẬT ĐỀ TÀI CŨ
+        // =================================================
+        $oldTopic->update([
+            'TenDeTai'  => $request->TenDT,
+            'MoTa'      => $request->MoTa,
+            'MaGV'      => $request->MaGV,
+            'TrangThai' => $request->TrangThai,
+        ]);
 
         return response()->json([
-            'message' => 'Cập nhật tên đề tài cho nhóm thành công',
+            'message' => 'Cập nhật đề tài cho nhóm thành công',
             'data'    => $oldTopic
         ]);
-    }
+    });
+}
 
     public function assignReviewer(Request $request, $MaDT)
     {

@@ -86,14 +86,13 @@
         <div v-if="currentView === 'students'">
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-bold text-indigo-600">QUẢN LÝ SINH VIÊN</h2>
-
             <div class="flex items-center space-x-2">
-              <input
+             <input
+                v-model="studentSearch"
                 type="text"
                 placeholder="Tìm kiếm sinh viên..."
                 class="border rounded px-3 py-2 text-sm w-64"
               />
-              <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Xuất file Excel</button>
             </div>
           </div>
 
@@ -111,7 +110,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(s, idx) in students1" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
+                <tr v-for="(s, idx) in filteredStudents" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
                   <td class="p-3 text-center">{{ idx + 1 }}</td>
                   <td class="p-3 text-center">{{ s.mssv }}</td>
                   <td class="p-3 text-center">{{ s.name }}</td>
@@ -134,11 +133,11 @@
 
             <div class="flex items-center space-x-2">
               <input
-                type="text"
-                placeholder="Tìm theo MSGV / MSSV / tên đề tài"
-                class="border rounded px-3 py-2 text-sm w-64"
-              />
-              <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Xuất file Excel</button>
+                  v-model="assignSearch"
+                  type="text"
+                  placeholder="Tìm theo sinh viên hoặc đề tài..."
+                  class="border rounded px-3 py-2 text-sm w-64"
+                />
             </div>
           </div>
 
@@ -156,16 +155,13 @@
                 </tr>
               </thead>
               <tbody>
-                  <tr v-if="guideScoreList.length === 0">
+                  <tr v-if="filteredGuideScoreList.length === 0">
                     <td colspan="7" class="p-4 text-center text-gray-500">
                       Chưa có phân công đề tài
                     </td>
                   </tr>
 
-                  <tr
-                    v-for="(row, idx) in guideScoreList"
-                    :key="(row.topic.MaDT || row.topic.id || 't') + '-' + idx"
-                  >
+                  <tr v-for="(row, idx) in filteredGuideScoreList" :key="(row.topic.MaDT || row.topic.id || 't') + '-' + idx">
                     <td class="p-3 text-center">
                       {{ row.MSSV || '-' }}
                     </td>
@@ -209,7 +205,7 @@
                     >
                       <div class="flex gap-2 justify-center">
                         <button
-                          @click="openAssignForm(row.topic)"
+                          @click="openAssignForm(row)"
                           type="button"
                           class="bg-blue-500 text-white px-3 py-1 rounded text-sm opacity-90"
                         >
@@ -268,6 +264,7 @@
                   <option value="">-- Chọn trạng thái --</option>
                   <option value="Được tiếp tục">Được tiếp tục</option>
                   <option value="Bị đình chỉ">Bị đình chỉ</option>
+                  <option value="Ý kiến khác">Ý kiến khác</option>
                 </select>
               </div>
 
@@ -290,9 +287,6 @@
                 placeholder="Tìm MSSV / tên..."
                 class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
               />
-              <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
-                Lưu
-              </button>
             </div>
           </div>
           <div class="bg-white rounded shadow overflow-x-auto">
@@ -310,7 +304,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(s, idx) in students1" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
+                <tr v-for="(s, idx) in filteredEvaluationStudents" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
                   <td class="p-3 text-center">{{ idx + 1 }}</td>
                   <td class="p-3 text-center">{{ s.mssv }}</td>
                   <td class="p-3 text-center">{{ s.name }}</td>
@@ -1023,62 +1017,22 @@ onMounted(() => { fetchStudents(); fetchTopics() })
 function getStudentsOfTopic(topic) {
   if (!topic) return []
 
-  const normalize = v =>
-    String(v || '')
-      .toLowerCase()
-      .trim()
-
-  if (Array.isArray(topic.students) && topic.students.length > 0) {
-    return topic.students
-      .map(s => ({
-        mssv: s.MSSV ?? s.mssv ?? '',
-        name: s.HoTen ?? s.name ?? s.fullName ?? '',
-        group: s.group ?? ''
-      }))
-      .filter(s => s.mssv || s.name)
+  const topicId = topic.MaDT
+  if (!topicId) {
+    console.error('Topic missing MaDT:', topic)
+    return []
   }
 
-  const topicId =
-    topic.MaDT ??
-    topic.id ??
-    topic.DeTaiId ??
-    null
-
-  const topicName = normalize(
-    topic.TenDeTai ??
-    topic.TenDT ??
-    topic.title ??
-    ''
-  )
-
   return (students.value || [])
-    .filter(s => {
-      const sameId =
-        topicId != null &&
-        (
-          String(s.MaDT) === String(topicId) ||
-          String(s.topicId) === String(topicId) ||
-          String(s.DeTaiId) === String(topicId)
-        )
-
-      const sameName =
-        topicName &&
-        normalize(
-          s.topic ??
-          s.TenDeTai ??
-          s.TenDT ??
-          ''
-        ) === topicName
-
-      return sameId || sameName
-    })
+    .filter(s => String(s.code) === String(topicId))
     .map(s => ({
-      mssv: s.MSSV ?? s.mssv ?? '',
-      name: s.HoTen ?? s.name ?? '',
+      mssv: s.mssv ?? s.MSSV ?? '',
+      name: s.name ?? s.HoTen ?? '',
       group: s.group ?? ''
     }))
     .filter(s => s.mssv || s.name)
 }
+
 
 function onScoreInput(e, c) {
   let val = Number(e.target.value)
@@ -1123,94 +1077,112 @@ const guideScoreList = computed(() => {
   const result = []
   let sttCounter = 0
 
-  const rows = []
-
   ;(guidingScoreList.value || []).forEach(topic => {
     const students = getStudentsOfTopic(topic)
 
-    if (students.length === 0) {
-      rows.push({
+    sttCounter++
+
+    if (!students.length) {
+      result.push({
         topic,
         MSSV: '',
         name: '',
         group: '',
+        isFirst: true,
+        stt: sttCounter,
+        rowSpan: 1,
       })
       return
     }
 
-    students.forEach(stu => {
-      rows.push({
+    // ✅ sort ONLY students of this topic
+    const sortedStudents = [...students].sort(
+      (a, b) => (Number(a.group) || 999) - (Number(b.group) || 999)
+    )
+
+    sortedStudents.forEach((stu, idx) => {
+      result.push({
         topic,
         MSSV: stu.mssv,
         name: stu.name,
         group: stu.group,
+        isFirst: idx === 0,
+        stt: idx === 0 ? sttCounter : null,
+        rowSpan: idx === 0 ? sortedStudents.length : null,
       })
     })
   })
 
-  rows.sort((a, b) => {
-    const ga = Number(a.group) || 999
-    const gb = Number(b.group) || 999
-    return ga - gb
-  })
+  return result
+})
+const rawReviewScoreRows = computed(() => {
+  const result = []
+  let sttCounter = 0
 
-  let lastTopic = null
-  let topicStartIndex = 0
+  ;(topicsReview.value || []).forEach(topic => {
+    const students = getReviewerStudentsOfTopic(topic)
+    sttCounter++
 
-  rows.forEach((row, index) => {
-    if (row.topic !== lastTopic) {
-      sttCounter++
-      row.isFirst = true
-      row.stt = sttCounter
-      row.rowSpan = 1
-      topicStartIndex = index
-    } else {
-      row.isFirst = false
-      row.stt = null
-      rows[topicStartIndex].rowSpan++
+    if (!students.length) {
+      result.push({
+        topic,
+        MSSV: '',
+        name: '',
+        isFirst: true,
+        stt: sttCounter,
+        rowSpan: 1,
+      })
+      return
     }
 
-    lastTopic = row.topic
-    result.push(row)
+    students.forEach((stu, idx) => {
+      result.push({
+        topic,
+        MSSV: stu.mssv,
+        name: stu.name,
+        isFirst: idx === 0,
+        stt: idx === 0 ? sttCounter : null,
+        rowSpan: idx === 0 ? students.length : null,
+      })
+    })
   })
 
   return result
 })
 
 const reviewScoreRows = computed(() => {
-  const result = []
-  let sttCounter = 0
+  const q = reviewScoreSearch.value.toLowerCase().trim()
+  if (!q) return rawReviewScoreRows.value
 
-  const filteredTopics = reviewScoreList.value || []
+  return rawReviewScoreRows.value.filter(row => {
+    const text = [
+      row.topic?.MaDT,
+      row.topic?.TenDeTai,
+      row.topic?.TenDT,
+      row.topic?.title,
+      row.MSSV,
+      row.name
+    ]
+      .join(' ')
+      .toLowerCase()
 
-  filteredTopics.forEach(topic => {
-    let stuArr = getStudentsOfTopic(topic).map(s => ({
-      MSSV: s.mssv,
-      name: s.name
-    }))
-
-    if (stuArr.length === 0) {
-      stuArr.push({ MSSV: '', name: '' })
-    }
-  
-
-
-    sttCounter += 1
-    const rowSpan = stuArr.length
-
-    stuArr.forEach((stu, index) => {
-      result.push({
-        topic,
-        isFirst: index === 0,      
-        rowSpan,                  
-        stt: index === 0 ? sttCounter : null,
-        MSSV: stu.MSSV,
-        name: stu.name
-      })
-    })
+    return text.includes(q)
   })
-  return result
 })
+
+const getReviewerStudentsOfTopic = (topic) => {
+  const topicId = topic?.MaDT ?? topic?.id
+  if (!topicId) return []
+
+  return (studentsReviewer.value || [])
+    .filter(s => String(s.MaDT) === String(topicId))
+    .map(s => ({
+      mssv: s.MSSV ?? s.mssv ?? '',
+      name: s.HoTen ?? s.name ?? '',
+      group: s.group ?? ''
+    }))
+    .filter(s => s.mssv || s.name)
+}
 
 const showReviewScoreMiniForm = ref(false)
 const reviewScoreMiniForm = reactive({
@@ -1594,18 +1566,15 @@ const formData = reactive({
   MoTa: '',
   TrangThai: ''
 })
-const topicSearch = ref('')
 
 async function openAssignForm(student){
   formMode.value = 'add'
   const teacher = await axios.post('/teacher-by-id/' + props.user.id);
-  formData.value = {
-    MSSV: student ? student.mssv || '' : '',
-    MaGV: teacher.data.MaGV || '',
-    TenDT: student ? student.topic || '' : '',
-    MoTa: student ? student.description || '' : '',
-    TrangThai: student ? student.status || '' : '',
-  }
+  formData.MaGV = teacher.data.MaGV || ''
+  formData.MSSV = student.mssv || student.MSSV || ''
+  formData.TenDT = student.topic.TenDeTai || ''
+  formData.MoTa = student.topic.MoTa || ''
+  formData.TrangThai = student.topic.TrangThai || ''
   showForm.value = true
 }
 async function downloadTemplate(MaDT) {
@@ -1615,15 +1584,13 @@ async function downloadTemplate(MaDT) {
 
   const url = window.URL.createObjectURL(new Blob([res.data]));
 
-  // Extract filename from content-disposition header
-  let filename = 'download.docx'; // fallback
+  let filename = 'download.docx'; 
   const disposition = res.headers['content-disposition'];
   if (disposition && disposition.indexOf('filename=') !== -1) {
     const match = disposition.match(/filename\*=UTF-8''(.+)$/);
     if (match && match[1]) {
       filename = decodeURIComponent(match[1]);
     } else {
-      // fallback for older browsers
       const match2 = disposition.match(/filename="(.+)"/);
       if (match2 && match2[1]) {
         filename = match2[1];
@@ -1641,12 +1608,13 @@ async function downloadTemplate(MaDT) {
 }
 async function saveForm() {
   try {
+    console.log('Saving form data:', formData);
     const res = await axios.post('/save-topic', {
-      MSSV: formData.value.MSSV,
-      TenDT: formData.value.TenDT,
-      MoTa: formData.value.MoTa,
-      TrangThai: formData.value.TrangThai,
-      MaGV: formData.value.MaGV
+      MSSV: formData.MSSV,
+      TenDT: formData.TenDT,
+      MoTa: formData.MoTa,
+      TrangThai: formData.TrangThai,
+      MaGV: formData.MaGV
     });
 
     alert("Lưu đề tài & cập nhật sinh viên thành công!");
@@ -1657,10 +1625,77 @@ async function saveForm() {
   } catch (err) {
     alert(err.response?.data?.error || "Lỗi khi lưu form");
   }
-}function closeForm() { showForm.value = false }
+}
+function closeForm() { showForm.value = false }
+
+const studentSearch = ref('')
+const filteredStudents = computed(() => {
+  const q = studentSearch.value.toLowerCase().trim()
+  if (!q) return students1.value || []
+
+  return (students1.value || []).filter(s => {
+    const text = [
+      s.mssv,
+      s.name,
+      s.Lop,
+      s.phone,
+      s.email,
+      s.group
+    ]
+      .join(' ')
+      .toLowerCase()
+
+    return text.includes(q)
+  })
+})
+const assignSearch = ref('')
+const filteredGuideScoreList = computed(() => {
+  const q = assignSearch.value.toLowerCase().trim()
+  if (!q) return guideScoreList.value || []
+
+  return (guideScoreList.value || []).filter(row => {
+    const t = row.topic || {}
+
+    const text = [
+      row.MSSV,
+      row.name,
+      row.group,
+
+      t.MaDT || t.code,
+      t.TenDeTai || t.TenDT || t.title,
+      t.MoTa || t.description,
+      t.TrangThai || t.status
+    ]
+      .join(' ')
+      .toLowerCase()
+
+    return text.includes(q)
+  })
+})
 
 const evaluationSearch = ref('')
-const filteredEvaluationList = ref([])
+const filteredEvaluationStudents = computed(() => {
+  const q = evaluationSearch.value.toLowerCase().trim()
+  if (!q) return students1.value || []
+
+  return (students1.value || []).filter(s => {
+    const text = [
+      s.mssv,
+      s.name,
+      s.Lop,
+      s.group,
+      s.topic,
+      s.title,
+      s.score,
+      s.note
+    ]
+      .join(' ')
+      .toLowerCase()
+
+    return text.includes(q)
+  })
+})
+
 
 function updateScore(student) {
   axios.post('/update-score', {
