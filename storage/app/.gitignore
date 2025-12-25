@@ -3,5 +3,5 @@
 !public/
 !.gitignore
 # But do not ignore these
-!template/
-!template/*
+!templates/
+!templates/*
