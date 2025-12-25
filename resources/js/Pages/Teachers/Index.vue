@@ -227,54 +227,64 @@
           </div>
         </div>
 
-        <!-- Simple Form Modal -->
         <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div class="bg-white rounded shadow-lg w-[90%] max-w-2xl p-6">
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-lg font-semibold">{{ formMode === 'add' ? 'Phân công đề tài' : 'Sửa' }}</h3>
-            </div>
+  <div class="bg-white rounded shadow-lg w-[90%] max-w-2xl p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold">{{ formMode === 'add' ? 'Phân công đề tài' : 'Sửa' }}</h3>
+    </div>
 
-            <div class="space-y-4 text-sm text-gray-700">
-              <div>
-                <label class="block font-medium mb-1">Tên đề tài</label>
-                <input
-                  v-model="formData.TenDT"
-                  type="text"
-                  class="w-full border rounded px-3 py-2"
-                  placeholder="Nhập tên đề tài"
-                />
-              </div>
+    <div class="space-y-4 text-sm text-gray-700">
+      <div>
+        <label class="block font-medium mb-1">Tên đề tài</label>
+        <input
+          v-model="formData.TenDT"
+          type="text"
+          class="w-full border rounded px-3 py-2"
+          placeholder="Nhập tên đề tài"
+        />
+      </div>
 
-              <div>
-                <label class="block font-medium mb-1">Mô tả</label>
-                <textarea
-                  v-model="formData.MoTa"
-                  class="w-full border rounded px-3 py-2"
-                  rows="4"
-                  placeholder="Nhập mô tả đề tài"
-                ></textarea>
-              </div>
+      <div>
+        <label class="block font-medium mb-1">Mô tả</label>
+        <textarea
+          v-model="formData.MoTa"
+          class="w-full border rounded px-3 py-2"
+          rows="4"
+          placeholder="Nhập mô tả đề tài"
+        ></textarea>
+      </div>
 
-              <div>
-                <label class="block font-medium mb-1">Trạng thái</label>
-                <select
-                  v-model="formData.TrangThai"
-                  class="w-full border rounded px-3 py-2"
-                >
-                  <option value="">-- Chọn trạng thái --</option>
-                  <option value="Được tiếp tục">Được tiếp tục</option>
-                  <option value="Bị đình chỉ">Bị đình chỉ</option>
-                  <option value="Ý kiến khác">Ý kiến khác</option>
-                </select>
-              </div>
+      <div>
+        <label class="block font-medium mb-1">Trạng thái</label>
+        <select
+          v-model="selectedStatus"
+          class="w-full border rounded px-3 py-2"
+        >
+          <option value="Được tiếp tục">Được tiếp tục</option>
+          <option value="Cảnh cáo">Cảnh cáo</option>
+          <option value="Bị đình chỉ">Bị đình chỉ</option>
+          <option value="Ý kiến khác">Ý kiến khác</option>
+        </select>
 
-              <div class="flex justify-end mt-4 gap-x-3">
-                <button @click="saveForm" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Lưu</button>
-                <button @click="closeForm" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Đóng</button>
-              </div>
-            </div>
-          </div>
+        <!-- Textbox for "Ý kiến khác" -->
+        <div v-if="selectedStatus === 'Ý kiến khác'" class="mt-2">
+          <input
+            type="text"
+            v-model="formData.TrangThai"
+            placeholder="Nhập ý kiến khác..."
+            class="w-full border rounded px-3 py-2"
+          />
         </div>
+      </div>
+
+      <div class="flex justify-end mt-4 gap-x-3">
+        <button @click="saveForm" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Lưu</button>
+        <button @click="closeForm" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
         <!-- Evaluation 50% view -->
         <div v-if="currentView === 'evaluation50'">
@@ -904,7 +914,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { router } from '@inertiajs/vue3'
 import axios from 'axios'
 
@@ -1566,6 +1576,17 @@ const formData = reactive({
   MoTa: '',
   TrangThai: ''
 })
+const selectedStatus = ref('');
+
+// Keep formData.TrangThai in sync for non-custom options
+watch(selectedStatus, (newVal) => {
+  if (newVal !== 'Ý kiến khác') {
+    formData.TrangThai = newVal;
+  } else {
+    formData.TrangThai = ''; // clear for custom input
+  }
+});
+
 
 async function openAssignForm(student){
   formMode.value = 'add'
