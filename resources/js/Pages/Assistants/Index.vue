@@ -198,9 +198,6 @@
               >
                 Thêm
               </button>
-              <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
-                Xuất file Excel
-              </button>
             </div>
           </div>
 
@@ -217,7 +214,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(teacher, i) in teachers" :key="teacher.id" class="hover:bg-indigo-50">
+                <tr v-for="(teacher, i) in filteredTeachers" :key="teacher.id" class="hover:bg-indigo-50">
                   <td class="p-3">{{ teacher.MaGV }}</td>
                   <td class="p-3">{{ teacher.name }}</td>
                   <td class="p-3">{{ teacher.email }}</td>
@@ -240,7 +237,7 @@
                     </div>
                   </td>
                 </tr>
-                <tr v-if="teachers.length === 0">
+                <tr v-if="filteredTeachers.length === 0">
                   <td class="p-3 italic text-sm text-gray-500" colspan="6">Không có dữ liệu từ database</td>
                 </tr>
               </tbody>
@@ -266,12 +263,6 @@
               >
                 Thêm
               </button>
-              <button
-                @click="exportExcel"
-                class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition"
-              >
-                Xuất file Excel
-              </button>
             </div>
           </div>
 
@@ -289,7 +280,7 @@
               </thead>
               <tbody>
                 <tr
-                  v-for="(s, idx) in students"
+                  v-for="(s, idx) in filteredStudents"
                   :key="s.mssv || s.id || idx"
                   class="hover:bg-indigo-50"
                 >
@@ -315,8 +306,7 @@
                     </div>
                   </td>
                 </tr>
-
-                <tr v-if="students.length === 0">
+                <tr v-if="filteredStudents.length === 0">
                   <td class="p-3 italic text-sm text-gray-500" colspan="6">Không có dữ liệu từ database</td>
                 </tr>
               </tbody>
@@ -341,9 +331,6 @@
               >
                 Thêm
               </button>
-              <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
-                Xuất file Excel
-              </button>
             </div>
           </div>
 
@@ -360,45 +347,45 @@
               </thead>
               <tbody>
                 <tr
-                  v-for="(topic, i) in topics"
-                  :key="topic.MaDT"
-                  class="hover:bg-indigo-50"
-                >
-                  <td class="p-3 text-center">{{ topic.MaDT }}</td>
-                  <td class="p-3 text-center">{{ topic.TenDeTai }}</td>
-                  <td class="p-3 text-center">{{ topic.GiangVien }}</td>
-                  <td class="p-3 text-center">
-                    <span
-                      :class="{
-                        'bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold':
-                          topic.status === 'Chờ sinh viên chọn',
-                        'bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-semibold':
-                          topic.status === 'Đã được chọn',
-                        'bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold':
-                          topic.status === 'Đã khóa'
-                      }"
-                    >
-                      {{ topic.TrangThai }}
-                    </span>
-                  </td>
-                  <td class="p-3">
-                    <div class="flex gap-2 justify-center">
-                      <button
-                        @click="openEditForm(topic)"
-                        class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition"
+                    v-for="(topic, i) in filteredTopics"
+                    :key="topic.MaDT"
+                    class="hover:bg-indigo-50"
+                  >
+                    <td class="p-3 text-center">{{ topic.MaDT }}</td>
+                    <td class="p-3 text-center">{{ topic.TenDeTai }}</td>
+                    <td class="p-3 text-center">{{ topic.GiangVien }}</td>
+                    <td class="p-3 text-center">
+                      <span
+                        :class="{
+                          'bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold':
+                            topic.TrangThai === 'Chờ sinh viên chọn',
+                          'bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-semibold':
+                            topic.TrangThai === 'Đã được chọn',
+                          'bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold':
+                            topic.TrangThai === 'Đã khóa'
+                        }"
                       >
-                        Sửa
-                      </button>
-                      <button
-                        @click="deleteItem(topic.MaDT)"
-                        class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition"
-                      >
-                        Xóa
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-if="topics.length === 0">
+                        {{ topic.TrangThai }}
+                      </span>
+                    </td>
+                    <td class="p-3">
+                      <div class="flex gap-2 justify-center">
+                        <button
+                          @click="openEditForm(topic)"
+                          class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition"
+                        >
+                          Sửa
+                        </button>
+                        <button
+                          @click="deleteItem(topic.MaDT)"
+                          class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition"
+                        >
+                          Xóa
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                <tr v-if="filteredTopics.length === 0">
                   <td class="p-3 italic text-sm text-gray-500" colspan="6">Không có dữ liệu từ database</td>
                 </tr>
               </tbody>
@@ -694,11 +681,7 @@
               </thead>
 
               <tbody>
-                <tr
-                  v-for="(item, i) in assignments"
-                  :key="i"
-                  class="hover:bg-indigo-50"
-                >
+                <tr v-for="(item, i) in filteredAssignments" :key="i" class="hover:bg-indigo-50">
                   <td class="p-3">{{ item.mssv }}</td>
                   <td class="p-3">{{ item.name }}</td>
                   <td class="p-3">{{ item.group }}</td>
@@ -724,7 +707,7 @@
                   </td>
                 </tr>
 
-                <tr v-if="assignments.length === 0">
+                <tr v-if="filteredAssignments.length === 0">
                   <td class="p-3 italic text-sm text-gray-500" colspan="8">
                     Không có dữ liệu từ database
                   </td>
@@ -872,18 +855,14 @@
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  v-for="(s, idx) in students"
-                  :key="s.mssv || s.id || idx"
-                  class="hover:bg-indigo-50"
-                >
+                <tr v-for="(s, idx) in filteredStudent" :key="s.mssv || s.id || idx" class="hover:bg-indigo-50">
                   <td class="p-3 text-center">{{ idx + 1 }}</td>
                   <td class="p-3 text-center">{{ s.mssv || '-' }}</td>
                   <td class="p-3 text-center">{{ s.name || '-' }}</td>
                   <td class="p-3 text-center">{{ s.lecturer || '-' }}</td>
                   <td class="p-3 text-center">{{ s.score || '-' }}</td>
                 </tr>
-                <tr v-if="topics.length === 0">
+                <tr v-if="filteredStudent.length === 0">
                   <td colspan="8" class="p-4 text-center text-gray-500">
                     Không có đề tài để phân công phản biện
                   </td>
@@ -2030,10 +2009,73 @@ const assignmentSearch = ref('')
 const teacherSearch = ref('')
 const studentSearch = ref('')
 const topicSearch = ref('')
+const evaluationSearch = ref('');
 
 const totalStudents = ref(0)
 const totalTeachers = ref(0)
 const totalTopics = ref(0)
+
+const filteredStudent = computed(() => {
+  if (!evaluationSearch.value) return students.value;
+
+  const searchTerm = evaluationSearch.value.toLowerCase();
+  return students.value.filter(s =>
+    s.mssv.toLowerCase().includes(searchTerm) ||
+    s.name.toLowerCase().includes(searchTerm) ||
+    (s.lecturer && s.lecturer.toLowerCase().includes(searchTerm))
+  );
+});
+
+const filteredAssignments = computed(() => {
+  if (!assignmentSearch.value) return assignments.value;
+
+  const searchTerm = assignmentSearch.value.toLowerCase();
+  return assignments.value.filter(item =>
+    item.mssv.toLowerCase().includes(searchTerm) ||
+    item.name.toLowerCase().includes(searchTerm) ||
+    (item.group && item.group.toLowerCase().includes(searchTerm)) ||
+    (item.topic && item.topic.toLowerCase().includes(searchTerm)) ||
+    (item.lecturer && item.lecturer.toLowerCase().includes(searchTerm)) ||
+    (item.note && item.note.toLowerCase().includes(searchTerm))
+  );
+});
+
+const filteredTopics = computed(() => {
+  if (!topicSearch.value) return topics.value;
+
+  const searchTerm = topicSearch.value.toLowerCase();
+  return topics.value.filter(t =>
+    t.MaDT.toLowerCase().includes(searchTerm) ||
+    t.TenDeTai.toLowerCase().includes(searchTerm) ||
+    t.GiangVien.toLowerCase().includes(searchTerm) ||
+    t.TrangThai.toLowerCase().includes(searchTerm)
+  );
+});
+
+const filteredStudents = computed(() => {
+  if (!studentSearch.value) return students.value;
+
+  const searchTerm = studentSearch.value.toLowerCase();
+  return students.value.filter(s =>
+    s.mssv.toLowerCase().includes(searchTerm) ||
+    s.name.toLowerCase().includes(searchTerm) ||
+    (s.group && s.group.toLowerCase().includes(searchTerm)) ||
+    (s.email && s.email.toLowerCase().includes(searchTerm)) ||
+    (s.phone && s.phone.toLowerCase().includes(searchTerm))
+  );
+});
+
+const filteredTeachers = computed(() => {
+  if (!teacherSearch.value) return teachers.value;
+
+  const searchTerm = teacherSearch.value.toLowerCase();
+  return teachers.value.filter(t => 
+    t.MaGV.toLowerCase().includes(searchTerm) ||
+    t.name.toLowerCase().includes(searchTerm) ||
+    t.email.toLowerCase().includes(searchTerm) ||
+    t.sdt.toLowerCase().includes(searchTerm)
+  );
+});
 
 const fetchStats = async () => {
   try {

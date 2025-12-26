@@ -329,6 +329,7 @@
                         type="text"
                         class="w-20 px-1 py-1 border rounded text-sm"
                         placeholder="0 - 100"
+                        :disabled="!canGrade50"
                       />
                       <span class="text-sm text-gray-600">%</span>
                     </div>
@@ -340,6 +341,7 @@
                       type="text"
                       class="w-full px-2 py-1 border rounded text-sm mx-auto block"
                       placeholder="Ghi chú..."
+                      :disabled="!canGrade50"
                     />
                   </td>
                 </tr>
@@ -420,7 +422,7 @@
                   >
                     <div class="flex gap-2 justify-center">
                       <button
-                        @click="openReviewScoreMiniForm(row.topic, row.MSSV, row.name)"
+                        @click="openReviewScoreMiniForm(row)"
                         class="bg-blue-500 text-white px-3 py-1 rounded text-sm"
                       >
                         Chấm điểm
@@ -467,7 +469,6 @@
         </p>
       </div>
 
-      <!-- ================= NHẬN XÉT CHUNG (1 LẦN) ================= -->
       <div class="border rounded-lg p-5 mb-8 bg-indigo-50">
         <p class="text-center font-semibold mb-4 text-indigo-700">
           Nhận xét chung cho nhóm
@@ -629,7 +630,7 @@
         <button @click="closeReviewScoreMiniForm" class="px-4 py-2 rounded border">
           Đóng
         </button>
-        <button @click="saveReviewScoreMiniForm" class="px-5 py-2 rounded bg-blue-500 text-white">
+        <button @click="saveReviewScoreMiniForm" class="px-5 py-2 rounded bg-blue-500 text-white" :disabled="!canReview">
           Xác nhận
         </button>
       </div>
@@ -856,6 +857,7 @@
                         min="0"
                         :max="c.max"
                         class="w-16 border rounded text-center"
+                        @input="onScoreInput($event, c)"
                       />
                     </td>
                     <td class="border p-2 text-center">{{ c.score*10 }}%</td>
@@ -902,7 +904,7 @@
               <button @click="closeGuideScoreMiniForm" class="px-4 py-2 rounded border">
                 Đóng
               </button>
-              <button @click="saveGuideScoreMiniForm" class="px-5 py-2 rounded bg-blue-500 text-white">
+              <button @click="saveGuideScoreMiniForm" class="px-5 py-2 rounded bg-blue-500 text-white" :disabled="!canGuide">
                 Xác nhận
               </button>
             </div>
@@ -1022,7 +1024,7 @@ async function fetchTopics() {
   } catch (e) { console.error(e) }
 }
 
-onMounted(() => { fetchStudents(); fetchTopics() })
+onMounted(() => { fetchStudents(); fetchTopics(); fetchGrade50Access(); fetchGuideAccess(); fetchReviewAccess(); })
 
 function getStudentsOfTopic(topic) {
   if (!topic) return []
@@ -1212,11 +1214,12 @@ const reviewScoreMiniForm = reactive({
 })
 
 async function openReviewScoreMiniForm(topic) {
+  console.log('openReviewScoreMiniForm topic:', topic)
   reviewScoreMiniForm.TenDeTai =
-    topic.TenDeTai || topic.TenDT || topic.title || ''
+    topic.topic.TenDeTai || topic.topic.TenDT || topic.topic.title || ''
 
   reviewScoreMiniForm.MaDT =
-    topic.MaDT || topic.id || ''
+    topic.topic.MaDT || topic.topic.id || ''
 
   const groupStu = getStudentsOfTopic(topic)
 
@@ -1230,8 +1233,8 @@ async function openReviewScoreMiniForm(topic) {
 
   reviewScoreMiniForm.students = await Promise.all(
     (groupStu.length ? groupStu : [{
-      name: topic.studentName || '',
-      mssv: topic.mssv || ''
+      name: topic.name || '',
+      mssv: topic.MSSV || ''
     }]).map(async (stu) => {
 
       let dbScore = null
@@ -1693,6 +1696,42 @@ const filteredGuideScoreList = computed(() => {
     return text.includes(q)
   })
 })
+
+const canGrade50 = ref(false)
+
+async function fetchGrade50Access() {
+  try {
+    const res = await axios.get('/check-access/Chấm điểm 50%')
+    canGrade50.value = res.data.access
+  } catch (err) {
+    console.error('Failed to fetch 50% grading access:', err)
+    canGrade50.value = false
+  }
+}
+
+const canReview = ref(false)
+
+async function fetchReviewAccess() {
+  try {
+    const res = await axios.get('/check-access/Chấm điểm phản biện')
+    canReview.value = res.data.access
+  } catch (err) {
+    console.error('Failed to fetch review access:', err)
+    canReview.value = false
+  }
+}
+
+const canGuide = ref(false)
+
+async function fetchGuideAccess() {
+  try {
+    const res = await axios.get('/check-access/Chấm điểm hướng dẫn')
+    canGuide.value = res.data.access
+  } catch (err) {
+    console.error('Failed to fetch guide access:', err)
+    canGuide.value = false
+  }
+}
 
 const evaluationSearch = ref('')
 const filteredEvaluationStudents = computed(() => {
