@@ -26,11 +26,11 @@ const form = useForm({
     <section>
         <header>
             <h2 class="text-lg font-medium text-gray-900">
-                Profile Information
+                Thông tin hồ sơ
             </h2>
 
             <p class="mt-1 text-sm text-gray-600">
-                Update your account's profile information and email address.
+                Cập nhật thông tin hồ sơ và địa chỉ email của tài khoản.
             </p>
         </header>
 
@@ -38,13 +38,15 @@ const form = useForm({
             @submit.prevent="form.patch(route('profile.update'))"
             class="mt-6 space-y-6"
         >
+            <!-- NAME -->
             <div>
-                <InputLabel for="name" value="Name" />
+                <InputLabel for="name" value="Họ và tên" />
 
                 <TextInput
                     id="name"
                     type="text"
-                    class="mt-1 block w-full"
+                    class="mt-1 block w-full rounded-md border-gray-300
+                           focus:border-indigo-500 focus:ring-indigo-500"
                     v-model="form.name"
                     required
                     autofocus
@@ -54,13 +56,15 @@ const form = useForm({
                 <InputError class="mt-2" :message="form.errors.name" />
             </div>
 
+            <!-- EMAIL -->
             <div>
                 <InputLabel for="email" value="Email" />
 
                 <TextInput
                     id="email"
                     type="email"
-                    class="mt-1 block w-full"
+                    class="mt-1 block w-full rounded-md border-gray-300
+                           focus:border-indigo-500 focus:ring-indigo-500"
                     v-model="form.email"
                     required
                     autocomplete="username"
@@ -69,16 +73,17 @@ const form = useForm({
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
+            <!-- EMAIL UNVERIFIED -->
             <div v-if="mustVerifyEmail && user.email_verified_at === null">
                 <p class="mt-2 text-sm text-gray-800">
-                    Your email address is unverified.
+                    Email của bạn chưa được xác thực.
                     <Link
                         :href="route('verification.send')"
                         method="post"
                         as="button"
                         class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
-                        Click here to re-send the verification email.
+                        Nhấn vào đây để gửi lại email xác thực.
                     </Link>
                 </p>
 
@@ -86,12 +91,18 @@ const form = useForm({
                     v-show="status === 'verification-link-sent'"
                     class="mt-2 text-sm font-medium text-green-600"
                 >
-                    A new verification link has been sent to your email address.
+                    Một liên kết xác thực mới đã được gửi đến email của bạn.
                 </div>
             </div>
 
+            <!-- ACTION -->
             <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
+                <PrimaryButton
+                    class="bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
+                    :disabled="form.processing"
+                >
+                    Lưu
+                </PrimaryButton>
 
                 <Transition
                     enter-active-class="transition ease-in-out"
@@ -99,11 +110,8 @@ const form = useForm({
                     leave-active-class="transition ease-in-out"
                     leave-to-class="opacity-0"
                 >
-                    <p
-                        v-if="form.recentlySuccessful"
-                        class="text-sm text-gray-600"
-                    >
-                        Saved.
+                    <p v-if="form.recentlySuccessful" class="text-sm text-gray-600">
+                        Đã lưu.
                     </p>
                 </Transition>
             </div>

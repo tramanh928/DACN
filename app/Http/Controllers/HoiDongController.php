@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\DeTai;
+use App\Exports\CommitteesExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class HoiDongController extends Controller
 {
@@ -115,5 +117,9 @@ class HoiDongController extends Controller
     {
         HoiDong::where('MaHD', $id)->delete();
         return response()->json(['message' => 'Deleted']);
+    }
+    public function export()
+    {
+        return Excel::download(new CommitteesExport(),'Danh_sach_hoi_dong.xlsx');
     }
 }

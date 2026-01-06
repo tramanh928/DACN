@@ -23,29 +23,27 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Forgot Password" />
+        <Head title="Quên mật khẩu" />
 
         <div class="mb-4 text-sm text-gray-600">
-            Forgot your password? No problem. Just let us know your email
-            address and we will email you a password reset link that will allow
-            you to choose a new one.
+            Quên mật khẩu? Không sao cả. Vui lòng nhập địa chỉ email của bạn, 
+            chúng tôi sẽ gửi liên kết đặt lại mật khẩu để bạn chọn mật khẩu mới.
         </div>
 
-        <div
-            v-if="status"
-            class="mb-4 text-sm font-medium text-green-600"
-        >
+        <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
             {{ status }}
         </div>
 
-        <form @submit.prevent="submit">
+        <form @submit.prevent="submit" class="space-y-5">
+            <!-- EMAIL -->
             <div>
-                <InputLabel for="email" value="Email" />
+                <InputLabel for="email" value="Email đăng nhập" />
 
                 <TextInput
                     id="email"
                     type="email"
-                    class="mt-1 block w-full"
+                    class="mt-1 block w-full rounded-md border-gray-300
+                           focus:border-indigo-500 focus:ring-indigo-500"
                     v-model="form.email"
                     required
                     autofocus
@@ -55,12 +53,14 @@ const submit = () => {
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
-            <div class="mt-4 flex items-center justify-end">
+            <!-- ACTION -->
+            <div class="flex justify-end">
                 <PrimaryButton
-                    :class="{ 'opacity-25': form.processing }"
+                    class="bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
+                    :class="{ 'opacity-50': form.processing }"
                     :disabled="form.processing"
                 >
-                    Email Password Reset Link
+                    Gửi liên kết đặt lại mật khẩu
                 </PrimaryButton>
             </div>
         </form>

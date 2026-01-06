@@ -24,13 +24,10 @@ class CreateGiangVienAccounts extends Command
 
         foreach ($giangViens as $gv) {
 
-            // Generate login email
             $email = $gv->email ?? strtolower(Str::slug($gv->name)).'@example.com';
 
-            // Generate password
             $password = $email;
 
-            // Create user
             $user = User::create([
                 'name' => $gv->Ho_va_Ten,
                 'email' => $email,
@@ -38,10 +35,8 @@ class CreateGiangVienAccounts extends Command
                 'role' => 'GiangVien',
             ]);
 
-            // Link back
             $gv->update(['user_id' => $user->id]);
 
-            // Show the created login
             $this->info("Created: {$gv->Ho_va_Ten} | {$email} | password: {$password}");
         }
 

@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Log;
 
 class AssistantController extends Controller
 {
-    // Liệt kê tất cả thư ký
     public function index()
     {
         return ThuKy::all()->map(function ($assistant) {
@@ -26,13 +25,11 @@ class AssistantController extends Controller
         });
     }
 
-    // Hiển thị thông tin một thư ký
     public function show(ThuKy $assistant)
     {
         return $assistant;
     }
 
-    // Tạo mới thư ký
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -46,7 +43,6 @@ class AssistantController extends Controller
         return ThuKy::create($data);
     }
 
-    // Cập nhật thông tin thư ký
     public function update(Request $request, ThuKy $assistant)
     {
         $data = $request->validate([
@@ -62,13 +58,11 @@ class AssistantController extends Controller
         return $assistant;
     }
 
-    // Xóa một thư ký
     public function destroy(ThuKy $assistant)
     {
         return $assistant->delete();
     }
 
-    // Thống kê tổng số sinh viên, giáo viên, đề tài
     public function getStats()
     {
         try {

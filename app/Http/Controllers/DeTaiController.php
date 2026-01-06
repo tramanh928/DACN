@@ -8,7 +8,6 @@ use App\Models\SinhVien;
 
 class DeTaiController extends Controller
 {
-    // Liệt kê tất cả đề tài
     public function index()
     {
         return DeTai::with('giangVien')->get()->map(function($d) {
@@ -57,13 +56,11 @@ class DeTaiController extends Controller
         });
     }
 
-    // Hiển thị thông tin một đề tài
     public function show(DeTai $detai)
     {
         return $detai->load('giangVien');
     }
 
-    // Tạo mới đề tài
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -77,7 +74,7 @@ class DeTaiController extends Controller
     private function generateMaDT()
     {
         do {
-            $number = str_pad(rand(1, 100), 2, '0', STR_PAD_LEFT); // makes 01, 02, 099, 1234
+            $number = str_pad(rand(1, 100), 2, '0', STR_PAD_LEFT); 
             $maDT = 'DT' . $number;
         } while (DeTai::where('MaDT', $maDT)->exists());
 
@@ -98,11 +95,9 @@ public function saveTopic(Request $request)
     $groupMembers = SinhVien::where('Nhom', $student->Nhom)->get();
     $hasOldTopic = $student->MaDT !== null;
 
-    // CASE 1: Student already has a topic → just update allowed fields
     if ($hasOldTopic) {
         $oldTopic = DeTai::find($student->MaDT);
 
-        // Only update fields like TrangThai or MoTa (not TenDT or MaGV)
         $oldTopic->TrangThai = $request->TrangThai;
         if ($request->MoTa) {
             $oldTopic->MoTa = $request->MoTa;
@@ -115,12 +110,10 @@ public function saveTopic(Request $request)
         ]);
     }
 
-    // CASE 2: Student does NOT have a topic yet
     $existingTopic = DeTai::where('TenDeTai', $request->TenDT)->first();
     $mustCreateNew = false;
 
     if ($existingTopic) {
-        // Create new only if topic is full or has a different advisor
         $countSV = SinhVien::where('MaDT', $existingTopic->MaDT)->count();
         if ($countSV >= 2 || $existingTopic->MaGV !== $request->MaGV) {
             $mustCreateNew = true;
@@ -128,7 +121,6 @@ public function saveTopic(Request $request)
     }
 
     if (!$existingTopic || $mustCreateNew) {
-        // Create new topic
         $newTopic = DeTai::create([
             'MaDT'     => $this->generateMaDT(),
             'TenDeTai' => $request->TenDT,
@@ -148,7 +140,6 @@ public function saveTopic(Request $request)
         ]);
     }
 
-    // Use existing topic
     foreach ($groupMembers as $sv) {
         $sv->MaDT = $existingTopic->MaDT;
         $sv->save();
@@ -178,7 +169,6 @@ public function saveTopic(Request $request)
         ]);
     }
 
-    // Cập nhật thông tin đề tài
    public function update(Request $request, $MaDT)
     {
             $detai = DeTai::where('MaDT', $MaDT)->firstOrFail();
@@ -194,7 +184,6 @@ public function saveTopic(Request $request)
         }
     }
 
-    // Xóa một đề tài
      public function destroy(Request $request)
     {
         $detai = DeTai::where('MaDT', $request->MaDT)->firstOrFail();

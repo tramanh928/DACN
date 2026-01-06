@@ -20,14 +20,6 @@ const showingNavigationDropdown = ref(false);
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="flex h-16 justify-between">
                         <div class="flex">
-                            <!-- Logo -->
-                            <div class="flex shrink-0 items-center">
-                                <Link :href="route('dashboard')">
-                                    <ApplicationLogo
-                                        class="block h-9 w-auto fill-current text-gray-800"
-                                    />
-                                </Link>
-                            </div>
 
                             <!-- Navigation Links -->
                             <div
@@ -37,7 +29,7 @@ const showingNavigationDropdown = ref(false);
                                     :href="route('dashboard')"
                                     :active="route().current('dashboard')"
                                 >
-                                    Dashboard
+                                    Bảng điều khiển
                                 </NavLink>
                             </div>
                         </div>
@@ -73,15 +65,17 @@ const showingNavigationDropdown = ref(false);
                                     <template #content>
                                         <DropdownLink
                                             :href="route('profile.edit')"
+                                            class="w-full text-left px-4 py-2 hover:bg-gray-100"
                                         >
-                                            Profile
+                                            Trang cá nhân
                                         </DropdownLink>
                                         <DropdownLink
                                             :href="route('logout')"
                                             method="post"
                                             as="button"
+                                            class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
                                         >
-                                            Log Out
+                                            Đăng xuất
                                         </DropdownLink>
                                     </template>
                                 </Dropdown>

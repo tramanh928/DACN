@@ -8,14 +8,12 @@ use Illuminate\Support\Facades\Log;
 
 class ThoiGianController extends Controller
 {
-    // Show all events
     public function index()
     {
         $events = ThoiGian::all();
         return response()->json($events);
     }
 
-    // Store a new event
     public function store(Request $request)
     {
         $request->validate([
@@ -36,7 +34,6 @@ class ThoiGianController extends Controller
         ]);
     }
 
-    // Optional: update an event
     public function update(Request $request, $id)
     {
         $event = ThoiGian::findOrFail($id);
@@ -55,7 +52,6 @@ class ThoiGianController extends Controller
         ]);
     }
 
-    // Optional: delete an event
     public function destroy($id)
     {
         $event = ThoiGian::findOrFail($id);

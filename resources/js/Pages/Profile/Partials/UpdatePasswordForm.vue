@@ -37,25 +37,26 @@ const updatePassword = () => {
     <section>
         <header>
             <h2 class="text-lg font-medium text-gray-900">
-                Update Password
+                Đổi mật khẩu
             </h2>
 
             <p class="mt-1 text-sm text-gray-600">
-                Ensure your account is using a long, random password to stay
-                secure.
+                Hãy đảm bảo tài khoản của bạn sử dụng mật khẩu dài và ngẫu nhiên để bảo mật.
             </p>
         </header>
 
         <form @submit.prevent="updatePassword" class="mt-6 space-y-6">
+            <!-- CURRENT PASSWORD -->
             <div>
-                <InputLabel for="current_password" value="Current Password" />
+                <InputLabel for="current_password" value="Mật khẩu hiện tại" />
 
                 <TextInput
                     id="current_password"
                     ref="currentPasswordInput"
                     v-model="form.current_password"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="mt-1 block w-full rounded-md border-gray-300
+                           focus:border-indigo-500 focus:ring-indigo-500"
                     autocomplete="current-password"
                 />
 
@@ -65,32 +66,33 @@ const updatePassword = () => {
                 />
             </div>
 
+            <!-- NEW PASSWORD -->
             <div>
-                <InputLabel for="password" value="New Password" />
+                <InputLabel for="password" value="Mật khẩu mới" />
 
                 <TextInput
                     id="password"
                     ref="passwordInput"
                     v-model="form.password"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="mt-1 block w-full rounded-md border-gray-300
+                           focus:border-indigo-500 focus:ring-indigo-500"
                     autocomplete="new-password"
                 />
 
                 <InputError :message="form.errors.password" class="mt-2" />
             </div>
 
+            <!-- CONFIRM PASSWORD -->
             <div>
-                <InputLabel
-                    for="password_confirmation"
-                    value="Confirm Password"
-                />
+                <InputLabel for="password_confirmation" value="Xác nhận mật khẩu mới" />
 
                 <TextInput
                     id="password_confirmation"
                     v-model="form.password_confirmation"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="mt-1 block w-full rounded-md border-gray-300
+                           focus:border-indigo-500 focus:ring-indigo-500"
                     autocomplete="new-password"
                 />
 
@@ -100,8 +102,14 @@ const updatePassword = () => {
                 />
             </div>
 
+            <!-- ACTION -->
             <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
+                <PrimaryButton
+                    class="bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
+                    :disabled="form.processing"
+                >
+                    Lưu
+                </PrimaryButton>
 
                 <Transition
                     enter-active-class="transition ease-in-out"
@@ -109,11 +117,8 @@ const updatePassword = () => {
                     leave-active-class="transition ease-in-out"
                     leave-to-class="opacity-0"
                 >
-                    <p
-                        v-if="form.recentlySuccessful"
-                        class="text-sm text-gray-600"
-                    >
-                        Saved.
+                    <p v-if="form.recentlySuccessful" class="text-sm text-gray-600">
+                        Đã lưu.
                     </p>
                 </Transition>
             </div>

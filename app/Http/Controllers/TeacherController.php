@@ -9,7 +9,6 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class TeacherController extends Controller
 {
-    // Liệt kê tất cả giáo viên
     public function index()
     {
         return GiangVien::all()->map(function ($teacher) {
@@ -23,7 +22,6 @@ class TeacherController extends Controller
         });
     }
 
-    // Hiển thị thông tin một giáo viên
     public function show(GiangVien $teacher)
     {
         return $teacher;
@@ -35,7 +33,6 @@ class TeacherController extends Controller
         return $teacher;
     }
 
-    // Tạo mới giáo viên
     private function generateUniqueMaGV()
     {
         do {
@@ -62,8 +59,6 @@ class TeacherController extends Controller
         return GiangVien::create($data);
     }
 
-
-    // Cập nhật thông tin giáo viên
     public function update(Request $request, $MaGV)
     {
         $teacher = GiangVien::where('MaGV', $MaGV)->firstOrFail();
@@ -79,15 +74,12 @@ class TeacherController extends Controller
         return $teacher;
     }
 
-
-    // Xóa một giáo viên
     public function destroy(Request $request)
     {
         $teacher = GiangVien::where('MaGV', $request->MaGV)->firstOrFail();
         return $teacher->delete();
     }
 
-    // Xuất danh sách giáo viên ra file Excel
     public function export()
     {
         return Excel::download(new TeachersExport, 'GiangVien.xlsx');

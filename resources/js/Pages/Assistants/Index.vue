@@ -166,16 +166,45 @@
             </div>
           </div>
 
-          <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Hoạt động gần đây</h3>
-            <div class="space-y-3">
-              <div class="flex items-center text-sm text-gray-600">
-                <div class="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
-                <span>0 sinh viên đã gặp giảng viên hướng dẫn</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                Tình trạng sinh viên
+              </h3>
+
+              <div class="space-y-3 text-sm">
+                <div class="flex items-center gap-2 text-green-600">
+                  <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                  {{ svDaCoGV }} Sinh viên đã được phân công giảng viên hướng dẫn
+                </div>
+
+                <div class="flex items-center gap-2 text-red-600">
+                  <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                  {{ svChuaCoGV }} Sinh viên chưa được phân công giảng viên hướng dẫn
+                </div>
               </div>
-              <div class="flex items-center text-sm text-gray-600">
-                <div class="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-                <span>0 sinh viên chưa gặp giảng viên hướng dẫn</span>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                Tình trạng đề tài
+              </h3>
+
+              <div class="space-y-3 text-sm">
+                <div class="flex items-center gap-2 text-green-600">
+                  <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                  {{ dtTiepTuc }} Đề tài được tiếp tục
+                </div>
+
+                <div class="flex items-center gap-2 text-red-600">
+                  <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                  {{ dtDinhChi }} Đề tài bị đình chỉ
+                </div>
+
+                <div class="flex items-center gap-2 text-yellow-600">
+                  <span class="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                  {{ dtXinHoan }} Đề tài xin hoãn
+                </div>
               </div>
             </div>
           </div>
@@ -838,8 +867,11 @@
                 placeholder="Tìm MSSV / tên..."
                 class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
               />
-              <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
-                Xuất file Excel
+              <button
+                @click="exportEvaluation50"
+                class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition"
+              >
+                Xuất Excel
               </button>
             </div>
           </div>
@@ -883,7 +915,10 @@
                 placeholder="Tìm kiếm theo đề tài..."
                 class="w-80 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
               />
-              <button class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
+              <button
+                @click="exportReviewAssignment"
+                class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition"
+              >
                 Xuất file Excel
               </button>
             </div>
@@ -899,7 +934,6 @@
                   <th class="p-3 text-center">MSSV</th>
                   <th class="p-3 text-center">Họ và tên sinh viên</th>
                   <th class="p-3 text-center">Giảng viên phản biện</th>
-                  <th class="p-3 text-center">Ghi chú</th>
                   <th class="p-3 text-center">Thao tác</th>
                 </tr>
               </thead>
@@ -955,15 +989,6 @@
                     :rowspan="row.rowSpan"
                   >
                     {{ row.topic.GiangVienPhanBien || row.topic.reviewerName || '-' }}
-                  </td>
-
-                  <!-- Ghi chú -->
-                  <td
-                    v-if="row.isFirst"
-                    class="p-3 text-center"
-                    :rowspan="row.rowSpan"
-                  >
-                    {{ row.topic.reviewNote || '-' }}
                   </td>
 
                   <!-- Thao tác -->
@@ -1115,12 +1140,20 @@
         <div v-if="currentView === 'committee'">
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-indigo-600">THÀNH LẬP HỘI ĐỒNG</h2>
+            <div class="flex items-center gap-4">
             <button
               @click="openCommitteeAddForm"
               class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
             >
               Thêm hội đồng
             </button>
+            <button
+              @click="exportCommittee"
+              class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition"
+            >
+              Xuất Excel
+            </button>
+            </div>
           </div>
 
           <div class="bg-white rounded shadow overflow-x-auto">
@@ -1482,14 +1515,14 @@
         <div v-if="currentView === 'timeAllocation'">
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-indigo-600">PHÂN BỔ THỜI GIAN</h2>
-            <div class="flex items-center gap-4">
+            <!-- <div class="flex items-center gap-4">
               <button
                 @click="showAddTimeModal = true"
                 class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition"
               >
                 Thêm sự kiện
               </button>
-            </div>
+            </div> -->
           </div>
           <div class="bg-white rounded shadow overflow-x-auto">
             <table class="min-w-full text-sm divide-y divide-gray-200">
@@ -2015,6 +2048,13 @@ const totalStudents = ref(0)
 const totalTeachers = ref(0)
 const totalTopics = ref(0)
 
+const svDaCoGV = ref(0)
+const svChuaCoGV = ref(0)
+
+const dtTiepTuc = ref(0)
+const dtDinhChi = ref(0)
+const dtXinHoan = ref(0)
+
 const filteredStudent = computed(() => {
   if (!evaluationSearch.value) return students.value;
 
@@ -2140,6 +2180,22 @@ function normalizeStudents(studentsArr) {
 /** ========================== */
 function exportExcel() {
   window.open(route('students.export'), '_blank')
+}
+
+function exportEvaluation50() {
+  window.open(route('evaluation50.export'), '_blank')
+}
+
+function exportReviewAssignment() {
+  window.open(route('reviewAssignment.export'), '_blank')
+}
+
+function exportCommitteeExcel() {
+  window.open(route('committeeAssignment.export'), '_blank')
+}
+
+function exportCommittee() {
+  window.open(route('committees.export'), '_blank')
 }
 
 const handleExcelImport = async e => {
@@ -2482,6 +2538,7 @@ const reviewAssignmentRows = computed(() => {
         name: stu.name
       })
       first = false
+      
     }
   }
   console.log(allStudents)
@@ -2892,5 +2949,14 @@ onMounted(() => {
   fetchStudents()
   loadTimeAllocations()
   fetchCommittees()
+  axios.get('/dashboard/stats').then(res => {
+    svDaCoGV.value   = res.data.sinh_vien.da_co_gv
+    svChuaCoGV.value = res.data.sinh_vien.chua_co_gv
+
+    dtTiepTuc.value  = res.data.de_tai.tiep_tuc
+    dtDinhChi.value  = res.data.de_tai.dinh_chi
+    dtXinHoan.value  = res.data.de_tai.xin_hoan
+    console.log(res.data)
+  })
 })
 </script>

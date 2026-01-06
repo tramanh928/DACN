@@ -1701,7 +1701,7 @@ const canGrade50 = ref(false)
 
 async function fetchGrade50Access() {
   try {
-    const res = await axios.get('/check-access/Chấm điểm 50%')
+    const res = await axios.get('/check-access/' + encodeURIComponent('Chấm điểm 50%'))
     canGrade50.value = res.data.access
   } catch (err) {
     console.error('Failed to fetch 50% grading access:', err)

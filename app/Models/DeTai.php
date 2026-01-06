@@ -12,7 +12,6 @@ class DeTai extends Model
 
     protected $table = 'DeTai';
 
-    // Khóa chính
     protected $primaryKey = 'MaDT';
     public $incrementing = false; 
     protected $keyType = 'string';

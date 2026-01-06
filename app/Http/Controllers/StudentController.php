@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\SinhVien;
+use App\Models\DeTai;
 use Illuminate\Http\Request;
 use App\Exports\StudentsExport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\Evaluation50Export;
+use App\Exports\ReviewAssignmentExport;
+use App\Exports\CommitteeAssignmentExport;
 
 class StudentController extends Controller
 {
-    // Liệt kê tất cả sinh viên
     public function index()
     {
         return SinhVien::with(['giangVienHuongDan', 'deTai'])->get()->map(function($s) {
@@ -31,7 +34,6 @@ class StudentController extends Controller
         });
     }
 
-    // Hiển thị thông tin một sinh viên
     public function show(SinhVien $student)
     {
         return $student->load(['giangVienHuongDan', 'deTai']);
@@ -75,8 +77,6 @@ class StudentController extends Controller
         });
     }
 
-
-    // Tạo mới sinh viên
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -93,7 +93,6 @@ class StudentController extends Controller
         return SinhVien::create($data);
     }
 
-    // Cập nhật thông tin sinh viên
    public function update(Request $request, $MSSV)
     {
         $student = SinhVien::where('MSSV', $MSSV)->firstOrFail();
@@ -148,61 +147,88 @@ class StudentController extends Controller
         return $student->load(['giangVienHuongDan', 'deTai']);
     }
 
-    //Tạo nhóm, gộp nhóm sinh viên
     public function updateStudentGroup(Request $request)
-{
-    $data = $request->validate([
-        'mssv' => 'required|string|exists:SinhVien,MSSV',
-        'group_number' => 'required|integer|min:1',
-    ]);
+    {
+        $data = $request->validate([
+            'mssv' => 'required|string|exists:SinhVien,MSSV',
+            'group_number' => 'required|integer|min:1',
+        ]);
 
-    $mssv = $request->mssv;
-    $groupNumber = $request->group_number;
+        $mssv = $request->mssv;
+        $groupNumber = $request->group_number;
 
-    $student = SinhVien::where('MSSV', $mssv)->first();
+        $student = SinhVien::where('MSSV', $mssv)->first();
 
-    if (!$student) {
-        return response()->json(['error' => 'Sinh viên không tồn tại'], 404);
-    }
+        if (!$student) {
+            return response()->json(['error' => 'Sinh viên không tồn tại'], 404);
+        }
 
-    // 🔥 Generate "Nhom" based on MaGV + number
-    $generatedGroup = $student->Giang_vien_huong_dan . '-' . $groupNumber;
+        $generatedGroup = $student->Giang_vien_huong_dan . '-' . $groupNumber;
 
-    // Get students already in this group
-    $sameGroup = SinhVien::where('Nhom', $generatedGroup)->get();
+        $sameGroup = SinhVien::where('Nhom', $generatedGroup)->get();
 
-    // CASE 1: Empty group → OK
-    if ($sameGroup->count() === 0) {
+        if ($sameGroup->count() === 0) {
+            $student->Nhom = $generatedGroup;
+            $student->save();
+            return response()->json(['success' => true]);
+        }
+
+        if ($sameGroup->count() >= 2) {
+            return response()->json([
+                'error' => 'Nhóm này đã đủ 2 thành viên!'
+            ], 400);
+        }
+
         $student->Nhom = $generatedGroup;
         $student->save();
+
         return response()->json(['success' => true]);
     }
 
-    // CASE 2: Max 2 members
-    if ($sameGroup->count() >= 2) {
-        return response()->json([
-            'error' => 'Nhóm này đã đủ 2 thành viên!'
-        ], 400);
-    }
-
-    // Everything OK → update group
-    $student->Nhom = $generatedGroup;
-    $student->save();
-
-    return response()->json(['success' => true]);
-}
-
-
-    // Xóa một sinh viên
     public function destroy(Request $request)
     {
         $student = SinhVien::where('MSSV', $request->mssv)->firstOrFail();
         return $student->delete();
     }
 
-    // Xuất danh sách sinh viên ra file Excel
     public function export()
     {
         return Excel::download(new StudentsExport, 'DSSV.xlsx');
+    }
+    public function exportEvaluation50()
+    {
+        return Excel::download(new Evaluation50Export(),'DanhGia_50.xlsx');
+    }
+    public function exportReviewAssignment()
+    {
+        return Excel::download(new ReviewAssignmentExport(),'PhanCong_PhanBien.xlsx');
+    }
+    public function exportCommitteeAssignment()
+    {
+        return Excel::download(new CommitteeAssignmentExport(),'PhanCong_HoiDong.xlsx');
+    }
+
+    public function dashboardStats()
+    {
+        $svDaCoGV = SinhVien::whereNotNull('Giang_vien_huong_dan')->count();
+
+        $svChuaCoGV = SinhVien::whereNull('Giang_vien_huong_dan')->count();
+
+        $detaiStats = DeTai::select('TrangThai')
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('TrangThai')
+            ->pluck('total', 'TrangThai');
+
+        return response()->json([
+            'sinh_vien' => [
+                'da_co_gv'   => $svDaCoGV,
+                'chua_co_gv'=> $svChuaCoGV,
+            ],
+            'de_tai' => [
+                'tiep_tuc' => $detaiStats['Được tiếp tục'] ?? 0,
+                'dinh_chi' => $detaiStats['Đình Chỉ'] ?? 0,
+                'xin_hoan' => $detaiStats['Xin hoãn'] ?? 0,
+            ]
+        ]);
     }
 }

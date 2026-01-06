@@ -38,7 +38,7 @@ class ImportController extends Controller
     private function generateMaDTForKey(string $key): string
     {
         $norm = strtolower(Str::ascii(trim($key)));
-        $hex = strtoupper(substr(dechex(crc32($norm)), 0, 4)); // 4 hex chars
+        $hex = strtoupper(substr(dechex(crc32($norm)), 0, 4)); 
         $prefix = 'DT';
         $candidate = null;
         $suffix = 0;
@@ -58,7 +58,7 @@ class ImportController extends Controller
     private function generateMaGVForName(string $name, array &$usedMaGVs): string
     {
         $norm = strtolower(Str::ascii(trim($name)));
-        $hex = strtoupper(substr(dechex(crc32($norm)), 0, 3)); // 3 hex chars
+        $hex = strtoupper(substr(dechex(crc32($norm)), 0, 3)); 
         $prefix = 'GV';
         $candidateBase = $prefix . $hex;
 
@@ -84,22 +84,15 @@ class ImportController extends Controller
         set_time_limit(0);
         DB::connection()->disableQueryLog();
 
-        // Clear temp + import Excel
         TempImportModel::truncate();
         Excel::import(new TempImport, $request->file('file'));
 
         DB::transaction(function () {
 
-            // Clear old data
             DB::table('sinhvien')->delete();
             DB::table('giangvien')->delete();
             DB::table('detai')->delete();
 
-            /**
-             * ======================================================
-             * 1. BUILD UNIQUE GIANG VIEN (GVHD + GVPB)
-             * ======================================================
-             */
             $uniqueGvNames = TempImportModel::query()
                 ->select('GVHD as name')
                 ->whereNotNull('GVHD')->where('GVHD', '!=', '')
@@ -141,25 +134,15 @@ class ImportController extends Controller
                 ];
             }
 
-            // Insert giangvien
             foreach (array_chunk($giangvienInserts, 500) as $chunk) {
                 DB::table('giangvien')->insert($chunk);
             }
 
-            /**
-             * ======================================================
-             * 2. MAP TEN GV -> MaGV
-             * ======================================================
-             */
             $gvMap = DB::table('giangvien')
                 ->pluck('MaGV', 'Ho_va_Ten')
                 ->toArray();
 
-            /**
-             * ======================================================
-             * 3. IMPORT DETAI + SINHVIEN (CHUNK)
-             * ======================================================
-             */
+
             $topicGroupMap = [];
             $usedMaDTs = [];
 
@@ -170,11 +153,9 @@ class ImportController extends Controller
 
                 foreach ($rows as $row) {
 
-                    // === GVHD + GVPB ===
                     $maGVHD = $gvMap[trim((string)$row->GVHD)] ?? null;
                     $maGVPB = $gvMap[trim((string)$row->GVPB)] ?? null;
 
-                    // === GROUP KEY ===
                     $nhom = trim((string)$row->Nhom);
                     if ($nhom !== '') {
                         $key = 'NHOM::' . strtolower(Str::ascii($nhom));
@@ -182,7 +163,6 @@ class ImportController extends Controller
                         $key = 'TOPIC::' . strtolower(Str::ascii(trim((string)$row->TenDeTai)));
                     }
 
-                    // === DETAI ===
                     if (!isset($topicGroupMap[$key])) {
 
                         $baseMaDT = $this->generateMaDTForKey($key);
@@ -201,8 +181,8 @@ class ImportController extends Controller
                             'TenDeTai' => $row->TenDeTai,
                             'MoTa' => $row->MoTa,
                             'TrangThai' => $row->TrangThai,
-                            'MaGV' => $maGVHD,   // GVHD
-                            'MaGVPB' => $maGVPB, // ✅ GVPB
+                            'MaGV' => $maGVHD,  
+                            'MaGVPB' => $maGVPB,
                             'created_at' => now(),
                             'updated_at' => now(),
                         ];
@@ -210,7 +190,6 @@ class ImportController extends Controller
 
                     $maDT = $topicGroupMap[$key];
 
-                    // === SINH VIEN ===
                     $email = $row->Email;
                     if (!$email || !str_contains($email, '@')) {
                         $email = strtolower($row->MSSV) . '@student.stu.edu.vn';

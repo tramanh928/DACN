@@ -83,6 +83,10 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/students-export', [StudentController::class, 'export'])->name('students.export');
+Route::get('/evaluation50-export',[StudentController::class, 'exportEvaluation50'])->name('evaluation50.export');
+Route::get('/review-assignment-export',[StudentController::class, 'exportReviewAssignment'])->name('reviewAssignment.export');
+Route::get('/committees-export', [HoiDongController::class, 'export'])->name('committees.export');
+
 
 Route::get('/students-list', [StudentController::class, 'index'])->name('students.list');
 require __DIR__.'/auth.php';
@@ -102,6 +106,8 @@ Route::post('/import-temp', [ImportController::class, 'import'])->withoutMiddlew
 Route::post('/add-student', [StudentController::class, 'store']);
 Route::post('/add-teacher', [TeacherController::class, 'store']);
 Route::post('/add-topic', [DeTaiController::class, 'store']);
+Route::get('/committee-assignment-export',[StudentController::class, 'exportCommitteeAssignment'])->name('committeeAssignment.export');
+
 
 //Route để xóa dữ liệu
 Route::post('/delete-student/{mssv}', [StudentController::class, 'destroy']);
@@ -163,3 +169,5 @@ Route::post('/committees', [HoiDongController::class, 'store']);
 Route::put('/committees/{id}', [HoiDongController::class, 'update']);
 Route::delete('/committees/{id}', [HoiDongController::class, 'destroy']);
 Route::post('/committees/assign', [HoiDongController::class, 'assignToTopic']);
+
+Route::get('/dashboard/stats', [StudentController::class, 'dashboardStats']);
